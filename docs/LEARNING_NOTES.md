@@ -55,3 +55,18 @@ The dirt shader is applied directly to the stadium's existing diamond and home-a
 `ToolBay` checks the tractor's distance from the workshop rack. Main also checks that the player is on foot, nearby, and that the tractor is stopped before allowing Q to change tools. `RidingMower.set_tool()` changes the visuals and emits `tool_changed`. Main uses that signal to update the rack and objective. R raises a working drag immediately, but lowering requires a stopped, occupied tractor. Each task keeps its own state while the other tool is equipped.
 
 Try `working_width` and `working_depth` on the drag, `dragging_speed` on the tractor, the bay's `service_radius`, and the dirt grid resolution/update frequency. The mask exclusions currently match Cedar Grove's dimensions; keep them aligned with any future stadium layout changes. The next architectural step for multiple stadiums is a shared field-layout resource rather than duplicated dimensions.
+
+
+## M4: Chalking as a separate walking tool
+
+`ChalkMarker` is a small CharacterBody3D with its own speed, collision, steering, brake, gate, wheels, and pushing character visual. Main transfers control to whichever nearby piece of equipment is closest, hiding the ordinary walking character while that tool's operator visual is active. The shared side-exit query checks space before restoring walking. The marker's collision footprint includes its handle/operator space; it is an arcade push tool rather than a rigidbody handcart.
+
+The R action is contextual: it lifts/lowers an occupied tractor's drag or toggles the occupied chalk marker's gate. Each actor reads WASD only while occupied. Leaving the marker closes the gate. The controller records only forward, grounded travel while the gate is open; closing or reopening resets its stroke anchor, so a closed-gate move does not create a connecting stripe later. Wall-contact handling also checks actual horizontal displacement, because a floor recovery contact can hide a wall slide report and leave a tiny requested speed behind.
+
+`ChalkSystem` draws the stroke where the nozzle actually travels. Small ribbons follow the park's known surface heights. New geometry is queued and committed at most 10 times per second in batches of 128 strokes. Finished mesh batches stay in the scene for the session. No broad field material swap or per-sample node is required. Repeated passes can add visual geometry, but they cannot increase already-earned coverage.
+
+The foul-line objective uses two one-dimensional sets of approximately quarter-meter sections. For each swept nozzle segment, the system tests nearby section centers against the chalk footprint. The bases/plate are protected and excluded. Left and right counts have separate denominators. Off-guide chalk is drawn, but it cannot mark a target section that its footprint did not reach. The gold dashed guides themselves start with zero coverage.
+
+Main remembers the selected task when you leave a tool. Returning to the tractor or changing its attachment restores its mowing/dragging objective. The HUD shows all three percentages and a left/right breakdown while chalking. Completion uses exact tracked counts rather than a rounded percentage, so nearly finished work cannot prematurely declare the park ready.
+
+Try `push_speed`, `steering_rate`, and `stroke_spacing` on the marker; `chalk_width`, line bounds, `section_length`, and `update_frequency` on the chalk system. Surface-height projection currently describes Cedar Grove's fixed geometry. A future shared field-layout resource should supply these heights and exclusions for multiple parks. Unlimited chalk, no erase/undo, and no session save/load are deliberate prototype limits, not quality or supply mechanics.

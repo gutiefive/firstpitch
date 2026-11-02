@@ -2,6 +2,7 @@ class_name CrewVisual
 extends Node3D
 const G = preload("res://scripts/gameplay/geometry.gd")
 var seated_pose := false
+var pushing_pose := false
 var limbs: Array[Node3D] = []
 var phase := 0.0
 
@@ -31,8 +32,8 @@ func _ready() -> void:
   G.sphere(arm,Vector3(0,-0.12,0),Vector3(0.23,0.35,0.25),shirt)
   G.cylinder(arm,Vector3(0,-0.39,0),0.085,0.28,skin)
   G.sphere(arm,Vector3(0,-0.56,0),Vector3(0.16,0.18,0.15),skin)
-  if seated_pose:
-   arm.rotation.x = 0.85
+  if seated_pose or pushing_pose:
+   arm.rotation.x = 0.95 if pushing_pose else 0.85
   limbs.append(arm)
   var leg := Node3D.new()
   leg.position = Vector3(side*0.15,body_y-0.32,0)
@@ -49,5 +50,8 @@ func animate_walk(speed: float,delta: float) -> void:
  phase += speed*delta*2.6
  var strength := clampf(speed/4.5,0,1)
  for i in range(limbs.size()):
+  if pushing_pose and i in [0,2]:
+   limbs[i].rotation.x = 0.95
+   continue
   var sign_value := 1.0 if i in [0,3] else -1.0
   limbs[i].rotation.x = lerpf(limbs[i].rotation.x,sin(phase)*0.48*strength*sign_value,1-exp(-14*delta))

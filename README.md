@@ -24,7 +24,7 @@ If your graphics device cannot run Forward+, use Godot's Compatibility renderer 
 | Jump on foot / brake mower | Space |
 | Enter nearby tractor / exit when stopped | E |
 | Swap mower deck / infield drag (on foot, by parked tractor at tool bay) | Q |
-| Raise drag / lower when stopped and seated | R |
+| Raise drag / lower when stopped and seated; open/close chalk gate while pushing | R |
 | Orbit third-person camera | Mouse |
 | Zoom camera | Mouse wheel |
 | Release or recapture cursor | Escape |
@@ -37,9 +37,21 @@ The tractor now accepts a tow-behind drag as well as its mowing deck. Start besi
 
 Press **E** to enter, drive onto a dirt basepath, stop, then press **R** to lower the drag. Drive forward to smooth the dirt into a lighter, fine-grooved finish. The working footprint is a swept, oriented **2.8 × 1.2 m rectangle**, tracked by a separate **250 × 265** condition mask. Dragging reduces maximum forward speed to **4 m/s**. You may raise the attachment at any time; lowering needs a stopped tractor. Reversing remains possible but does not prepare dirt.
 
-Grass, the decorative infield lawn, mound, bases, and the batter/plate area are excluded from dirt progress. Overlapping passes count once. The HUD shows the equipped tool's objective and progress, plus both task percentages. Stop and exit to inspect the prepared path; it stays prepared for the session. Return to the bay and press Q to resume mowing. The two tasks never count toward each other's progress.
+Grass, the decorative infield lawn, mound, bases, and the batter/plate area are excluded from dirt progress. Overlapping passes count once. The HUD shows the equipped tool's objective and progress, plus all three task percentages. Stop and exit to inspect the prepared path; it stays prepared for the session. Return to the bay and press Q to resume mowing. The two tasks never count toward each other's progress.
 
-This is the first playable M4 tool, not the entire field-tool suite. The drag follows the tractor as an arcade attachment; it has no independent trailer collision or articulated towing physics. There are no watering, chalking, or mound-repair tools yet.
+The drag follows the tractor as an arcade attachment; it has no independent trailer collision or articulated towing physics. Watering and mound repair remain planned.
+
+## M4 — Chalk marker
+
+A separate **pushable chalk marker** is parked on the workshop pad, beside the tool bay. Walk to it and press **E**. WASD pushes and steers, **R** opens/closes the chalk gate, **Space** brakes, and **E** lets go after stopping. The operator visibly holds the handle and walks with the cart. Mower and tractor controls stay inactive while pushing.
+
+The two foul lines now begin as **dashed gold guides**, rather than finished white stripes. Push forward along a guide with the gate open to lay a persistent white trail. The gate starts closed and automatically closes when you leave the marker. Reverse or stationary travel does not paint. Close the gate before repositioning so you do not leave unwanted marks.
+
+Coverage is tracked in approximately **0.25 m target sections** on the left and right lines, from 0.8 to 103 m from home plate. Bases and the plate are protected. The HUD shows each line's completion and the total. Actual chalk strokes are **0.22 m wide**; off-guide strokes remain visible but earn no line credit. Repeated passes count once. All three task percentages remain independent, and park completion requires every task's full tracked count.
+
+Chalk trails use small persistent mesh batches, refreshed at most 10 times per second, rather than a node for each paint sample. Their height follows the current park's dirt, lawn, and track surfaces. Chalk is session-only, has unlimited supply in this prototype, and is not erased by mowing or dragging yet. The batter's boxes remain decorative and are not part of the chalk objective.
+
+![Pushing the chalk marker along a foul line](docs/screenshots/chalking.png)
 
 ## Implemented M1–M3
 
@@ -62,7 +74,7 @@ Uncut grass has 28,000 deterministic crossed-triangle tufts in one MultiMesh. Th
 
 ## Project map
 
-Start with `scenes/main/main.tscn` and `scripts/gameplay/game.gd` for scene composition and interactions. Then inspect `scripts/vehicles/mower.gd` and `scripts/mowing/grass.gd` for driving and cutting. `scripts/gameplay/stadium.gd` composes the ballpark; `scripts/environment/park_props.gd` builds reusable park props using shared geometry helpers. `scripts/vehicles/mower_visual.gd` and `scripts/player/crew_visual.gd` hold appearance code, separate from movement. The HUD is in `scripts/ui/grounds_hud.gd`. Dirt accounting and tool service live in `scripts/infield/`; the tow-behind visual is in `scripts/vehicles/drag_attachment.gd`. Open `scenes/environment/infield.tscn` to tune dirt mask bounds and resolution. The player, mower, and grass mask have separate reusable scenes. Open `scenes/environment/grass.tscn` to tune the exported grass settings. Prototype geometry is generated on scene startup; expand the running scene in the editor's **Remote** tree to inspect generated nodes.
+Start with `scenes/main/main.tscn` and `scripts/gameplay/game.gd` for scene composition and interactions. Then inspect `scripts/vehicles/mower.gd` and `scripts/mowing/grass.gd` for driving and cutting. `scripts/gameplay/stadium.gd` composes the ballpark; `scripts/environment/park_props.gd` builds reusable park props using shared geometry helpers. `scripts/vehicles/mower_visual.gd` and `scripts/player/crew_visual.gd` hold appearance code, separate from movement. The HUD is in `scripts/ui/grounds_hud.gd`. Dirt accounting and tool service live in `scripts/infield/`; the tow-behind visual is in `scripts/vehicles/drag_attachment.gd`. `scripts/chalking/` contains the chalk marker controller and stroke/coverage system. The marker has a reusable scene at `scenes/vehicles/chalk_marker.tscn`. Open `scenes/environment/infield.tscn` to tune dirt mask bounds and resolution. The player, mower, and grass mask have separate reusable scenes. Open `scenes/environment/grass.tscn` to tune the exported grass settings. Prototype geometry is generated on scene startup; expand the running scene in the editor's **Remote** tree to inspect generated nodes.
 
 See [learning notes](docs/LEARNING_NOTES.md), [roadmap](docs/ROADMAP.md), and [verification](docs/VERIFICATION.md).
 
@@ -76,6 +88,8 @@ godot --headless --path . --script tests/test_mowing.gd
 godot --headless --path . --script tests/test_gameplay.gd
 godot --headless --path . --script tests/test_infield.gd
 godot --headless --path . --script tests/test_drag_gameplay.gd
+godot --headless --path . --script tests/test_chalk.gd
+godot --headless --path . --script tests/test_chalk_gameplay.gd
 godot --headless --path . --quit-after 180
 ```
 
@@ -86,14 +100,15 @@ For a graphical smoke run on a desktop or virtual display:
 ```sh
 godot --path . --rendering-method gl_compatibility --script tests/test_visual.gd
 godot --path . --rendering-method gl_compatibility --script tests/test_drag_visual.gd
+godot --path . --rendering-method gl_compatibility --script tests/test_chalk_visual.gd
 ```
 
-The mowing graphical test captures six images; the dragging graphical test captures four, including the same dirt area before and after preparation. Captures use `/tmp/firstpitch-*.png` (Linux only). These scripts automate controlled passes; normal play uses the main scene, not a test script.
+The mowing graphical test captures six images; the dragging graphical test captures four, including the same dirt area before and after preparation. The chalking graphical test captures five views, including a repeatable on-guide pass and a separate off-guide stroke. Captures use `/tmp/firstpitch-*.png` (Linux only). These scripts automate controlled passes; normal play uses the main scene, not a test script.
 
 ## Current limitations
 
-- Prototype primitive art and generated scene content; no artist-authored assets, rigged animations, stadium crowds, career, or tools beyond the initial infield drag.
-- Cut grass uses color/texture variation and hides the sparse uncut tufts. It is not a dense simulated lawn. No cross-session mask save/load yet for either task.
+- Prototype primitive art and generated scene content; no artist-authored assets, rigged animations, stadium crowds, career, or tools beyond the infield drag and chalk marker.
+- Cut grass uses color/texture variation and hides the sparse uncut tufts. It is not a dense simulated lawn. No cross-session save/load yet for the task states or chalk strokes.
 - Cutting audio has a named `CuttingAudioHook` AudioStreamPlayer3D on the mower, with no sound assigned.
 - Flat terrain and arcade handling; no suspension. The walking player hides while a separate seated visual appears on the mower. The infield is visually raised slightly but the continuous ground collider remains flat.
 - Only the outfield wall is a perimeter barrier; this is an explorable prototype, not a fully enclosed stadium. The dugouts now have open fronts, solid walls, and decorative benches.

@@ -8,6 +8,7 @@ var percent_label: Label
 var progress: ProgressBar
 var objective_label: Label
 var summary_label: Label
+var detail_label: Label
 
 func text_label(text: String,size: int,color: Color = CREAM) -> Label:
  var label := Label.new()
@@ -72,6 +73,8 @@ func _ready() -> void:
  stack.add_child(progress)
  summary_label = text_label("OUTFIELD 0.00%  /  INFIELD 0.00%",11,Color("aac2ad"))
  stack.add_child(summary_label)
+ detail_label = text_label("",11,Color("aac2ad"))
+ stack.add_child(detail_label)
  mode_label = text_label("ON FOOT",11,Color("aac2ad"))
  stack.add_child(mode_label)
  var bottom := PanelContainer.new()

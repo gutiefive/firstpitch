@@ -41,8 +41,6 @@ func build_field() -> void:
   for edge in [-0.55,0.55]:
    G.box(self,Vector3(x+edge,0.15,0),Vector3(0.06,0.018,2.2),CREAM)
  for side in [-1,1]:
-  var line := G.box(self,Vector3(side*36.5,0.095,-36.5),Vector3(0.16,0.025,103),CREAM)
-  line.rotation.y = -side*PI/4
   G.cylinder(self,Vector3(side*73.5,9,-73.5),0.12,18,Color("e7bd54"))
 
 func ground_material(dark: Color,light: Color,scale_value: float) -> ShaderMaterial:
