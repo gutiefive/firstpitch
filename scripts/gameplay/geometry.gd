@@ -1,10 +1,14 @@
 class_name ParkGeometry
 extends RefCounted
+static var material_cache: Dictionary = {}
 
 static func material(color: Color) -> StandardMaterial3D:
+ if material_cache.has(color):
+  return material_cache[color]
  var m := StandardMaterial3D.new()
  m.albedo_color = color.srgb_to_linear()
  m.roughness = 0.85
+ material_cache[color] = m
  return m
 
 static func box(parent: Node3D, pos: Vector3, size: Vector3, color: Color, collision: bool = false) -> MeshInstance3D:
@@ -52,7 +56,7 @@ static func sector(parent: Node3D, inner: float, outer: float, y: float, color: 
  mesh.surface_end()
  var node := MeshInstance3D.new()
  node.mesh = mesh
- var surface_material := material(color)
+ var surface_material := material(color).duplicate() as StandardMaterial3D
  surface_material.cull_mode = BaseMaterial3D.CULL_DISABLED
  node.material_override = surface_material
  parent.add_child(node)
@@ -63,6 +67,56 @@ static func label(parent: Node3D, text: String, pos: Vector3, size: int = 64) ->
  node.text = text
  node.position = pos
  node.font_size = size
+ node.outline_size = 0
  node.pixel_size = 0.02
+ parent.add_child(node)
+ return node
+
+static func sphere(parent: Node3D, pos: Vector3, scale_size: Vector3, color: Color) -> MeshInstance3D:
+ var node := MeshInstance3D.new()
+ var mesh := SphereMesh.new()
+ mesh.radius = 0.5
+ mesh.height = 1
+ mesh.radial_segments = 12
+ mesh.rings = 6
+ node.mesh = mesh
+ node.material_override = material(color)
+ node.position = pos
+ node.scale = scale_size
+ parent.add_child(node)
+ return node
+
+static func beam(parent: Node3D, from: Vector3, to: Vector3, width: float, color: Color) -> MeshInstance3D:
+ var node := box(parent,(from+to)*0.5,Vector3(width,from.distance_to(to),width),color)
+ var direction := (to-from).normalized()
+ node.quaternion = Quaternion(Vector3.UP,direction)
+ return node
+
+static func ring(parent: Node3D, pos: Vector3, inner: float, outer: float, color: Color) -> MeshInstance3D:
+ var node := MeshInstance3D.new()
+ var mesh := TorusMesh.new()
+ mesh.inner_radius = inner
+ mesh.outer_radius = outer
+ mesh.rings = 20
+ mesh.ring_segments = 8
+ node.mesh = mesh
+ node.material_override = material(color)
+ node.position = pos
+ parent.add_child(node)
+ return node
+
+static func box_instances(parent: Node3D,positions: PackedVector3Array,size: Vector3,color: Color,title: String) -> MultiMeshInstance3D:
+ var mesh := BoxMesh.new()
+ mesh.size = size
+ mesh.material = material(color)
+ var batch := MultiMesh.new()
+ batch.transform_format = MultiMesh.TRANSFORM_3D
+ batch.mesh = mesh
+ batch.instance_count = positions.size()
+ for index in range(positions.size()):
+  batch.set_instance_transform(index,Transform3D(Basis.IDENTITY,positions[index]))
+ var node := MultiMeshInstance3D.new()
+ node.name = title
+ node.multimesh = batch
  parent.add_child(node)
  return node

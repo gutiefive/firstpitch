@@ -14,13 +14,8 @@ func _ready() -> void:
  shape.shape = capsule
  shape.position.y = 0.9
  add_child(shape)
- visual = Node3D.new()
+ visual = CrewVisual.new()
  add_child(visual)
- ParkGeometry.cylinder(visual,Vector3(0,1.05,0),0.3,0.7,Color("e4a64a"))
- ParkGeometry.cylinder(visual,Vector3(0,1.65,0),0.23,0.4,Color("e7b68a"))
- ParkGeometry.cylinder(visual,Vector3(0,1.89,0),0.28,0.12,Color("214c52"))
- for x in [-0.15,0.15]:
-  ParkGeometry.box(visual,Vector3(x,0.4,0),Vector3(0.22,0.8,0.27),Color("28495f"))
 
 func set_seated(value: bool) -> void:
  seated = value
@@ -43,4 +38,5 @@ func _physics_process(delta: float) -> void:
   velocity.y = 7
  if direction.length_squared() > 0.01:
   visual.rotation.y = lerp_angle(visual.rotation.y,atan2(-direction.x,-direction.z),delta*12)
+ (visual as CrewVisual).animate_walk(Vector2(velocity.x,velocity.z).length(),delta)
  move_and_slide()

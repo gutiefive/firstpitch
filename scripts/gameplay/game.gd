@@ -5,7 +5,7 @@ var grass: MowingGrass
 var camera: Camera3D
 var pivot: Node3D
 var boom: SpringArm3D
-var yaw := PI/4
+var yaw := 0.12
 var pitch := -0.45
 var camera_distance := 8.0
 var mode_label: Label
@@ -20,7 +20,7 @@ func _ready() -> void:
  grass = preload("res://scenes/environment/grass.tscn").instantiate()
  add_child(grass)
  player = preload("res://scenes/player/player.tscn").instantiate()
- player.position = Vector3(32,0.1,-12)
+ player.position = Vector3(29,0.1,-11)
  add_child(player)
  mower = preload("res://scenes/vehicles/mower.tscn").instantiate()
  mower.position = Vector3(30,0.1,-19)
@@ -38,6 +38,7 @@ func _ready() -> void:
  pivot.add_child(boom)
  camera = Camera3D.new()
  camera.current = true
+ camera.fov = 65
  camera.near = 0.25
  camera.far = 400
  boom.add_child(camera)
@@ -107,57 +108,16 @@ func _process(delta: float) -> void:
   prompt.text = "WASD walk  •  Shift sprint  •  Space jump  •  Find the mower beside the shed"
 
 func create_hud() -> void:
- var layer := CanvasLayer.new()
- add_child(layer)
- var panel := PanelContainer.new()
- panel.position = Vector2(24,24)
- panel.custom_minimum_size = Vector2(390,0)
- var style := StyleBoxFlat.new()
- style.bg_color = Color(0.035,0.11,0.12,0.94)
- style.content_margin_left = 20
- style.content_margin_right = 20
- style.content_margin_top = 16
- style.content_margin_bottom = 16
- style.corner_radius_top_left = 12
- style.corner_radius_bottom_right = 12
- panel.add_theme_stylebox_override("panel",style)
- layer.add_child(panel)
- var stack := VBoxContainer.new()
- stack.add_theme_constant_override("separation",8)
- panel.add_child(stack)
- var title := Label.new()
- title.text = "FIRST PITCH: GROUNDS CREW"
- title.add_theme_font_size_override("font_size",22)
- title.add_theme_color_override("font_color",Color("f1cc75"))
- stack.add_child(title)
- mode_label = Label.new()
- stack.add_child(mode_label)
- var objective := Label.new()
- objective.text = "PREPARE THE PARK  /  Mow the outfield"
- stack.add_child(objective)
- progress = ProgressBar.new()
- progress.custom_minimum_size = Vector2(350,16)
- progress.show_percentage = false
- stack.add_child(progress)
- percent_label = Label.new()
- stack.add_child(percent_label)
+ var hud := GroundsHUD.new()
+ add_child(hud)
+ mode_label = hud.mode_label
+ prompt = hud.prompt
+ percent_label = hud.percent_label
+ progress = hud.progress
  update_progress(0)
- prompt = Label.new()
- prompt.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
- prompt.offset_top = -65
- prompt.offset_bottom = -30
- prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
- prompt.add_theme_font_size_override("font_size",20)
- prompt.add_theme_color_override("font_shadow_color",Color.BLACK)
- prompt.add_theme_constant_override("shadow_outline_size",6)
- layer.add_child(prompt)
- var reminder := Label.new()
- reminder.text = "Mouse orbit  •  Wheel zoom  •  Esc cursor"
- reminder.position = Vector2(24,204)
- layer.add_child(reminder)
 
 func update_progress(value: float) -> void:
  progress.value = value
- percent_label.text = "%.2f%% of mowable grass prepared" % value
+ percent_label.text = "%.2f%%" % value
  if value >= 99.99:
-  percent_label.text = "FIELD READY — Beautiful work!"
+  percent_label.text = "FIELD READY"

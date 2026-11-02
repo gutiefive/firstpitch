@@ -28,6 +28,17 @@ Try the exported `max_speed`, `reverse_speed`, `acceleration`, `braking`, and `s
 
 The deck paints a circular footprint with a 2.4 m diameter. Sampling along each movement segment closes gaps between physics frames, including diagonal travel. A cell increments the score only on its first cut. The RGBA texture uses red for cut state, green for direction shading, and alpha for grass validity. The shader discards invalid cells so the dirt beneath remains visible.
 
-The mask is modest (450 × 330). A dirty flag batches full uploads to at most 10 Hz; idle grass uploads nothing. This is simpler than a partial-update rendering pipeline and has predictable small upload size. CPU footprint work only visits a local bounding box around the cutting deck. There is one grass surface, not a node per blade. Session state stays in the same grass node when you leave the mower.
+The mask is modest (450 × 330). A dirty flag batches full uploads to at most 10 Hz; idle grass uploads nothing. This is simpler than a partial-update rendering pipeline and has predictable small upload size. CPU footprint work only visits a local bounding box around the cutting deck. There is one grass surface and one MultiMesh batch for the sparse uncut tufts, not a node per blade. Session state stays in the same grass node when you leave the mower.
 
 Try `deck_width`, `resolution`, `update_frequency`, `field_origin`, and `field_size`. Keep the exported outfield radius and diamond exclusions matched to the stadium geometry. Shader colors are in `shaders/grass.gdshader`. A future layout resource should hold both stadium dimensions and scoring boundaries as their shared source of truth.
+
+
+## The visual pass
+
+Appearance is now separated further from controls. `CrewVisual` builds both the standing groundskeeper and a seated pose. Walking rotates the four limb pivots using a sine wave; there is no animation rig or skeleton. `MowerVisual` builds the tractor details and returns the deck, wheel, steering, and driver references to the controller. Driving physics still own movement; the visual class owns appearance.
+
+`ParkProps` groups the workshop, dugouts, stands, scoreboard, light towers, benches, and trees. Each group has its own origin, so details can be designed in local coordinates. Repeated seats use MultiMesh: many transforms reference one mesh and material, keeping the render batches small. Color materials are cached and shared, so treat returned standard materials as immutable. Use a separate material when a prop needs custom settings.
+
+The grass tuft shader reads the same mask as the ground. A freshly cut cell hides its blades instead of relying on the vehicle to delete individual objects. All 28,000 tufts are deterministic and live in one batch. Set `tuft_count` to zero on the grass scene to disable this visual layer for slower hardware; the score and flat cut stripes still work. Shadows are disabled on these tiny blades to avoid flicker and excessive rendering cost.
+
+Try the colors and dimensions in `ParkProps`, the visual proportions in `MowerVisual`, the sky/sun settings in `stadium.gd`, and the color gradients in the grass shaders. The infield grass island is deliberately decorative and remains excluded from the outfield mowing objective.

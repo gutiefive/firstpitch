@@ -14,6 +14,7 @@ var deck: Node3D
 var grass: MowingGrass
 var previous_deck := Vector3.ZERO
 var cutting_audio: AudioStreamPlayer3D
+var appearance: MowerVisual
 
 func _ready() -> void:
  var collider := CollisionShape3D.new()
@@ -22,18 +23,12 @@ func _ready() -> void:
  collider.shape = shape
  collider.position.y = 0.8
  add_child(collider)
- ParkGeometry.box(self,Vector3(0,0.6,0),Vector3(1.5,0.5,2.2),Color("e6ad32"))
- ParkGeometry.box(self,Vector3(0,1,-0.65),Vector3(1.15,0.65,0.95),Color("e7bb40"))
- ParkGeometry.box(self,Vector3(0,1.15,0.5),Vector3(0.8,0.18,0.7),Color("293c42"))
- ParkGeometry.box(self,Vector3(0,1.5,0.85),Vector3(0.8,0.7,0.18),Color("293c42"))
- deck = ParkGeometry.box(self,Vector3(0,0.22,-0.3),Vector3(2.4,0.2,1.2),Color("e4c45e"))
- steering = ParkGeometry.cylinder(self,Vector3(0,1.5,-0.18),0.28,0.09,Color("263a3b"))
- steering.rotation.x = 0.5
- for x in [-0.88,0.88]:
-  for z in [-0.85,0.8]:
-   var wheel := ParkGeometry.cylinder(self,Vector3(x,0.4,z),0.4,0.3,Color("253033"))
-   wheel.rotation.z = PI/2
-   wheels.append(wheel)
+ appearance = MowerVisual.new()
+ appearance.name = "MowerVisual"
+ add_child(appearance)
+ wheels = appearance.wheels
+ steering = appearance.steering
+ deck = appearance.deck
  cutting_audio = AudioStreamPlayer3D.new()
  cutting_audio.name = "CuttingAudioHook"
  add_child(cutting_audio)
@@ -44,6 +39,7 @@ func can_exit() -> bool:
 
 func set_occupied(value: bool) -> void:
  occupied = value
+ appearance.driver.visible = value
  occupied_changed.emit(value)
 
 func _physics_process(delta: float) -> void:
@@ -69,7 +65,7 @@ func _physics_process(delta: float) -> void:
     speed = 0
  for wheel in wheels:
   wheel.rotate_object_local(Vector3.UP,speed*delta/0.4)
- steering.rotation.z = turn*0.4
+ steering.rotation.y = turn*0.4
  if grass != null and occupied and absf(speed) > 0.1:
   grass.mow_segment(previous_deck,deck.global_position,-global_basis.z)
  previous_deck = deck.global_position

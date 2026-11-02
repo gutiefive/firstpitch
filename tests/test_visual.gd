@@ -26,6 +26,9 @@ func run() -> void:
  await RenderingServer.frame_post_draw
  root.get_texture().get_image().save_png("/tmp/firstpitch-mowing.png")
  game.interact()
+ game._process(0.0)
+ await physics_frame
+ await process_frame
  game.set_process(false)
  var overview := Camera3D.new()
  game.add_child(overview)
@@ -39,5 +42,25 @@ func run() -> void:
   await process_frame
  await RenderingServer.frame_post_draw
  root.get_texture().get_image().save_png("/tmp/firstpitch-overview.png")
+ overview.position = Vector3(29,4,7)
+ overview.look_at(Vector3(38,1.7,-11))
+ await capture("/tmp/firstpitch-workshop.png")
+ overview.position = Vector3(20,4,35)
+ overview.look_at(Vector3(0,2,12))
+ await capture("/tmp/firstpitch-stands.png")
+ game.interact()
+ game._process(0.0)
+ overview.position = game.mower.global_position+game.mower.global_basis*Vector3(4,2.6,-5)
+ overview.look_at(game.mower.global_position+Vector3.UP*1.1)
+ await capture("/tmp/firstpitch-mower-detail.png")
  print("Graphical smoke completed; cut cells: ",game.grass.cut_count)
  quit()
+
+func capture(path: String) -> void:
+ for i in range(4):
+  await process_frame
+ await RenderingServer.frame_post_draw
+ var error := root.get_texture().get_image().save_png(path)
+ if error != OK:
+  push_error("Could not save graphical capture: " + path)
+  quit(1)

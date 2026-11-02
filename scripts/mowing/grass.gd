@@ -3,6 +3,7 @@ extends Node3D
 signal completion_changed(percent: float)
 @export var field_size := Vector2(150,110)
 @export var resolution := Vector2i(450,330)
+@export var tuft_count := 28000
 @export var deck_width := 2.4
 @export var update_frequency := 10.0
 var image: Image
@@ -53,6 +54,8 @@ func _ready() -> void:
  mat.set_shader_parameter("state_mask",texture)
  surface.material_override = mat
  add_child(surface)
+ if tuft_count > 0:
+  build_tufts()
 
 func mow_segment(from: Vector3,to: Vector3,direction: Vector3) -> void:
  var steps := maxi(1,ceili(from.distance_to(to)/(deck_width*0.2)))
@@ -87,3 +90,45 @@ func _process(delta: float) -> void:
   completion_changed.emit(percentage())
   elapsed = 0
   dirty = false
+
+func build_tufts() -> void:
+ # One draw batch, no per-blade nodes; the same GPU mask hides freshly cut tufts.
+ var geometry := SurfaceTool.new()
+ geometry.begin(Mesh.PRIMITIVE_TRIANGLES)
+ for rotation_index in range(2):
+  var basis := Basis(Vector3.UP,rotation_index*PI/2)
+  for vertex in [Vector3(-0.018,0,0),Vector3(0,0.16,0),Vector3(0.018,0,0)]:
+   geometry.set_normal(Vector3.UP)
+   geometry.set_uv(Vector2(0,1 if vertex.y>0 else 0))
+   geometry.add_vertex(basis*vertex)
+ var mesh := geometry.commit()
+ var mat := ShaderMaterial.new()
+ mat.shader = preload("res://shaders/grass_tufts.gdshader")
+ mat.set_shader_parameter("state_mask",texture)
+ mat.set_shader_parameter("field_origin",field_origin)
+ mat.set_shader_parameter("field_size",field_size)
+ mesh.surface_set_material(0,mat)
+ var batch := MultiMesh.new()
+ batch.transform_format = MultiMesh.TRANSFORM_3D
+ batch.mesh = mesh
+ batch.instance_count = tuft_count
+ var rng := RandomNumberGenerator.new()
+ rng.seed = 9137
+ for index in range(tuft_count):
+  var point := Vector2.ZERO
+  # Rejection sampling stays within the exact scored grass layout.
+  var found := false
+  for attempt in range(100):
+   point = field_origin+Vector2(rng.randf(),rng.randf())*field_size
+   if is_grass(point):
+    found = true
+    break
+  var basis := Basis(Vector3.UP,rng.randf()*TAU).scaled(Vector3.ONE*rng.randf_range(0.75,1.35))
+  if not found:
+   basis = basis.scaled(Vector3.ZERO)
+  batch.set_instance_transform(index,Transform3D(basis,Vector3(point.x,0.058,point.y)))
+ var tufts := MultiMeshInstance3D.new()
+ tufts.name = "UncutGrassTufts"
+ tufts.multimesh = batch
+ tufts.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+ add_child(tufts)

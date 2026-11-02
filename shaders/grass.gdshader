@@ -1,12 +1,20 @@
 shader_type spatial;
 render_mode cull_disabled;
 uniform sampler2D state_mask : filter_nearest, repeat_disable;
+varying vec3 world_pos;
+float hash(vec2 p) { return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
+float noise(vec2 p) {
+ vec2 i=floor(p); vec2 f=fract(p); f=f*f*(3.0-2.0*f);
+ return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);
+}
+void vertex() { world_pos=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz; }
 void fragment() {
- vec4 state = texture(state_mask, UV);
- if (state.a < 0.5) { discard; }
- float noise = fract(sin(dot(floor(UV * vec2(1800.0,1320.0)),vec2(12.9898,78.233)))*43758.5453);
- vec3 tall = mix(vec3(0.10,0.26,0.08),vec3(0.14,0.31,0.10),noise);
- vec3 short_grass = mix(vec3(0.24,0.43,0.12),vec3(0.33,0.52,0.16),state.g);
- ALBEDO = mix(tall,short_grass,state.r);
- ROUGHNESS = mix(0.98,0.8,state.r);
+ vec4 state=texture(state_mask,UV);
+ if(state.a<0.5) { discard; }
+ float variation=noise(world_pos.xz*1.2)*0.7+noise(world_pos.xz*22.0)*0.3;
+ vec3 uncut=mix(vec3(0.075,0.19,0.055),vec3(0.10,0.24,0.065),variation);
+ vec3 cut=mix(vec3(0.16,0.32,0.08),vec3(0.23,0.40,0.10),state.g);
+ cut*=0.95+0.1*variation;
+ ALBEDO=mix(uncut,cut,state.r);
+ ROUGHNESS=mix(0.97,0.85,state.r);
 }
