@@ -13,10 +13,19 @@ var prompt: Label
 var percent_label: Label
 var progress: ProgressBar
 var driving := false
+var infield: InfieldSurface
+var tool_bay: ToolBay
+var hud: GroundsHUD
 
 func _ready() -> void:
  configure_input()
- add_child(preload("res://scenes/stadium/stadium.tscn").instantiate())
+ var stadium = preload("res://scenes/stadium/stadium.tscn").instantiate()
+ add_child(stadium)
+ infield = preload("res://scenes/environment/infield.tscn").instantiate()
+ add_child(infield)
+ infield.apply_to(stadium.infield_surfaces)
+ tool_bay = ToolBay.new()
+ add_child(tool_bay)
  grass = preload("res://scenes/environment/grass.tscn").instantiate()
  add_child(grass)
  player = preload("res://scenes/player/player.tscn").instantiate()
@@ -27,6 +36,7 @@ func _ready() -> void:
  mower.rotation.y = PI/4
  add_child(mower)
  mower.grass = grass
+ mower.infield = infield
  pivot = Node3D.new()
  pivot.position = player.position+Vector3.UP*1.5
  add_child(pivot)
@@ -44,10 +54,12 @@ func _ready() -> void:
  boom.add_child(camera)
  create_hud()
  grass.completion_changed.connect(update_progress)
+ infield.completion_changed.connect(update_progress)
+ mower.tool_changed.connect(on_tool_changed)
  Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func configure_input() -> void:
- var keys := {"forward":KEY_W,"back":KEY_S,"left":KEY_A,"right":KEY_D,"sprint":KEY_SHIFT,"jump":KEY_SPACE,"interact":KEY_E,"brake":KEY_SPACE}
+ var keys := {"forward":KEY_W,"back":KEY_S,"left":KEY_A,"right":KEY_D,"sprint":KEY_SHIFT,"jump":KEY_SPACE,"interact":KEY_E,"brake":KEY_SPACE,"swap_tool":KEY_Q,"lift_drag":KEY_R}
  for action in keys:
   if not InputMap.has_action(action):
    InputMap.add_action(action)
@@ -56,6 +68,8 @@ func configure_input() -> void:
   InputMap.action_add_event(action,event)
 
 func _unhandled_input(event: InputEvent) -> void:
+ if event is InputEventKey and event.echo:
+  return
  if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
   Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED else Input.MOUSE_MODE_CAPTURED
  if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
@@ -68,6 +82,10 @@ func _unhandled_input(event: InputEvent) -> void:
    camera_distance = minf(18,camera_distance+0.7)
  if event.is_action_pressed("interact"):
   interact()
+ if event.is_action_pressed("swap_tool"):
+  swap_work_tool()
+ if event.is_action_pressed("lift_drag"):
+  mower.toggle_drag()
 
 func interact() -> void:
  if driving:
@@ -91,6 +109,18 @@ func interact() -> void:
   mower.set_occupied(true)
   driving = true
 
+func swap_work_tool() -> bool:
+ if driving or not mower.can_exit() or not tool_bay.contains(mower.global_position):
+  return false
+ if player.global_position.distance_to(mower.global_position) >= 3.5:
+  return false
+ var next_tool := RidingMower.WorkTool.DRAG if mower.active_tool == RidingMower.WorkTool.MOWER else RidingMower.WorkTool.MOWER
+ return mower.set_tool(next_tool)
+
+func on_tool_changed(_tool: int) -> void:
+ tool_bay.show_equipped_drag(mower.active_tool == RidingMower.WorkTool.DRAG)
+ update_progress(0)
+
 func _process(delta: float) -> void:
  if player == null:
   return
@@ -99,16 +129,29 @@ func _process(delta: float) -> void:
  pivot.global_position = pivot.global_position.lerp(target,1-exp(-7*delta))
  pivot.rotation = Vector3(pitch,yaw,0)
  boom.spring_length = lerpf(boom.spring_length,camera_distance,1-exp(-8*delta))
- mode_label.text = "MOWING  •  Deck engaged" if driving else "ON FOOT"
- if driving:
+ var dragging := mower.active_tool == RidingMower.WorkTool.DRAG
+ if not driving:
+  mode_label.text = "ON FOOT  /  " + ("DRAG EQUIPPED" if dragging else "MOWER EQUIPPED")
+ elif dragging:
+  mode_label.text = "DRAGGING  /  " + ("LOWERED" if mower.drag.lowered else "RAISED")
+  if mower.drag.lowered and mower.speed < -0.15:
+   mode_label.text = "DRAGGING  /  REVERSE — NO PREPARATION"
+ else:
+  mode_label.text = "MOWING  /  DECK ENGAGED"
+ if driving and dragging:
+  if mower.drag.lowered:
+   prompt.text = "WASD drive  •  R raise drag  •  Space brake  •  " + ("E exit" if mower.can_exit() else "Stop to exit")
+  else:
+   prompt.text = "WASD drive  •  Stop + R lower drag  •  Space brake  •  E exit when stopped"
+ elif driving:
   prompt.text = "WASD drive  •  Space brake  •  E exit" if mower.can_exit() else "WASD drive  •  Space brake  •  Stop to exit"
  elif player.global_position.distance_to(mower.global_position) < 3.5:
-  prompt.text = "Press E to enter mower"
+  prompt.text = "E enter tractor  •  Q swap mower / drag" if tool_bay.contains(mower.global_position) else "E enter tractor  •  Return to tool bay to swap equipment"
  else:
-  prompt.text = "WASD walk  •  Shift sprint  •  Space jump  •  Find the mower beside the shed"
+  prompt.text = "WASD walk  •  Shift sprint  •  Space jump  •  Find equipment beside the workshop"
 
 func create_hud() -> void:
- var hud := GroundsHUD.new()
+ hud = GroundsHUD.new()
  add_child(hud)
  mode_label = hud.mode_label
  prompt = hud.prompt
@@ -116,8 +159,16 @@ func create_hud() -> void:
  progress = hud.progress
  update_progress(0)
 
-func update_progress(value: float) -> void:
+func update_progress(_value: float) -> void:
+ var mowing := grass.percentage()
+ var dirt := infield.percentage()
+ var dragging := mower.active_tool == RidingMower.WorkTool.DRAG
+ var value := dirt if dragging else mowing
+ hud.objective_label.text = "Drag the infield dirt" if dragging else "Mow the outfield"
+ hud.summary_label.text = "OUTFIELD %.2f%%  /  INFIELD %.2f%%" % [mowing,dirt]
  progress.value = value
  percent_label.text = "%.2f%%" % value
  if value >= 99.99:
-  percent_label.text = "FIELD READY"
+  percent_label.text = "TASK COMPLETE"
+ if mowing >= 99.99 and dirt >= 99.99:
+  hud.objective_label.text = "PARK READY — Both tasks complete"

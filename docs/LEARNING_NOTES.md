@@ -42,3 +42,16 @@ Appearance is now separated further from controls. `CrewVisual` builds both the 
 The grass tuft shader reads the same mask as the ground. A freshly cut cell hides its blades instead of relying on the vehicle to delete individual objects. All 28,000 tufts are deterministic and live in one batch. Set `tuft_count` to zero on the grass scene to disable this visual layer for slower hardware; the score and flat cut stripes still work. Shadows are disabled on these tiny blades to avoid flicker and excessive rendering cost.
 
 Try the colors and dimensions in `ParkProps`, the visual proportions in `MowerVisual`, the sky/sun settings in `stadium.gd`, and the color gradients in the grass shaders. The infield grass island is deliberately decorative and remains excluded from the outfield mowing objective.
+
+
+## M4: Dirt, attachments, and task selection
+
+`InfieldSurface` follows the mowing mask's broad idea without inheriting its circular cutting footprint. It builds a 250 × 265 grid for dirt basepaths and the work area around home plate. The decorative lawn, bases, mound, and batter/plate area are invalid cells. Red stores prepared state, green/blue store drag heading, and alpha stores validity. Each valid cell increments progress just once. Uploads happen only when dirty, at most 10 times per second.
+
+The dirt shader is applied directly to the stadium's existing diamond and home-area meshes. World X/Z maps those meshes into the state texture. This avoids a second dirt plane fighting for depth with the stadium surface. Protected cells retain their dirt appearance, rough cells have clumpy variation, and prepared cells show a lighter finish with subtle heading-aligned grooves. Texture variation changes appearance; the terrain stays physically flat.
+
+`DragAttachment` draws the frame, grid, and tow bars. Its lowered visual follows the existing shallow dirt heights. It has no independent rigidbody or collision shape. The tractor owns movement, and each physics step sends the rear attachment's travel segment to `InfieldSurface`. The footprint is an oriented rectangle rather than a circle. Sampling along that segment closes gaps between frames. Reverse and raised travel do not prepare dirt. Turning uses the current heading for each short sweep; there is no independently articulating trailer.
+
+`ToolBay` checks the tractor's distance from the workshop rack. Main also checks that the player is on foot, nearby, and that the tractor is stopped before allowing Q to change tools. `RidingMower.set_tool()` changes the visuals and emits `tool_changed`. Main uses that signal to update the rack and objective. R raises a working drag immediately, but lowering requires a stopped, occupied tractor. Each task keeps its own state while the other tool is equipped.
+
+Try `working_width` and `working_depth` on the drag, `dragging_speed` on the tractor, the bay's `service_radius`, and the dirt grid resolution/update frequency. The mask exclusions currently match Cedar Grove's dimensions; keep them aligned with any future stadium layout changes. The next architectural step for multiple stadiums is a shared field-layout resource rather than duplicated dimensions.

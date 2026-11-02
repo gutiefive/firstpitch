@@ -1,6 +1,9 @@
 class_name RidingMower
 extends CharacterBody3D
 signal occupied_changed(occupied: bool)
+signal tool_changed(tool: int)
+signal drag_state_changed(lowered: bool)
+enum WorkTool { MOWER, DRAG }
 @export var max_speed := 8.0
 @export var reverse_speed := 3.0
 @export var acceleration := 4.0
@@ -15,6 +18,11 @@ var grass: MowingGrass
 var previous_deck := Vector3.ZERO
 var cutting_audio: AudioStreamPlayer3D
 var appearance: MowerVisual
+var infield: InfieldSurface
+var drag: DragAttachment
+var active_tool: WorkTool = WorkTool.MOWER
+var previous_drag := Vector3.ZERO
+@export var dragging_speed := 4.0
 
 func _ready() -> void:
  var collider := CollisionShape3D.new()
@@ -32,6 +40,12 @@ func _ready() -> void:
  cutting_audio = AudioStreamPlayer3D.new()
  cutting_audio.name = "CuttingAudioHook"
  add_child(cutting_audio)
+ drag = DragAttachment.new()
+ drag.name = "TowBehindDrag"
+ drag.position = Vector3(0,0,2.7)
+ add_child(drag)
+ drag.visible = false
+ previous_drag = drag.global_position
  previous_deck = deck.global_position
 
 func can_exit() -> bool:
@@ -42,10 +56,34 @@ func set_occupied(value: bool) -> void:
  appearance.driver.visible = value
  occupied_changed.emit(value)
 
+func set_tool(tool: WorkTool) -> bool:
+ if occupied or not can_exit():
+  return false
+ active_tool = tool
+ drag.set_lowered(false)
+ drag.visible = tool == WorkTool.DRAG
+ deck.visible = tool == WorkTool.MOWER
+ previous_drag = drag.global_position
+ tool_changed.emit(tool)
+ drag_state_changed.emit(false)
+ return true
+
+func toggle_drag() -> bool:
+ if not occupied or active_tool != WorkTool.DRAG:
+  return false
+ # Raising is always available; lowering needs a stationary tractor.
+ if not drag.lowered and not can_exit():
+  return false
+ drag.set_lowered(not drag.lowered)
+ previous_drag = drag.global_position
+ drag_state_changed.emit(drag.lowered)
+ return true
+
 func _physics_process(delta: float) -> void:
  var throttle := Input.get_axis("back","forward") if occupied else 0.0
  var turn := Input.get_axis("right","left") if occupied else 0.0
- var target := throttle*(max_speed if throttle >= 0 else reverse_speed)
+ var limit := dragging_speed if active_tool == WorkTool.DRAG and drag.lowered else max_speed
+ var target := throttle*(limit if throttle >= 0 else reverse_speed)
  var rate := acceleration if throttle != 0 else braking
  if occupied and Input.is_action_pressed("brake"):
   target = 0
@@ -66,6 +104,9 @@ func _physics_process(delta: float) -> void:
  for wheel in wheels:
   wheel.rotate_object_local(Vector3.UP,speed*delta/0.4)
  steering.rotation.y = turn*0.4
- if grass != null and occupied and absf(speed) > 0.1:
+ if grass != null and occupied and active_tool == WorkTool.MOWER and absf(speed) > 0.1:
   grass.mow_segment(previous_deck,deck.global_position,-global_basis.z)
  previous_deck = deck.global_position
+ if infield != null and occupied and active_tool == WorkTool.DRAG and drag.lowered and speed > 0.15:
+  infield.drag_segment(previous_drag,drag.global_position,-global_basis.z,drag.working_width,drag.working_depth)
+ previous_drag = drag.global_position

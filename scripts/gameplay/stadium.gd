@@ -3,6 +3,7 @@ const G = preload("res://scripts/gameplay/geometry.gd")
 const Props = preload("res://scripts/environment/park_props.gd")
 const CREAM := Color("eee3c6")
 const TEAL := Color("28585a")
+var infield_surfaces: Array[MeshInstance3D] = []
 
 func _ready() -> void:
  build_field()
@@ -24,6 +25,7 @@ func build_field() -> void:
  island.material_override = ground_material(Color("3c7248"),Color("477c4e"),1.8)
  var home := G.cylinder(self,Vector3(0,0.07,0),6,0.12,dirt)
  home.material_override = diamond.material_override
+ infield_surfaces.assign([diamond,home])
  var mound := G.cylinder(self,Vector3(0,0.18,-18.44),2.8,0.36,dirt)
  mound.material_override = diamond.material_override
  G.box(self,Vector3(0,0.38,-18.44),Vector3(0.61,0.05,0.15),CREAM)

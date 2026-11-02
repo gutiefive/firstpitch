@@ -6,6 +6,8 @@ var mode_label: Label
 var prompt: Label
 var percent_label: Label
 var progress: ProgressBar
+var objective_label: Label
+var summary_label: Label
 
 func text_label(text: String,size: int,color: Color = CREAM) -> Label:
  var label := Label.new()
@@ -45,7 +47,8 @@ func _ready() -> void:
  gap.custom_minimum_size.y = 8
  stack.add_child(gap)
  stack.add_child(text_label("CEDAR GROVE  /  MORNING PREP",11,Color("aac2ad")))
- stack.add_child(text_label("Mow the outfield",19))
+ objective_label = text_label("Mow the outfield",19)
+ stack.add_child(objective_label)
  var row := HBoxContainer.new()
  stack.add_child(row)
  percent_label = text_label("0.00%",26,GOLD)
@@ -67,6 +70,8 @@ func _ready() -> void:
   track.content_margin_top = 0
   track.content_margin_bottom = 0
  stack.add_child(progress)
+ summary_label = text_label("OUTFIELD 0.00%  /  INFIELD 0.00%",11,Color("aac2ad"))
+ stack.add_child(summary_label)
  mode_label = text_label("ON FOOT",11,Color("aac2ad"))
  stack.add_child(mode_label)
  var bottom := PanelContainer.new()
