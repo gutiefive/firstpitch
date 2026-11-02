@@ -38,6 +38,7 @@ func _ready() -> void:
  pivot.add_child(boom)
  camera = Camera3D.new()
  camera.current = true
+ camera.near = 0.25
  camera.far = 400
  boom.add_child(camera)
  create_hud()

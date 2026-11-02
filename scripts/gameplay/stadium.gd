@@ -2,11 +2,9 @@ extends Node3D
 const G = preload("res://scripts/gameplay/geometry.gd")
 
 func _ready() -> void:
- var green := Color("367351")
  var dirt := Color("b7794c")
  G.box(self,Vector3(0,-0.3,-40),Vector3(250,0.6,250),Color("64844c"),true)
- G.sector(self,0,104,0.012,dirt)
- G.sector(self,0,99,0.018,green)
+ G.sector(self,99,104,0.06,dirt)
  # The dirt diamond has 27.43 m sides, rotated 45 degrees.
  var diamond := G.box(self,Vector3(0,0.025,-19.396),Vector3(31,0.025,31),dirt)
  diamond.rotation.y = PI/4

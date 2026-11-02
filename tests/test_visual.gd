@@ -33,6 +33,7 @@ func run() -> void:
  overview.position = Vector3(75,105,80)
  overview.look_at(Vector3(0,0,-40))
  overview.fov = 50
+ overview.near = 0.5
  overview.far = 500
  for i in range(4):
   await process_frame
