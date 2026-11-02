@@ -1,0 +1,10 @@
+config_version=5
+[application]
+config/name="First Pitch: Grounds Crew"
+run/main_scene="res://scenes/main/main.tscn"
+[display]
+window/size/viewport_width=1280
+window/size/viewport_height=720
+[rendering]
+renderer/rendering_method="forward_plus"
+environment/defaults/default_clear_color=Color(0.48,0.72,0.87,1)
