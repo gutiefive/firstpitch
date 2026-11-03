@@ -2,6 +2,8 @@ class_name ShiftOverlay
 extends CanvasLayer
 signal close_requested
 signal start_requested(profile: String)
+signal save_requested
+signal load_requested
 signal end_requested
 var session: ShiftSession
 var modal: Control
@@ -17,6 +19,9 @@ var training_button: Button
 var full_button: Button
 var end_button: Button
 var close_button: Button
+var save_button: Button
+var load_button: Button
+var save_message: Label
 const GOLD := Color("e1bb67")
 const CREAM := Color("f4ecd8")
 
@@ -46,9 +51,12 @@ func button(text: String) -> Button:
  node.custom_minimum_size.y = 38
  node.add_theme_font_size_override("font_size",16)
  node.add_theme_color_override("font_color",CREAM)
- node.add_theme_stylebox_override("normal",style(Color("365d57")))
- node.add_theme_stylebox_override("hover",style(Color("49766a")))
- node.add_theme_stylebox_override("pressed",style(Color("25453e")))
+ var colors := {"normal":"365d57","hover":"49766a","pressed":"25453e"}
+ for state in colors:
+  var box := style(Color(colors[state]))
+  box.content_margin_top = 8
+  box.content_margin_bottom = 8
+  node.add_theme_stylebox_override(state,box)
  return node
 
 func _ready() -> void:
@@ -80,15 +88,19 @@ func _ready() -> void:
  shade.color = Color(0.015,0.04,0.035,0.8)
  shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  modal.add_child(shade)
+ var scroll := ScrollContainer.new()
+ scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+ modal.add_child(scroll)
  var center := CenterContainer.new()
- center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
- modal.add_child(center)
+ center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+ center.size_flags_vertical = Control.SIZE_EXPAND_FILL
+ scroll.add_child(center)
  var card := PanelContainer.new()
  card.custom_minimum_size = Vector2(720,0)
  card.add_theme_stylebox_override("panel",style(Color("173c39")))
  center.add_child(card)
  var content := VBoxContainer.new()
- content.add_theme_constant_override("separation",10)
+ content.add_theme_constant_override("separation",6)
  card.add_child(content)
  heading = label("SHIFT BOARD",28,GOLD)
  content.add_child(heading)
@@ -120,6 +132,18 @@ func _ready() -> void:
  end_button = button("End shift now")
  content.add_child(end_button)
  end_button.pressed.connect(func(): end_requested.emit())
+ var saves := HBoxContainer.new()
+ content.add_child(saves)
+ save_button = button("Save field + shift")
+ load_button = button("Load saved field + shift")
+ for item in [save_button,load_button]:
+  item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  saves.add_child(item)
+ save_button.pressed.connect(func(): save_requested.emit())
+ load_button.pressed.connect(func(): load_requested.emit())
+ content.add_child(label("One slot. Loading replaces current work and parks equipment.",12,GOLD))
+ save_message = label("Save manually before closing the game.",12,Color("adc7b7"))
+ content.add_child(save_message)
  close_button = button("Return to practice")
  content.add_child(close_button)
  close_button.pressed.connect(func(): close_requested.emit())

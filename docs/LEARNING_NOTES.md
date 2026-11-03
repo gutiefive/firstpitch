@@ -69,7 +69,7 @@ The foul-line objective uses two one-dimensional sets of approximately quarter-m
 
 Main remembers the selected task when you leave a tool. Returning to the tractor or changing its attachment restores its mowing/dragging objective. The HUD shows all five percentages and a left/right breakdown while chalking. Completion uses exact tracked counts rather than a rounded percentage, so nearly finished work cannot prematurely declare the park ready.
 
-Try `push_speed`, `steering_rate`, and `stroke_spacing` on the marker; `chalk_width`, line bounds, `section_length`, and `update_frequency` on the chalk system. Surface-height projection currently describes Cedar Grove's fixed geometry. A future shared field-layout resource should supply these heights and exclusions for multiple parks. Unlimited chalk, no erase/undo, and no session save/load are deliberate prototype limits, not quality or supply mechanics.
+Try `push_speed`, `steering_rate`, and `stroke_spacing` on the marker; `chalk_width`, line bounds, `section_length`, and `update_frequency` on the chalk system. Surface-height projection currently describes Cedar Grove's fixed geometry. A future shared field-layout resource should supply these heights and exclusions for multiple parks. Unlimited chalk and no erase/undo remain prototype limits. Manual saves now preserve chalk through a stroke archive; they do not add quality or supply mechanics.
 
 
 ## M4: Water exposure and the on-foot hose
@@ -106,4 +106,13 @@ Try `patch_positions`, `patch_radius`, and `hits_required` on the mound scene, o
 
 `ShiftDirector` collects the five existing models, advances the active clock, and coordinates fresh starts. Each model exposes `reset_state()` to clear both accounting and visible work. Reset also stows hand tools, cancels windups, clears chalk meshes, parks vehicles, raises/closes attachments, and restores the player/camera. Active attempts cannot be reset through a fresh-start request.
 
-`ShiftOverlay` processes while the SceneTree is paused. Opening the board cancels an unfinished tamp and releases held tool actions; closing releases them again so a GUI click cannot become a spray or strike. The previous mouse mode is restored. Results are snapshots: later practice may change the field but cannot revise the last score. Profile durations and goals live in `ShiftSession.PROFILES`; no save data or quality simulation is implied by the score.
+`ShiftOverlay` processes while the SceneTree is paused. Opening the board cancels an unfinished tamp and releases held tool actions; closing releases them again so a GUI click cannot become a spray or strike. The previous mouse mode is restored. Results are snapshots: later practice may change the field but cannot revise the last score. Profile durations and goals live in `ShiftSession.PROFILES`; quality simulation is not implied by the score.
+
+
+## M5: Manual field persistence
+
+`FieldSave` captures raw RGBA mask bytes for mowing and dragging so direction shading survives, full floating-point moisture for partially soaked cells, chalk coverage plus a small quad archive, and per-patch mound hits. It rebuilds counters from those arrays rather than trusting saved totals. Chalk keeps the same mesh batching; the archive additionally retains completed batches and strokes awaiting upload. Loading recreates those meshes, including off-guide marks.
+
+The resource-free Variant payload has a format version, a SHA-256 layout signature, and a checksum header. Reads are bounded to 32 MiB and use object-disabled decoding. Layout, dimensions, protected cells, numeric ranges, stroke geometry, session clocks, and reconstructed result scores are validated before calling `reset_field()`. Temporary-file writes are flushed and renamed over the slot, keeping the old slot if replacement fails. This guards accidental corruption; it is not an anti-cheat format.
+
+`ShiftDirector` connects the board's explicit save/load buttons. Loading stows tools and parks equipment using the existing reset lifecycle, then restores field state and session data. The world stays paused until the player resumes. Positions, motion, camera angle, hand-tool animations, and held inputs are deliberately not serialized. Save files live under Godot's `user://`, never in the project directory. There is one manual slot, no autosave, no automatic startup load, no migration, and no cloud sync.

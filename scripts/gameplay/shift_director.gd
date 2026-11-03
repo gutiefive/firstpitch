@@ -3,6 +3,7 @@ extends Node
 var game: Node3D
 var session: ShiftSession
 var overlay: ShiftOverlay
+var save_store := FieldSave.new()
 var mouse_before_board := Input.MOUSE_MODE_CAPTURED
 
 func _ready() -> void:
@@ -15,6 +16,8 @@ func _ready() -> void:
  overlay.close_requested.connect(close_board)
  overlay.start_requested.connect(start_shift)
  overlay.end_requested.connect(end_shift)
+ overlay.save_requested.connect(save_field)
+ overlay.load_requested.connect(load_field)
  session.finished.connect(on_finished)
  build_noticeboard()
 
@@ -119,3 +122,19 @@ func reset_field() -> void:
  game.mound.reset_state()
  game.selected_task = 0
  game.update_progress(0)
+
+func save_field() -> void:
+ collect_progress()
+ if save_store.write(game,session):
+  overlay.save_message.text = "Saved snapshot. Save again after doing more work."
+ else:
+  overlay.save_message.text = save_store.error
+
+func load_field() -> void:
+ var data := save_store.read(game)
+ if data.is_empty() or not save_store.restore(game,self,data):
+  overlay.save_message.text = save_store.error
+  return
+ mouse_before_board = Input.MOUSE_MODE_CAPTURED
+ overlay.refresh()
+ overlay.save_message.text = "Loaded. Equipment parked at workshop. Resume when ready."

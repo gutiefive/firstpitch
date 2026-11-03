@@ -54,7 +54,7 @@ The two foul lines now begin as **dashed gold guides**, rather than finished whi
 
 Coverage is tracked in approximately **0.25 m target sections** on the left and right lines, from 0.8 to 103 m from home plate. Bases and the plate are protected. The HUD shows each line's completion and the total. Actual chalk strokes are **0.22 m wide**; off-guide strokes remain visible but earn no line credit. Repeated passes count once. All five task percentages remain independent, and park completion requires every task's full tracked count.
 
-Chalk trails use small persistent mesh batches, refreshed at most 10 times per second, rather than a node for each paint sample. Their height follows the current park's dirt, lawn, and track surfaces. Chalk is session-only, has unlimited supply in this prototype, and is not erased by mowing or dragging yet. The batter's boxes remain decorative and are not part of the chalk objective.
+Chalk trails use small persistent mesh batches, refreshed at most 10 times per second, rather than a node for each paint sample. Their height follows the current park's dirt, lawn, and track surfaces. Chalk can be saved from the shift board, has unlimited supply in this prototype, and is not erased by mowing or dragging yet. The batter's boxes remain decorative and are not part of the chalk objective.
 
 ![Pushing the chalk marker along a foul line](docs/screenshots/chalking.png)
 
@@ -66,7 +66,7 @@ Water accumulates over time in a separate dirt-moisture mask. The **1.8 m radius
 
 The hose can water within **65 m of its station**, and the nozzle has a **12 m spray reach**. Walls and other colliders block the spray. Grass, the decorative infield lawn, mound, bases, and batter/plate area do not count toward watering. Watering does not advance mowing, dragging, or chalking. Park readiness now requires all five full task counts.
 
-This prototype has no drying, overwatering penalties, limited water supply, or physical rope simulation. The drawn hose follows a simple curve and can pass through props; reach checks and spray obstruction are separate from that visual. Moisture persists for the current session only. You cannot swap tractor attachments with a hose in hand; stow it or enter the tractor first.
+This prototype has no drying, overwatering penalties, limited water supply, or physical rope simulation. The drawn hose follows a simple curve and can pass through props; reach checks and spray obstruction are separate from that visual. Moisture persists during play and in manual saves. You cannot swap tractor attachments with a hose in hand; stow it or enter the tractor first.
 
 ![Watering prepared dirt without erasing the chalk](docs/screenshots/watering.png)
 
@@ -88,9 +88,19 @@ You begin in **free practice**, with no countdown. Press **Tab** to open the shi
 
 The live checklist shows your goals and remaining time. Each job earns up to 20 points, proportional to its quota. Full-completion goals require exact tracked counts. Finish all five goals, run out of time, or use **End shift now** on the board to see results. Results stay fixed when you continue practicing; a new shift starts a clean attempt. Tab pauses both the world and clock; Escape outside the board only releases the cursor.
 
-These are initial coverage-based challenges. Timings still need human playtesting; finish-quality penalties, saved results, and career progression are future work.
+These are initial coverage-based challenges. Timings still need human playtesting; finish-quality penalties and career progression are future work.
 
 ![Training shift results](docs/screenshots/shift-results.png)
+
+## Save and resume
+
+Press **Tab**, then **Save field + shift** to write one local slot. It includes all five jobs, grass/drag patterns, every chalk stroke (including off-guide marks), partial moisture, mound impacts, the active countdown, and the last frozen result. **Save again after more work**; there is no autosave or automatic load.
+
+On your next launch, press Tab and choose **Load saved field + shift**. Loading replaces your current work, returns you and all equipment to the workshop, and leaves the board paused. Choose **Resume shift** or **Continue practicing** when ready. Fresh shifts do not erase the disk slot unless you explicitly save over it.
+
+The file is `user://field-save.dat` (under the game’s folder in `%APPDATA%/Godot/app_userdata/` on Windows; use Godot’s **Project → Open User Data Folder** to find it). Saves are local to this application and user, not uploaded to GitHub or synced across devices. Missing, damaged, or incompatible files show an error and keep the current field. Changes to field layout may invalidate older saves; migration is not implemented yet.
+
+![Loading a saved shift](docs/screenshots/save-loaded.png)
 
 ## Implemented M1–M3
 
@@ -135,6 +145,7 @@ godot --headless --path . --script tests/test_mound.gd
 godot --headless --path . --script tests/test_tamping_gameplay.gd
 godot --headless --path . --script tests/test_shift_session.gd
 godot --headless --path . --script tests/test_shift_gameplay.gd
+godot --headless --path . --script tests/test_field_save.gd
 godot --headless --path . --quit-after 180
 ```
 
@@ -155,7 +166,7 @@ The mowing graphical test captures six images; the dragging graphical test captu
 ## Current limitations
 
 - Prototype primitive art and generated scene content; no artist-authored assets, rigged animations, stadium crowds, career, or tools beyond the infield drag, chalk marker, hose, and tamper.
-- Cut grass uses color/texture variation and hides the sparse uncut tufts. It is not a dense simulated lawn. No cross-session save/load yet for the task states or chalk strokes.
+- Cut grass uses color/texture variation and hides the sparse uncut tufts. It is not a dense simulated lawn. Manual saves include task states and chalk strokes; equipment positions and held tools reset on load.
 - Cutting audio has a named `CuttingAudioHook` AudioStreamPlayer3D on the mower, with no sound assigned.
 - Mostly flat terrain and arcade handling; no suspension. The mound now has a walkable sloped collider. The walking player hides while a separate seated visual appears on the mower. The remaining shallow infield surfaces still use the flat ground collider.
 - Only the outfield wall is a perimeter barrier; this is an explorable prototype, not a fully enclosed stadium. The dugouts now have open fronts, solid walls, and decorative benches.

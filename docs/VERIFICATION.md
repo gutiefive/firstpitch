@@ -109,3 +109,12 @@ The art is still generated prototype geometry. The uncut tufts are sparse, not a
 - Inspected active checklist and results captures at 1280×720: text and buttons fit. Seven software-rendered captures are stored as `shift-*.png` in `docs/screenshots/`.
 
 The board pauses the world and shift clock; Escape outside it only releases the cursor. Windows Forward+ appearance/performance and challenge timing balance remain unverified.
+
+
+## M5: Save and resume
+
+- All twelve prior headless suites passed again: **255 assertions**.
+- `test_field_save.gd`: **28 assertions passed** for missing saves, mixed real work, slot replacement, exact direction/visual data, independent counters, partial moisture/patches, on/off-guide chalk rebuilding, paused active clocks, parked equipment, version/layout mismatch, invalid data, immutable results after later practice, checksum/truncation rejection, practice/timeout/completion snapshots, and write failures. Total: **283 passing headless assertions**. The completed-result branch uses synthetic full progress; mixed-work restoration uses the actual field models.
+- `test_save_visual.gd`: native mouse-button clicks saved an active five-job scene, then loaded it into a completely recreated main scene. Verified all five counters, the exact paused elapsed time, Resume advancing the clock, and early-end results. Inspected 1280×720 board, loaded-state, and results captures under Xorg/Mesa OpenGL Compatibility (`save-*.png`). The load warning remains visible alongside the status message; all controls fit the viewport, with scrolling available for smaller windows.
+
+No Windows executable or Windows filesystem replacement behavior was tested. The automated graphical run recreates the scene in one process; a human close/relaunch check remains part of desktop testing. Saves are manual and local, with one slot and no migration or sync. Check on desktop: save mid-shift, close, reopen, load from Tab, verify patterns/clock, then resume. A fresh shift should preserve the previous disk slot until Save is clicked.

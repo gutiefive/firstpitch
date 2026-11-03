@@ -15,6 +15,7 @@ var covered_count := 0
 var line_counts := [0,0]
 var segment_step := 0.0
 var guides: MultiMeshInstance3D
+var stroke_archive: Array[PackedVector3Array] = []
 var pending: Array[PackedVector3Array] = []
 var active_strokes: Array[PackedVector3Array] = []
 var active_mesh: MeshInstance3D
@@ -132,6 +133,7 @@ func paint_segment(from: Vector3,to: Vector3) -> void:
   for point in [start-across,start+across,finish+across,finish-across]:
    corners.append(Vector3(point.x,ground_height(point)+0.025,point.y))
   pending.append(corners)
+  stroke_archive.append(corners)
 
 func percentage() -> float:
  return 100.0*covered_count/maxi(valid_count,1)
@@ -190,6 +192,7 @@ func reset_state() -> void:
  covered_count = 0
  line_counts = [0,0]
  pending.clear()
+ stroke_archive.clear()
  active_strokes.clear()
  active_mesh = null
  for child in get_children():
