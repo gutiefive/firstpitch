@@ -5,6 +5,10 @@ signal start_requested(profile: String)
 signal save_requested
 signal load_requested
 signal end_requested
+var contracts_screen: ScrollContainer
+var contracts_panel: ContractsPanel
+var contracts_button: Button
+var scoring_label: Label
 var director: ShiftDirector
 var career_screen: ScrollContainer
 var career_panel: CareerPanel
@@ -125,8 +129,8 @@ func _ready() -> void:
   var row := label("",16)
   board_rows.append(row)
   content.add_child(row)
- var scoring := label("Each job is worth 20 points, proportional to its shift goal.",13,Color("adc7b7"))
- content.add_child(scoring)
+ scoring_label = label("",13,Color("adc7b7"))
+ content.add_child(scoring_label)
  var warning := label("Starting fresh resets field work and returns equipment to the workshop.",13,GOLD)
  content.add_child(warning)
  var profiles := HBoxContainer.new()
@@ -159,9 +163,10 @@ func _ready() -> void:
  content.add_child(save_message)
  var menus := HBoxContainer.new()
  content.add_child(menus)
+ contracts_button = button("Contracts")
  career_button = button("Crew career")
  sound_button = button("Sound settings")
- for item in [career_button,sound_button]:
+ for item in [contracts_button,career_button,sound_button]:
   item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   menus.add_child(item)
  close_button = button("Return to practice")
@@ -169,6 +174,7 @@ func _ready() -> void:
  close_button.pressed.connect(func(): close_requested.emit())
  modal.visible = false
  attach_career()
+ attach_contracts()
  session.changed.connect(refresh)
  refresh()
 
@@ -192,6 +198,25 @@ func attach_career() -> void:
  director.career.changed.connect(refresh)
  career_screen.visible = false
 
+func attach_contracts() -> void:
+ contracts_screen = ScrollContainer.new()
+ contracts_screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+ modal.add_child(contracts_screen)
+ var center := CenterContainer.new()
+ center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+ center.size_flags_vertical = Control.SIZE_EXPAND_FILL
+ contracts_screen.add_child(center)
+ contracts_panel = ContractsPanel.new()
+ contracts_panel.director = director
+ center.add_child(contracts_panel)
+ contracts_panel.back_requested.connect(show_board)
+ contracts_button.pressed.connect(func():
+  board_scroll.visible = false
+  contracts_screen.visible = true
+  contracts_panel.refresh()
+  contracts_panel.back_button.grab_focus())
+ contracts_screen.visible = false
+
 func attach_audio(audio: GroundsAudio) -> void:
  sound_screen = CenterContainer.new()
  sound_screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -211,11 +236,13 @@ func show_board() -> void:
   sound_screen.visible = false
  if career_screen != null:
   career_screen.visible = false
+ if contracts_screen != null:
+  contracts_screen.visible = false
  board_scroll.visible = true
 
 func _input(event: InputEvent) -> void:
  if modal.visible and event is InputEventKey and event.pressed and not event.echo and event.keycode in [KEY_TAB,KEY_ESCAPE]:
-  if event.keycode == KEY_ESCAPE and ((sound_screen != null and sound_screen.visible) or (career_screen != null and career_screen.visible)):
+  if event.keycode == KEY_ESCAPE and ((sound_screen != null and sound_screen.visible) or (career_screen != null and career_screen.visible) or (contracts_screen != null and contracts_screen.visible)):
    show_board()
   else:
    close_requested.emit()
@@ -230,13 +257,15 @@ func refresh() -> void:
  var result := session.get_result()
  var finished := session.phase == ShiftSession.Phase.FINISHED and not result.is_empty()
  status_title.text = session.title().to_upper() if active else "FREE PRACTICE"
- status_clock.text = "%s  /  %d of 5 goals · TAB pauses" % [ShiftSession.clock_text(session.remaining_seconds),session.jobs_completed()] if active else "TAB  Shift board / last result"
+ var goal_count := "%d of %d %s" % [int(result.jobs_completed) if finished else session.jobs_completed(),session.jobs_required(),"goal" if session.jobs_required() == 1 else "goals"]
+ scoring_label.text = "Each listed job is worth %.0f points, proportional to its goal." % (100.0/maxi(session.jobs_required(),1))
+ status_clock.text = "%s  /  %s · TAB pauses" % [ShiftSession.clock_text(session.remaining_seconds),goal_count] if active else "TAB  Shift board / last result"
  if active and session.remaining_seconds <= 60:
   status_clock.modulate = Color("efbb8e")
  else:
   status_clock.modulate = Color.WHITE
  for i in range(5):
-  status_rows[i].visible = active
+  status_rows[i].visible = active and session.goals()[i] > 0
   status_rows[i].text = "%s %s  %.1f / %.0f%%" % ["✓" if session.goal_met(i) else "·",ShiftSession.JOB_NAMES[i],session.values[i],session.goals()[i]]
  heading.text = "SHIFT BOARD"
  description.text = "Free practice. Choose a fresh shift when you are ready."
@@ -250,18 +279,19 @@ func refresh() -> void:
  if active:
   heading.text = session.title().to_upper()
   description.text = "PAUSED — World and shift clock stopped."
-  score_label.text = "%s left  /  %.1f points  /  %d of 5 goals" % [ShiftSession.clock_text(session.remaining_seconds),session.score(),session.jobs_completed()]
+  score_label.text = "%s left  /  %.1f points  /  %s" % [ShiftSession.clock_text(session.remaining_seconds),session.score(),goal_count]
  elif finished:
   values = result["values"]
   targets = result["goals"]
   met = result["met"]
   if result["reason"] == "completed":
-   heading.text = "TRAINING COMPLETE" if result["profile_id"] == "training" else "PARK READY"
+   heading.text = "CONTRACT COMPLETE" if ShiftSession.PROFILES[result.profile_id].get("contract",false) else ("TRAINING COMPLETE" if result["profile_id"] == "training" else "PARK READY")
   else:
    heading.text = "TIME’S UP" if result["reason"] == "time_up" else "SHIFT ENDED"
   description.text = "%s · Last shift result · Active time %s" % [result["title"],ShiftSession.clock_text(result["elapsed_seconds"])]
-  score_label.text = "%.1f / 100 points  /  %d of 5 goals" % [result["score"],result["jobs_completed"]]
+  score_label.text = "%.1f / 100 points  /  %s" % [result["score"],goal_count]
  for i in range(5):
+  board_rows[i].visible = targets[i] > 0
   board_rows[i].text = "%s  %s     %.1f%% / %.0f%% goal" % ["✓" if met[i] else "·",ShiftSession.JOB_NAMES[i],values[i],targets[i]]
   board_rows[i].modulate = Color("a5d2b9") if met[i] else Color.WHITE
  training_button.disabled = active

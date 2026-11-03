@@ -86,11 +86,27 @@ The mound now has a shallow sloped edge and matching convex collision, so you ca
 
 You begin in **free practice**, with no countdown. Press **Tab** to open the shift board and pause the world. Choose **Fresh training** for 15 minutes (mow 25%, drag/chalk/water 50% each, mound 100%) or **Fresh full prep** for 30 minutes and 100% of every job. Starting fresh resets all field work and returns equipment to the workshop.
 
-The live checklist shows your goals and remaining time. Each job earns up to 20 points, proportional to its quota. Full-completion goals require exact tracked counts. Finish all five goals, run out of time, or use **End shift now** on the board to see results. Results stay fixed when you continue practicing; a new shift starts a clean attempt. Tab pauses both the world and clock; Escape outside the board only releases the cursor.
+The live checklist shows your goals and remaining time. For training and full prep, each job earns up to 20 points, proportional to its quota. Full-completion goals require exact tracked counts. Finish all five goals, run out of time, or use **End shift now** on the board to see results. Results stay fixed when you continue practicing; a new shift starts a clean attempt. Tab pauses both the world and clock; Escape outside the board only releases the cursor.
 
 These are initial coverage-based challenges. Timings still need human playtesting; finish-quality penalties and further career content are future work.
 
 ![Training shift results](docs/screenshots/shift-results.png)
+
+## Focused contracts
+
+Open **Tab → Contracts** for shorter jobs that use the same field tools and career rewards:
+
+| Contract | Deadline | Required work | Maximum total pay | Unlock |
+| --- | --- | --- | --- | --- |
+| Morning mowing | 10 min | Mow 10% | 100 cr (40 completion bonus included) | Available immediately |
+| Mound callout | 5 min | Repair every mound patch | 40 cr (15 completion bonus included) | Available immediately |
+| Between-games infield | 12 min | Drag 25% and water 25% | 150 cr (60 completion bonus included) | Field Hand / 500 lifetime credits |
+
+Only listed jobs count toward a contract's score. The 100 points divide equally among its requested jobs; unrelated field work earns no contract points. Partial pay is proportional to score, rounded down. Completing the requested goals ends the contract automatically, without requiring the rest of the park. Its result says **Contract complete**, while whole-park readiness still requires all five full jobs.
+
+Contracts are repeatable fixed offers. Each fresh start resets all field work and parks equipment; finish or end the active attempt before taking another. Pausing, field saves, permanent upgrades, frozen results and one-payout-per-attempt rules all apply. Unlocks use lifetime earnings, so buying upgrades cannot lock a contract again. Contract personal bests appear on the cards. Timing and pay are initial values for playtesting.
+
+![Focused contract board](docs/screenshots/contracts-locked.png)
 
 ## Crew career and equipment upgrades
 
@@ -110,7 +126,7 @@ Two permanent upgrades are available:
 
 Career rewards and purchases save automatically to `user://career.dat`, separately from your manual field slot. Loading an old field does not refund purchases or roll back owned equipment. If a career write fails, no credits or purchases change; use **Reload career / retry last reward** in the career screen after addressing the file error. Damaged career files are preserved and financial changes are blocked until readable again.
 
-This is the first career slice: one park, two upgrades, five recent results displayed, and a local ledger capped at 2,000 attempts. It has no cloud sync, multiple-park unlocks, or equipment resale. Economy balance still needs human playtesting.
+This is the first career slice: one park, two upgrades, five recent results displayed, and a local ledger capped at 2,000 attempts. It has no cloud sync, multiple-park unlocks, or equipment resale. Focused contracts now add shorter job choices; economy balance still needs human playtesting.
 
 ![Career rewards and equipment shop](docs/screenshots/career-shop.png)
 
@@ -198,6 +214,7 @@ godot --headless --path . --script tests/test_audio.gd
 godot --headless --path . --script tests/test_field_layout.gd
 godot --headless --path . --script tests/test_career.gd
 godot --headless --path . --script tests/test_career_gameplay.gd
+godot --headless --path . --script tests/test_contracts.gd
 godot --headless --path . --quit-after 180
 ```
 

@@ -27,8 +27,8 @@ static func valid_result(result: Variant) -> bool:
  return FieldSave.new().session_ok({"phase":2,"profile":result.profile_id,"elapsed":result.elapsed_seconds,"result":result})
 
 static func payout(result: Dictionary) -> int:
- var rate := 1 if result.profile_id == "training" else 3
- return floori(float(result.score)*rate)+(50*rate if result.reason == "completed" else 0)
+ var profile: Dictionary = ShiftSession.PROFILES[result.profile_id]
+ return floori(float(result.score)*float(profile.pay_rate))+(int(profile.bonus) if result.reason == "completed" else 0)
 
 func validate(value: Variant) -> bool:
  if not value is Dictionary or not value.has_all(["version","records","upgrades"]) or value.version != 1:
@@ -142,7 +142,9 @@ func owns(id: String) -> bool:
 func rebuild() -> void:
  earned = 0
  completed = 0
- best = {"training":0.0,"full":0.0}
+ best = {}
+ for id in ShiftSession.PROFILES:
+  best[id] = 0.0
  for record in data.records:
   var result: Dictionary = record.result
   earned += payout(result)

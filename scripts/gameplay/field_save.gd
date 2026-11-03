@@ -141,7 +141,7 @@ func session_ok(data: Variant) -> bool:
  if valid:
   check.elapsed_seconds = data.elapsed
   check.remaining_seconds = check.duration_seconds-data.elapsed
-  valid = (result.reason != "completed" or check.jobs_completed() == 5) and (result.reason != "time_up" or check.remaining_seconds == 0)
+  valid = (result.reason != "completed" or check.jobs_completed() == check.jobs_required()) and (result.reason != "time_up" or check.remaining_seconds == 0)
   check.finish(result.reason)
   valid = valid and check.get_result() == result
  check.free()

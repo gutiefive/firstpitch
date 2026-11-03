@@ -5,8 +5,11 @@ signal finished(result: Dictionary)
 enum Phase { PRACTICE, ACTIVE, FINISHED }
 const JOB_NAMES := ["Mow outfield","Drag dirt","Chalk lines","Water dirt","Repair mound"]
 const PROFILES := {
- "training": {"title":"Training shift","duration":900.0,"goals":[25.0,50.0,50.0,50.0,100.0]},
- "full": {"title":"Full park prep","duration":1800.0,"goals":[100.0,100.0,100.0,100.0,100.0]}
+ "training": {"title":"Training shift","duration":900.0,"goals":[25.0,50.0,50.0,50.0,100.0],"pay_rate":1.0,"bonus":50},
+ "full": {"title":"Full park prep","duration":1800.0,"goals":[100.0,100.0,100.0,100.0,100.0],"pay_rate":3.0,"bonus":150},
+ "quick_mow": {"title":"Morning mowing","duration":600.0,"goals":[10.0,0.0,0.0,0.0,0.0],"pay_rate":0.6,"bonus":40,"contract":true,"minimum_earnings":0},
+ "mound_callout": {"title":"Mound callout","duration":300.0,"goals":[0.0,0.0,0.0,0.0,100.0],"pay_rate":0.25,"bonus":15,"contract":true,"minimum_earnings":0},
+ "infield_turnaround": {"title":"Between-games infield","duration":720.0,"goals":[0.0,25.0,0.0,25.0,0.0],"pay_rate":0.9,"bonus":60,"contract":true,"minimum_earnings":500}
 }
 var attempt_id := ""
 var phase: Phase = Phase.PRACTICE
@@ -57,7 +60,16 @@ func set_progress(progress: Array,complete: Array) -> bool:
 
 func goal_met(index: int) -> bool:
  var goal: float = PROFILES[profile_id]["goals"][index]
+ if goal <= 0:
+  return false
  return bool(full_completion[index]) and values[index] >= 100 if goal == 100 else values[index] >= goal
+
+func jobs_required() -> int:
+ var count := 0
+ for goal in goals():
+  if goal > 0:
+   count += 1
+ return count
 
 func jobs_completed() -> int:
  var count := 0
@@ -70,9 +82,10 @@ func score() -> float:
  var points := 0.0
  var targets := goals()
  for i in range(JOB_NAMES.size()):
-  points += clampf(values[i]/float(targets[i]),0,1)*20
+  if float(targets[i]) > 0:
+   points += clampf(values[i]/float(targets[i]),0,1)*(100.0/maxi(jobs_required(),1))
  var value := snappedf(points,0.1)
- return value if jobs_completed() == JOB_NAMES.size() else minf(value,99.9)
+ return value if jobs_completed() == jobs_required() else minf(value,99.9)
 
 func advance(delta: float) -> void:
  if phase != Phase.ACTIVE or delta < 0 or not is_finite(delta):
@@ -81,7 +94,7 @@ func advance(delta: float) -> void:
  elapsed_seconds = minf(duration_seconds,elapsed_seconds+delta)
  remaining_seconds = maxf(0,duration_seconds-elapsed_seconds)
  # Work collected during the deadline frame wins over the timeout condition.
- if jobs_completed() == JOB_NAMES.size():
+ if jobs_completed() == jobs_required():
   finish("completed")
  elif remaining_seconds <= 0:
   finish("time_up")
@@ -91,7 +104,7 @@ func advance(delta: float) -> void:
 func end_early() -> bool:
  if phase != Phase.ACTIVE:
   return false
- finish("completed" if jobs_completed() == JOB_NAMES.size() else "ended_early")
+ finish("completed" if jobs_completed() == jobs_required() else "ended_early")
  return true
 
 func finish(reason: String) -> void:

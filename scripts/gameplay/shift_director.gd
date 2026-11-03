@@ -88,9 +88,16 @@ func on_finished(result: Dictionary) -> void:
 func start_shift(profile: String) -> bool:
  if session.phase == ShiftSession.Phase.ACTIVE or not ShiftSession.PROFILES.has(profile):
   return false
+ if career.earned < int(ShiftSession.PROFILES[profile].get("minimum_earnings",0)):
+  return false
  career_message = ""
  reset_field()
  session.start(profile)
+ for i in range(session.goals().size()):
+  if session.goals()[i] > 0:
+   game.selected_task = i
+   break
+ game.update_progress(0)
  mouse_before_board = Input.MOUSE_MODE_CAPTURED
  close_board()
  return true
