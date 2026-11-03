@@ -1,197 +1,207 @@
 # First Pitch: Grounds Crew
 
-A native Godot 3D baseball groundskeeping prototype. Walk through a small ballpark, enter a riding mower, and cut persistent stripes into the outfield. Built with GDScript and procedural meshes; no plugins or downloaded art are required.
+A playable Godot 3D groundskeeping prototype set at **Cedar Grove Ballpark**. Mow the outfield, drag and water the dirt, chalk foul lines, and repair the mound. Take timed shifts or focused contracts, earn crew credits, climb the ranks, and buy permanent tool upgrades. Save field work and resume later.
 
-![The playable ballpark](docs/screenshots/stadium.png)
+Built with GDScript, procedural meshes and original generated sound effects. No plugins, downloaded art, or external runtime dependencies are required.
 
-## Open and play
+**Current build: M1–M5 prototypes implemented, plus the first M6 career and contracts loop.** The latest verified build passed **408 headless assertions** and scripted graphical checks. Windows and Forward+ hardware testing remain outstanding.
 
-Tested with **Godot 4.6.3 stable**, the installed stable 4.x version. Import `project.godot` into Godot, open `scenes/main/main.tscn`, and press **F6**, or press **F5** to run the project. The project defaults to **Forward+** for a desktop GPU. Windows PC is the intended platform; a Windows executable has not been exported or tested.
+![Cedar Grove's connected dugouts and playing enclosure](docs/screenshots/dugout-layout.png)
+
+[Start playing](#start-playing) · [Controls](#controls) · [Field tools](#field-tools) · [Shifts and contracts](#shifts-and-contracts) · [Career and upgrades](#career-and-upgrades) · [Saving](#save-and-resume) · [Development](#development-and-verification)
+
+## Current milestone status
+
+| Milestone | Implemented |
+| --- | --- |
+| **M1 — Stadium and character** | Explorable ballpark, walking/sprinting/jumping, orbit camera, collisions, daylight, detailed groundskeeper and park props. |
+| **M2 — Riding mower** | Enter/exit, acceleration, braking, reverse, steering, animated wheels, seated operator and speed-responsive engine audio. |
+| **M3 — Grass mowing** | Persistent spatial cutting, directional stripes, disappearing grass tufts and overlap-safe coverage. |
+| **M4 — Field tools** | Tow-behind infield drag, pushable chalk marker, on-foot hose and timed hand tamper; five independent field jobs. |
+| **M5 — Shifts, scores and saving** | Free practice, training/full-park shifts, paused board, live goals, frozen results and a manual field save slot. |
+| **M6 — First career slice** | Credits, four crew ranks, personal bests, recent results, two permanent upgrades and three focused contracts with a rank unlock. |
+| **Field and sound polish** | Field-facing dugouts connected to fencing/backstop, proper home plate and reference markings, positional tool sounds, ambience and saved volume settings. |
+
+These are playable prototype systems, not a finished release. See the [roadmap](docs/ROADMAP.md), [verification record](docs/VERIFICATION.md) and [current limitations](#current-limitations).
+
+## Start playing
+
+Tested with **Godot 4.6.3 stable**. Import `project.godot` into Godot and press **F5**, or open `scenes/main/main.tscn` and press **F6**. The project defaults to **Forward+** for a desktop GPU. Windows PC is the intended platform; a Windows executable has not been exported or tested.
 
 ```sh
 godot --editor --path .
 godot --path .
 ```
 
-If your graphics device cannot run Forward+, use Godot's Compatibility renderer (or launch with `--rendering-method gl_compatibility`). That override was used for software-rendered graphical checks in the cloud; it does not change the saved desktop renderer.
+For a device without Forward+ support, choose the Compatibility renderer or launch with:
+
+```sh
+godot --path . --rendering-method gl_compatibility
+```
+
+You spawn beside the workshop in **free practice**, with no countdown. The tractor, chalk marker, hose station and tamper rack are nearby. Use the open **GROUNDS CREW / FIELD ACCESS** entrance beside the workshop to reach the field.
+
+1. Try the tools in practice; work stays on the field during the session.
+2. Press **Tab** and choose a fresh training/full-prep shift, or open **Contracts** for a shorter job.
+3. Complete its listed goals before the deadline, or use **End shift now** for a partial result.
+4. Open **Crew career** to spend earned credits on equipment.
+5. Use **Save field + shift** before quitting if you want to keep the current field and clock.
+
+**Starting any fresh shift or contract resets all field work and parks equipment.** It keeps your career and upgrades, and does not overwrite the manual field slot unless you save again.
 
 ## Controls
 
 | Action | Input |
 | --- | --- |
-| Walk / steer and drive mower | WASD |
+| Walk / drive tractor / push chalk marker | WASD |
 | Sprint on foot | Shift |
-| Jump on foot / brake mower | Space |
-| Enter nearby tractor / exit when stopped | E |
-| Swap mower deck / infield drag (on foot, by parked tractor at tool bay) | Q |
-| Raise drag / lower when stopped and seated; open/close chalk gate while pushing | R |
-| Take hose near water station / stow hose anywhere on foot | F |
-| Take tamper near repair rack / stow tamper anywhere on foot | G |
-| One timed tamping stroke while holding tamper | Click left mouse button |
+| Jump on foot / brake vehicle or marker | Space |
+| Enter nearby tractor or chalk marker / leave when stopped | E |
+| Swap mower deck / infield drag, on foot beside the parked tractor at the tool bay | Q |
+| Raise drag / lower when stopped; open or close chalk gate while pushing | R |
+| Take hose near its station / stow anywhere on foot | F |
+| Take tamper near its rack / stow anywhere on foot | G |
 | Spray while holding hose and cursor captured | Hold left mouse button |
+| One timed stroke while holding tamper | Click left mouse button |
 | Orbit third-person camera | Mouse |
-| Zoom camera | Mouse wheel |
-| Open / close shift board and pause | Tab |
-| Release or recapture cursor (does not pause) | Escape |
+| Zoom | Mouse wheel |
+| Open/close shift board; pause/resume world and countdown | Tab |
+| Release/recapture cursor during play; return from a board submenu | Escape |
 
-Spawn beside the equipment shed. The mower is ahead, on the paved equipment pad. Approach until **Press E to enter mower** appears. Drive across the foul line onto grass. Cutting starts automatically while driving. Dirt does not contribute to the percentage. Repeated passes count only once. Exit after stopping; your cut pattern stays for this session.
+**Escape during play does not pause the clock.** Tab does. Inside Contracts, Crew career or Sound settings, Escape returns to the paused main board; Tab resumes play.
 
-## M4 — Infield dragging
+## Field tools
 
-The tractor now accepts a tow-behind drag as well as its mowing deck. Start beside the workshop, approach the parked tractor on foot, and press **Q** to swap tools. The tool bay displays the unused equipment. Swapping requires a stopped tractor within 9 m of the bay and a player within 3.5 m of the tractor; you cannot change tools while driving or out on the field.
+All five jobs track actual unique cells, line sections or accepted impacts. Overlapping work cannot inflate completion, and doing one job does not advance another. Whole-park readiness requires every job's exact full count; rounded HUD percentages cannot finish it early.
 
-Press **E** to enter, drive onto a dirt basepath, stop, then press **R** to lower the drag. Drive forward to smooth the dirt into a lighter, fine-grooved finish. The working footprint is a swept, oriented **2.8 × 1.2 m rectangle**, tracked by a separate **250 × 265** condition mask. Dragging reduces maximum forward speed to **4 m/s**. You may raise the attachment at any time; lowering needs a stopped tractor. Reversing remains possible but does not prepare dirt.
+### Mowing
 
-Grass, the decorative infield lawn, mound, bases, and the batter/plate area are excluded from dirt progress. Overlapping passes count once. The HUD shows the equipped tool's objective and progress, plus all five task percentages. Stop and exit to inspect the prepared path; it stays prepared for the session. Return to the bay and press Q to resume mowing. The two tasks never count toward each other's progress.
+Approach the tractor until the E prompt appears, enter, and drive onto the outfield. Cutting is automatic with the mowing deck fitted. The standard **2.4 m** footprint leaves persistent directional stripes and removes uncut grass tufts. The career deck upgrade increases it to **3.0 m**.
 
-The drag follows the tractor as an arcade attachment; it has no independent trailer collision or articulated towing physics. A compaction-based mound-repair tool is described below.
+Only the mowable outfield counts. Dirt, warning track and the decorative infield lawn are excluded. Stop before exiting; your cutting pattern remains visible. Driving supports acceleration, reverse, braking and speed-dependent steering, with protected dismount placement.
 
-## M4 — Chalk marker
+### Infield dragging
 
-A separate **pushable chalk marker** is parked on the workshop pad, beside the tool bay. Walk to it and press **E**. WASD pushes and steers, **R** opens/closes the chalk gate, **Space** brakes, and **E** lets go after stopping. The operator visibly holds the handle and walks with the cart. Mower and tractor controls stay inactive while pushing.
+On foot beside the stopped tractor at the workshop bay, press **Q** to swap the mower deck for the drag. Swapping requires the tractor within **9 m** of the bay and the player within **3.5 m** of the tractor. The rack displays the unused attachment.
 
-The two foul lines now begin as **dashed gold guides**, rather than finished white stripes. Push forward along a guide with the gate open to lay a persistent white trail. The gate starts closed and automatically closes when you leave the marker. Reverse or stationary travel does not paint. Close the gate before repositioning so you do not leave unwanted marks.
+Enter, drive onto dirt, stop and press **R** to lower the drag. Forward travel smooths a swept **2.8 × 1.2 m** footprint, leaving lighter, fine-grooved dirt. Working speed is limited to **4 m/s**. Raise it at any time; lowering requires a stop. Reverse travel does not prepare dirt.
 
-Coverage is tracked in approximately **0.25 m target sections** on the left and right lines, from 0.8 to 103 m from home plate. Bases and the plate are protected. The HUD shows each line's completion and the total. Actual chalk strokes are **0.22 m wide**; off-guide strokes remain visible but earn no line credit. Repeated passes count once. All five task percentages remain independent, and park completion requires every task's full tracked count.
+Grass, infield lawn, mound, bases and the batter/plate area are protected. Dirt preparation persists independently of mowing and moisture. The attachment uses arcade towing rather than articulated trailer physics.
 
-Chalk trails use small persistent mesh batches, refreshed at most 10 times per second, rather than a node for each paint sample. Their height follows the current park's dirt, lawn, and track surfaces. Chalk can be saved from the shift board, has unlimited supply in this prototype, and is not erased by mowing or dragging yet. The batter's boxes, coaching boxes and on-deck circles are fixed reference markings and are not part of the chalk objective.
+### Chalk marker
 
-![Pushing the chalk marker along a foul line](docs/screenshots/chalking.png)
+The separate push cart is parked on the workshop pad. Use **E**, WASD, **R** for its gate, Space to brake, and E to leave after stopping. The visible operator walks behind its handle.
 
-## M4 — Hose watering
+Foul lines begin as **dashed gold guides**. Push forward with the gate open to leave a persistent white trail. Reverse or stationary travel does not paint; leaving closes the gate. Close it before repositioning to avoid stray marks.
 
-The **water station** stands beside the workshop and visitor dugout. Approach within 3 m on foot and press **F** to take the hose. Walk normally, aim the center reticle at the dirt, and **hold the left mouse button** to spray. F stows the hose from anywhere. Entering the tractor or chalk marker also stows it automatically. Escape releases the cursor and stops spraying so you can interact outside the game safely.
+Both foul lines track approximately **0.25 m sections** from **0.8 to 103 m** from home. Strokes are **0.22 m wide**. Off-guide marks remain visible but earn no credit; bases and plate are protected. The HUD reports left/right and combined coverage.
 
-Water accumulates over time in a separate dirt-moisture mask. The **1.8 m radius** spray has a softer falloff at its edges. Each valid dirt cell counts once when it reaches **65% moisture**, not merely when a droplet passes over it. The reticle turns blue and the HUD reports the aim point's moisture when it is sufficiently soaked. The edges may still need more exposure. Wet dirt darkens and gains a slightly smoother finish while preserving existing drag grooves and chalk.
+Chalk is unlimited and is not erased by other tools yet. Batter's boxes, coaching boxes and on-deck circles are fixed reference markings, outside the chalk objective.
 
-The hose can water within **65 m of its station**, and the nozzle has a **12 m spray reach**. Walls and other colliders block the spray. Grass, the decorative infield lawn, mound, bases, and batter/plate area do not count toward watering. Watering does not advance mowing, dragging, or chalking. Park readiness now requires all five full task counts.
+### Hose watering
 
-This prototype has no drying, overwatering penalties, limited water supply, or physical rope simulation. The drawn hose follows a simple curve and can pass through props; reach checks and spray obstruction are separate from that visual. Moisture persists during play and in manual saves. You cannot swap tractor attachments with a hose in hand; stow it or enter the tractor first.
+Approach the water station beside the workshop, press **F**, aim at dirt and hold **LMB**. F stows the hose anywhere; entering the tractor or marker also stows it.
 
-![Watering prepared dirt without erasing the chalk](docs/screenshots/watering.png)
+The **1.8 m radius** spray accumulates moisture with a softer edge. A valid dirt cell qualifies at **65% moisture**, so a quick pass may only dampen it. Wet dirt darkens without erasing drag grooves or chalk. The high-flow career nozzle delivers **25% more moisture per second**.
 
-## M4 — Mound repair
+The hose reaches **65 m** from its station; the nozzle reaches **12 m**. Walls and colliders block spraying. Grass, lawn, mound, bases and the batter/plate area earn no water credit. Releasing the cursor stops spray.
 
-The **tamper rack** is outside the workshop. Approach it on foot and press **G** to take the tool. Walk onto the pitcher's mound, aim the reticle at a dark clay patch, stop, and **click LMB** for one tamping stroke. Keep the patch under the reticle until impact. Three separate strokes repair one patch; there are **six patches / eighteen valid strokes** in total. The HUD shows both repaired patches and the aim patch's hit count.
+There is no drying, overwatering penalty or limited water supply. The hose is a visual curve, not a simulated rope routed around obstacles.
 
-Each accepted impact settles the loose clay and blends away the worn spot. Completed patches turn the target ring blue and cannot be farmed for more progress. Holding the mouse does not auto-repeat; wait for the stroke to finish before clicking again. Moving, looking away, being too far away, an obstacle, or a released cursor prevents the impact from counting. The pitching rubber and ordinary infield dirt are not repair targets.
+### Mound repair
 
-G stows the tamper anywhere. Taking the hose stows it automatically, and taking the tamper stows the hose. Entering the tractor or chalk marker also stows it. Cancelled windups do not repair a patch; already completed impacts persist for the session.
+Take the tamper with **G** near the workshop rack. Walk onto the sloped mound, stop, aim at worn clay, and **click LMB**. Hold aim through impact. Each of **six patches** needs **three valid strokes**, for **18 impacts** total.
 
-The mound now has a shallow sloped edge and matching convex collision, so you can walk up and stand on its top. This is compaction-based prototype repair, not digging, clay inventory, or deformable-terrain simulation. The character/tool animation is procedural rather than a rigged hand-contact animation.
+Accepted impacts visibly compact the clay and settle its clumps. Repaired patches cannot earn more work. Holding LMB does not repeat strokes. Moving, looking away, an obstacle, excessive distance or a released cursor prevents contact from counting.
 
-![Repairing worn clay on the mound](docs/screenshots/tamping.png)
+G stows it anywhere. Hose and tamper are mutually exclusive; vehicle entry stows either. Stowing cancels unfinished strokes while preserving accepted work. Repair is compaction-based, without digging, clay inventory or deformable terrain.
 
-## M5 — Timed preparation shifts
+Tool screenshots: [mowing](docs/screenshots/mowing.png), [dragging](docs/screenshots/dragging.png), [chalking](docs/screenshots/chalking.png), [watering](docs/screenshots/watering.png), [tamping](docs/screenshots/tamping.png).
 
-You begin in **free practice**, with no countdown. Press **Tab** to open the shift board and pause the world. Choose **Fresh training** for 15 minutes (mow 25%, drag/chalk/water 50% each, mound 100%) or **Fresh full prep** for 30 minutes and 100% of every job. Starting fresh resets all field work and returns equipment to the workshop.
+## Shifts and contracts
 
-The live checklist shows your goals and remaining time. For training and full prep, each job earns up to 20 points, proportional to its quota. Full-completion goals require exact tracked counts. Finish all five goals, run out of time, or use **End shift now** on the board to see results. Results stay fixed when you continue practicing; a new shift starts a clean attempt. Tab pauses both the world and clock; Escape outside the board only releases the cursor.
+Press **Tab** for the paused shift board. Training/full prep start from its main screen; shorter jobs live under **Contracts**.
 
-These are initial coverage-based challenges. Timings still need human playtesting; finish-quality penalties and further career content are future work.
-
-![Training shift results](docs/screenshots/shift-results.png)
-
-## Focused contracts
-
-Open **Tab → Contracts** for shorter jobs that use the same field tools and career rewards:
-
-| Contract | Deadline | Required work | Maximum total pay | Unlock |
+| Job | Deadline | Goals | Maximum total pay | Availability |
 | --- | --- | --- | --- | --- |
-| Morning mowing | 10 min | Mow 10% | 100 cr (40 completion bonus included) | Available immediately |
-| Mound callout | 5 min | Repair every mound patch | 40 cr (15 completion bonus included) | Available immediately |
-| Between-games infield | 12 min | Drag 25% and water 25% | 150 cr (60 completion bonus included) | Field Hand / 500 lifetime credits |
+| Free practice | None | Explore and practice any task | No earnings | Always |
+| Training shift | 15 min | Mow 25%; drag/chalk/water 50% each; mound 100% | **150 cr**, including 50 completion bonus | Always |
+| Full park prep | 30 min | 100% of every job | **450 cr**, including 150 completion bonus | Always |
+| Morning mowing | 10 min | Mow 10% | **100 cr**, including 40 completion bonus | Always |
+| Mound callout | 5 min | Repair every mound patch | **40 cr**, including 15 completion bonus | Always |
+| Between-games infield | 12 min | Drag 25% and water 25% | **150 cr**, including 60 completion bonus | Field Hand / 500 lifetime credits |
 
-Only listed jobs count toward a contract's score. The 100 points divide equally among its requested jobs; unrelated field work earns no contract points. Partial pay is proportional to score, rounded down. Completing the requested goals ends the contract automatically, without requiring the rest of the park. Its result says **Contract complete**, while whole-park readiness still requires all five full jobs.
+Scores run from **0–100**, divided equally among listed jobs. Training and full prep award up to 20 points per job; single-job contracts use all 100 points for that job, and the infield contract divides them 50/50. Unlisted work earns no contract points. Full-completion goals still require exact task counts.
 
-Contracts are repeatable fixed offers. Each fresh start resets all field work and parks equipment; finish or end the active attempt before taking another. Pausing, field saves, permanent upgrades, frozen results and one-payout-per-attempt rules all apply. Unlocks use lifetime earnings, so buying upgrades cannot lock a contract again. Contract personal bests appear on the cards. Timing and pay are initial values for playtesting.
+Finishing the requested goals ends the attempt automatically. Running out of time or choosing **End shift now** records partial work. Partial pay is proportional to the work portion of the payout, rounded down; the bonus is only for completion. For example, a half-finished mound callout earns **12 cr**, while completing it earns **40 cr**.
+
+Results freeze when the attempt ends. Later practice cannot change its score, goal count or payout. A completed contract says **CONTRACT COMPLETE**; it does not declare the entire park ready. Each attempt pays once, even when replayed from a saved field. A fresh start creates a new attempt.
+
+Contracts are fixed, repeatable offers. You cannot replace an active attempt without finishing or ending it. Rank unlocks use lifetime earnings, so spending cannot relock them. Personal bests appear on the contract cards. Deadlines and payout balance still need human playtesting.
 
 ![Focused contract board](docs/screenshots/contracts-locked.png)
 
-## Crew career and equipment upgrades
+## Career and upgrades
 
-Preparation shifts now earn persistent **crew credits**. Partial work pays, and completing all goals adds a bonus. Free practice earns nothing. Results show the committed payout; open **Tab → Crew career** for your balance, rank, personal bests, recent shifts and equipment shop.
+Open **Tab → Crew career** for your wallet, lifetime earnings, rank, personal bests, latest five results and equipment shop. Career records retain up to **2,000 attempts**. Rewards and purchases save automatically, separately from field work.
 
-| Shift | Work pay | Completion bonus |
+| Crew rank | Lifetime earnings |
+| --- | --- |
+| Rookie | 0 cr |
+| Field Hand | 500 cr |
+| Crew Lead | 1,500 cr |
+| Head Groundskeeper | 3,500 cr |
+
+Spending credits never reduces rank progress. Training pays one credit per score point plus 50 for completion; full prep pays three per point plus 150. Contract terms appear on their cards. Free practice earns nothing.
+
+| Permanent upgrade | Price | Effect |
 | --- | --- | --- |
-| Training | 1 credit per score point | 50 credits |
-| Full park prep | 3 credits per score point | 150 credits |
+| Wide mower deck | **300 cr** | Actual cut width grows from 2.4 to 3.0 m; fitted and spare deck visuals widen too. |
+| High-flow nozzle | **200 cr** | Moisture application is 25% faster, with unchanged spray radius, reach and target. |
 
-Credits round down. A complete training shift earns **150**, and complete full prep earns **450**. Each attempt pays once, including when you reload an earlier field save. A fresh shift creates a new attempt. Crew ranks follow lifetime earnings: **Rookie → Field Hand (500) → Crew Lead (1,500) → Head Groundskeeper (3,500)**. Spending never reduces rank progress.
+Purchases apply immediately and survive fresh shifts, field loads and game restarts. Owned equipment cannot be bought twice. Loading an older field does not refund spending or roll back upgrades.
 
-Two permanent upgrades are available:
-
-- **Wide mower deck — 300 credits:** increases the actual cutting width from 2.4 to 3.0 m and widens the visible deck.
-- **High-flow nozzle — 200 credits:** delivers moisture 25% faster with the same spray radius, reach and target.
-
-Career rewards and purchases save automatically to `user://career.dat`, separately from your manual field slot. Loading an old field does not refund purchases or roll back owned equipment. If a career write fails, no credits or purchases change; use **Reload career / retry last reward** in the career screen after addressing the file error. Damaged career files are preserved and financial changes are blocked until readable again.
-
-This is the first career slice: one park, two upgrades, five recent results displayed, and a local ledger capped at 2,000 attempts. It has no cloud sync, multiple-park unlocks, or equipment resale. Focused contracts now add shorter job choices; economy balance still needs human playtesting.
+If a career write fails, no credits or purchases change. Use **Reload career / retry last reward** after addressing the file error. Damaged career files are preserved and financial changes stay blocked until readable again.
 
 ![Career rewards and equipment shop](docs/screenshots/career-shop.png)
 
 ## Save and resume
 
-Press **Tab**, then **Save field + shift** to write one local slot. It includes all five jobs, grass/drag patterns, every chalk stroke (including off-guide marks), partial moisture, mound impacts, the active countdown, and the last frozen result. **Save again after more work**; there is no autosave or automatic load.
+**Field work uses one manual slot.** Open Tab and choose **Save field + shift** before quitting. It stores all five jobs, mowing/dragging patterns, on/off-guide chalk, partial moisture, mound impacts, the active countdown, attempt identity and frozen results. Save again after doing more work; there is no automatic field save or startup load.
 
-On your next launch, press Tab and choose **Load saved field + shift**. Loading replaces your current work, returns you and all equipment to the workshop, and leaves the board paused. Choose **Resume shift** or **Continue practicing** when ready. Fresh shifts do not erase the disk slot unless you explicitly save over it.
+On the next launch, open Tab and choose **Load saved field + shift**. Loading replaces current work, returns the player and equipment to the workshop, and keeps the world paused. Resume when ready. Equipment positions, motion, held tools and camera angle are not restored. Fresh shifts leave the disk slot intact until you explicitly save over it.
 
-The file is `user://field-save.dat` (under the game’s folder in `%APPDATA%/Godot/app_userdata/` on Windows; use Godot’s **Project → Open User Data Folder** to find it). Saves are local to this application and user, not uploaded to GitHub or synced across devices. Missing, damaged, or incompatible files show an error and keep the current field. Changes to field layout may invalidate older saves; migration is not implemented yet.
+| Local file | Saved automatically? | Contains |
+| --- | --- | --- |
+| `user://field-save.dat` | No — manual Save button | Field work, active attempt/clock and last result. |
+| `user://career.dat` | Yes — rewards and purchases | Earnings, paid attempts, rank progress, personal bests and owned upgrades. |
+| `user://sound.cfg` | Yes — volume changes | Master/effects/ambience levels and mute. |
 
-![Loading a saved shift](docs/screenshots/save-loaded.png)
+Use Godot's **Project → Open User Data Folder** to find these files. On Windows they are under the game's folder in `%APPDATA%/Godot/app_userdata/`. Saves are local, with no cloud/device sync or GitHub upload.
+
+Missing, damaged or incompatible field files report an error and leave current work intact. Older field snapshots without attempt IDs remain loadable. Future layout/format changes may require additional migration support.
 
 ## Sound and volume
 
-The park now has quiet wind and bird ambience, footsteps, a speed-responsive mower engine, drag friction, chalk-cart movement, hose spray, timed tamp impacts, and a short shift-result chime. Tool effects are positional; engine and working loops follow their equipment. Tamping sounds only on accepted impacts. Pausing stops world audio as well as the clock.
+The first audio pass includes **nine original generated clips**: mower engine, hose spray, drag friction, chalk-cart movement, footsteps, tamp impact, shift-result chime, wind and birds. Tool effects are positional, engine pitch follows speed, and tamp sound follows accepted contact. World audio pauses with the board; the preview/result chime can play while paused.
 
-Open **Tab → Sound settings** for **Master**, **Effects**, **Ambience**, and **Mute all sound**. Changes save automatically to `user://sound.cfg`, separately from your field slot. **Preview sound** plays a short chime while paused. Escape returns to the board; Tab resumes play. Setting any slider to zero silences that channel.
+Open **Tab → Sound settings** for Master, Effects, Ambience and Mute all sound. Zero silences that channel. **Preview sound** plays a chime, and preferences save automatically. The game needs no audio-generation tools at runtime; developers can reproduce the WAV files with `python3 tools/generate_audio.py`.
 
-All nine clips are original generated prototype sounds, supplied in `assets/audio/`. The game needs no external audio tools. Developers can reproduce the WAV files with `python3 tools/generate_audio.py`. This is a first sound pass; natural recordings and desktop mix tuning remain future polish.
+## Cedar Grove Ballpark
 
-![Sound controls](docs/screenshots/sound-settings.png)
+The park has 27.43 m (90 ft) basepaths, a dirt infield, grass outfield and warning track, with a warm teal/cream/gold palette, daylight and shadows. It includes covered seating, open dugouts, a detailed workshop and tool bay, scoreboard, community signs, light towers, ticket booth, concourse props and a surrounding tree line.
 
-## Implemented M1–M3
+Both dugouts face the diamond along the first-/third-base sides. Walk-in front-corner openings connect to a taller backstop and foul-side fencing returning to the padded outfield wall. Outside walkways anchor them to the park. The marked workshop equipment entrance stays open with its gate leaves folded away from the driving lane.
 
-- 27.43 m basepaths, dirt diamond, mound, bases, foul lines, grass outfield, warning track, padded outfield wall, dugouts, bleachers, scoreboard, light towers, shed, and mower parking.
-- Collidable ground, buildings, stands, and outfield fence; daylight and shadows.
-- Visible groundskeeper, walking, sprinting, jumping, orbit/zoom camera with spring-arm collision.
-- Arcade CharacterBody3D mower: acceleration, reverse, speed-dependent steering, braking, rotating wheels, steering animation, protected exit placement.
-- Spatial 450 × 330 grass-state image. Swept 2.4 m cutting footprint, overlap-safe unique-cell percentage, dirt exclusion, directional cut color, dirty-only updates capped at 10 Hz.
-- HUD with mode, objective, contextual controls, percentage, and progress bar.
+Home plate has the proper **17-inch five-sided shape**, pointing toward the catcher/backstop. Reference markings include **4 × 6 ft batter's boxes** with a 6-inch plate gap, **5 × 20 ft coaching boxes**, and **5 ft diameter on-deck circles** on clay pads. These marks are decorative and do not grant chalk coverage.
 
-## Field layout — connected dugouts and fencing
+The character has procedural walking/tool poses and a separate seated mower visual. The mower has treaded wheels, fenders, grille, lights and steering animation. Uncut grass uses **28,000 mask-aware instanced tufts** that disappear when cut. Repeated seats use instancing, materials are shared, and 4× MSAA improves presentation.
 
-Both dugouts now run parallel to the first-/third-base sides, with their open fronts facing the diamond. They form part of the field boundary instead of standing loose in foul territory. Chain-link wings connect them to a taller backstop behind home plate; side fences continue to the foul poles and padded outfield wall. Narrow outside walkways tie the dugouts into the park.
+More views: [full field](docs/screenshots/field-layout.png), [home area](docs/screenshots/home-area.png), [dugout front](docs/screenshots/visitor-dugout.png), [equipment access](docs/screenshots/field-access.png), [sound controls](docs/screenshots/sound-settings.png).
 
-Walk into either dugout through the openings at its front corners. Use the marked **GROUNDS CREW / FIELD ACCESS** opening beside the workshop for equipment. Its gate leaves stay folded back to preserve the driving lane. Fair territory, bases, foul-line targets, all five task masks and save compatibility remain unchanged.
+## Development and verification
 
-![Connected dugouts and field boundary](docs/screenshots/dugout-layout.png)
-
-## Field details — plate and reference markings
-
-Home plate now has the proper 17-inch five-sided shape, with its point toward the catcher/backstop. The two batter's boxes measure 4 × 6 ft, with a 6-inch gap from the plate. Both baseline sides now have 5 × 20 ft coaching boxes in foul territory, plus 5 ft diameter on-deck circles on small clay pads near home.
-
-These are decorative reference markings. They do not grant chalk coverage, create new jobs, or change your saved field state. Dugout openings and the workshop gate remain accessible.
-
-![Home plate and on-deck areas](docs/screenshots/home-area.png)
-
-## Visual pass — Cedar Grove Ballpark
-
-The park now follows a warm small-town palette: deep teal, cream trim, golden mower paint, and brick-red dirt. The visual pass adds a manicured infield island, covered seat rows, open bench-lined dugouts, a clapboard workshop with tools and a tarp cart, a detailed scoreboard, community signs, concourse benches, a ticket booth, and a surrounding tree line. The island is decorative; the current objective still scores only the outfield.
-
-The mower has a grille, fenders, lights, treaded wheels, a ring-and-spoke steering wheel, and a visible seated groundskeeper. The walking character has a cap, workwear details, and a simple procedural walk cycle. A compact HUD and 4× MSAA improve presentation.
-
-Uncut grass has 28,000 deterministic crossed-triangle tufts in one MultiMesh. They sway gently and shrink out beyond 38 m. The existing spatial mask hides cut tufts immediately when its texture updates. Repeated seats are also drawn using MultiMesh batches, and solid materials are shared by color. This remains procedural prototype art; the pass does not introduce imported models or textures.
-
-![Preparing a basepath with the drag](docs/screenshots/dragging.png)
-
-## Project map
-
-Start with `scenes/main/main.tscn` and `scripts/gameplay/game.gd` for scene composition and interactions. Then inspect `scripts/vehicles/mower.gd` and `scripts/mowing/grass.gd` for driving and cutting. `scripts/gameplay/stadium.gd` composes the ballpark; `scripts/environment/park_props.gd` builds reusable park props using shared geometry helpers. `scripts/vehicles/mower_visual.gd` and `scripts/player/crew_visual.gd` hold appearance code, separate from movement. The HUD is in `scripts/ui/grounds_hud.gd`. Dirt accounting and tool service live in `scripts/infield/`; the tow-behind visual is in `scripts/vehicles/drag_attachment.gd`. `scripts/mound/` contains repair state, tamper appearance, and the timed hand-tool controller. `scenes/environment/mound_repairs.tscn` exposes patch layout and stroke requirements; `tamper_rack.tscn` exposes pickup position, reach, and stroke timing. `scripts/watering/` holds moisture accounting and the hose controller. Open `scenes/environment/dirt_moisture.tscn` to tune spray radius, application rate, moisture target, and update frequency; `water_station.tscn` exposes station position and reach. `scripts/chalking/` contains the chalk marker controller and stroke/coverage system. The marker has a reusable scene at `scenes/vehicles/chalk_marker.tscn`. Open `scenes/environment/infield.tscn` to tune dirt mask bounds and resolution. The player, mower, and grass mask have separate reusable scenes. Open `scenes/environment/grass.tscn` to tune the exported grass settings. Prototype geometry is generated on scene startup; expand the running scene in the editor's **Remote** tree to inspect generated nodes.
-
-See [learning notes](docs/LEARNING_NOTES.md), [roadmap](docs/ROADMAP.md), and [verification](docs/VERIFICATION.md).
-
-## Automated checks
+The last feature pass verified **408 headless assertions**, editor import, main-scene startup and scripted graphical flows. These include actual tool work, native board/shop controls, saved-attempt replay protection, upgrades and contract completion. Graphical checks used Linux Xorg/Mesa **OpenGL Compatibility**; synthetic fixtures and fast-forwarded branches are identified in [VERIFICATION.md](docs/VERIFICATION.md).
 
 Run from the project directory:
 
@@ -218,26 +228,52 @@ godot --headless --path . --script tests/test_contracts.gd
 godot --headless --path . --quit-after 180
 ```
 
-On restricted Linux machines set `XDG_DATA_HOME`, `XDG_CONFIG_HOME`, and `XDG_CACHE_HOME` to writable directories before launching. No such adjustment is normally needed on Windows.
+On restricted Linux hosts, set `XDG_DATA_HOME`, `XDG_CONFIG_HOME` and `XDG_CACHE_HOME` to writable directories. This is normally unnecessary on Windows. Scene fixtures use isolated career paths so test results do not alter player earnings.
 
-For a graphical smoke run on a desktop or virtual display:
+Graphical scripts require a desktop or virtual display. Use the same launch pattern for any script below:
 
 ```sh
-godot --path . --rendering-method gl_compatibility --script tests/test_visual.gd
-godot --path . --rendering-method gl_compatibility --script tests/test_drag_visual.gd
-godot --path . --rendering-method gl_compatibility --script tests/test_chalk_visual.gd
-godot --path . --rendering-method gl_compatibility --script tests/test_watering_visual.gd
-godot --path . --rendering-method gl_compatibility --script tests/test_tamping_visual.gd
+godot --path . --rendering-method gl_compatibility --script tests/test_contracts_visual.gd
 ```
 
-The mowing graphical test captures six images; the dragging graphical test captures four, including the same dirt area before and after preparation. The chalking graphical test captures five views, including a repeatable on-guide pass and a separate off-guide stroke. The watering test adds five captures of the station, dry/wet comparison, live spray, and field overview. The tamping test captures the rack, worn mound, active stroke, repaired patch, and fully repaired mound. Captures use `/tmp/firstpitch-*.png` (Linux only). These scripts automate controlled passes; normal play uses the main scene, not a test script.
+| Graphical script | Coverage |
+| --- | --- |
+| `test_visual.gd` | Park, mower and mowing views. |
+| `test_drag_visual.gd` | Attachment and before/after dirt preparation. |
+| `test_chalk_visual.gd` | On-guide coverage and off-guide strokes. |
+| `test_watering_visual.gd` | Station, aiming, spray and moisture comparison. |
+| `test_tamping_visual.gd` | Rack, timed impacts and repaired patches. |
+| `test_shift_visual.gd` | Native board controls, real work, restart and timeout. |
+| `test_save_visual.gd` | Native save/load into a recreated scene. |
+| `test_sound_visual.gd` | Volume/mute controls and recorded mixer preview. |
+| `test_field_layout_visual.gd` | Field, dugouts, gate, plate and reference markings. |
+| `test_career_visual.gd` | Real earnings, native shop purchases and upgraded deck. |
+| `test_contracts_visual.gd` | Real mound-contract completion, rank lock/unlock and focused goals. |
+
+Captures use `/tmp/firstpitch-*.png` on Linux. These scripts run controlled automated scenarios; normal play uses the main scene. Intermittent audio playback-resource warnings have appeared during test-process teardown; see the verification record.
+
+### Project map
+
+| Area | Entry points |
+| --- | --- |
+| Main scene and interactions | `scenes/main/main.tscn`, `scripts/gameplay/game.gd` |
+| Stadium and reference markings | `scripts/gameplay/stadium.gd`, `scripts/environment/park_props.gd`, `scripts/environment/field_markings.gd` |
+| Player, mower and appearance | `scripts/player/`, `scripts/vehicles/mower.gd`, `scripts/vehicles/mower_visual.gd` |
+| Mowing and dirt preparation | `scripts/mowing/grass.gd`, `scripts/infield/`, `scripts/vehicles/drag_attachment.gd` |
+| Chalking, watering and mound repair | `scripts/chalking/`, `scripts/watering/`, `scripts/mound/` |
+| Profiles, clock, goals and contracts | `scripts/gameplay/shift_session.gd`, `scripts/gameplay/shift_director.gd` |
+| Field saves, career and audio | `scripts/gameplay/field_save.gd`, `scripts/gameplay/career_profile.gd`, `scripts/gameplay/grounds_audio.gd`, `scripts/gameplay/sound_preferences.gd` |
+| HUD and board screens | `scripts/ui/` |
+
+Reusable scenes under `scenes/environment/` expose field-mask bounds/resolution, spray rate/reach and mound stroke requirements. Prototype geometry builds at startup; inspect the editor's **Remote** scene tree while running. See [LEARNING_NOTES.md](docs/LEARNING_NOTES.md) for implementation explanations and tuning guidance.
 
 ## Current limitations
 
-- Prototype primitive art and generated scene content; no artist-authored assets, rigged animations, stadium crowds, multiple parks, or tools beyond the infield drag, chalk marker, hose, and tamper.
-- Cut grass uses color/texture variation and hides the sparse uncut tufts. It is not a dense simulated lawn. Manual saves include task states and chalk strokes; equipment positions and held tools reset on load.
-- Audio is an initial synthetic pass, with no music, crowd simulation, material-specific footsteps, or sound occlusion. Headphone/speaker balance still needs desktop playtesting.
-- Mostly flat terrain and arcade handling; no suspension. The mound now has a walkable sloped collider. The walking player hides while a separate seated visual appears on the mower. The remaining shallow infield surfaces still use the flat ground collider.
-- The playing enclosure now connects the outfield wall, foul-side fencing, backstop and dugouts. A marked workshop equipment gate stays open. Dugouts have walk-in openings, solid rear/side walls and a low front rail; surrounding grounds remain explorable through the gate.
-- Forward+ GPU visuals, native Windows behavior, controller support, and hardware performance remain unverified.
-- Field bounds and mask resolution are configurable; changing the stadium layout also requires matching the mowing area's exported exclusion settings. There is no layout-authoring UI yet.
+- One procedural prototype park. No authored character rigs, crowds, playable baseball, additional parks or park-unlock progression yet.
+- Initial coverage-based scoring and economy. Human deadline/pay balancing, finish-quality penalties and deeper career progression remain future work.
+- Arcade vehicle handling and mostly flat ground; no suspension, articulated trailer physics, deformable terrain or physical hose simulation.
+- Unlimited supplies; no drying, overwatering penalties, clay inventory, chalk erasing or repainting of the static reference markings.
+- One manual field slot, a 2,000-attempt local career ledger, no equipment resale and no cloud sync. Loading parks equipment rather than restoring its exact position.
+- Synthetic prototype sound; no music, crowds, surface-specific footsteps or acoustic occlusion. Desktop listening and mix tuning remain outstanding.
+- Windows exports, native Windows behavior, Forward+ GPU appearance/performance and controller support remain unverified.
+- Layout changes require corresponding mask/exclusion updates; no field-layout authoring UI or general migration system yet.
