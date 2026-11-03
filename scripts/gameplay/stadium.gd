@@ -2,7 +2,7 @@ extends Node3D
 @export var layout: FieldLayout = preload("res://resources/layouts/cedar_grove.tres")
 const G = preload("res://scripts/gameplay/geometry.gd")
 const Props = preload("res://scripts/environment/park_props.gd")
-const CREAM := Color("eee3c6")
+const CREAM := Color("d0c9b6")
 const TEAL := Color("28585a")
 var grandstands: Array[Node3D] = []
 var infield_surfaces: Array[MeshInstance3D] = []
@@ -14,18 +14,19 @@ func _ready() -> void:
  build_atmosphere()
 
 func build_field() -> void:
- G.box(self,layout.ground_center,layout.ground_size,Color("68845b"),true)
+ var terrain := G.box(self,layout.ground_center,layout.ground_size,Color("647155"),true)
+ terrain.material_override = ground_material(Color("566448"),Color("687653"),0.7)
  var dirt := Color("b7794c")
  var track := G.sector(self,layout.outfield_radius,layout.fence_radius,layout.track_height,dirt)
  track.position = layout.point3(layout.plate_position)
- track.material_override = ground_material(Color("ad7951"),Color("ba8c63"),0.8)
+ track.material_override = ground_material(Color("947452"),Color("a68961"),0.8)
  var diamond := G.box(self,layout.point3(layout.diamond_center,layout.diamond_height-layout.diamond_thickness*0.5),Vector3(layout.diamond_side,layout.diamond_thickness,layout.diamond_side),dirt)
  diamond.rotation.y = PI/4
- diamond.material_override = ground_material(Color("a96140"),Color("bd7950"),1.3)
+ diamond.material_override = ground_material(Color("8b6247"),Color("a37b56"),1.3)
  # A manicured infield island is decorative: the mowing objective scores the outfield only.
- var island := G.box(self,layout.point3(layout.diamond_center,layout.island_height-layout.island_thickness*0.5),Vector3(layout.island_side,layout.island_thickness,layout.island_side),Color("427a50"))
+ var island := G.box(self,layout.point3(layout.diamond_center,layout.island_height-layout.island_thickness*0.5),Vector3(layout.island_side,layout.island_thickness,layout.island_side),Color("536b43"))
  island.rotation.y = PI/4
- island.material_override = ground_material(Color("3c7248"),Color("477c4e"),1.8)
+ island.material_override = ground_material(Color("45643b"),Color("506f41"),1.8)
  var home := G.cylinder(self,layout.point3(layout.plate_position,layout.home_height-layout.home_thickness*0.5),layout.home_radius,layout.home_thickness,dirt)
  home.material_override = diamond.material_override
  infield_surfaces.assign([diamond,home])
@@ -62,7 +63,7 @@ func build_boundary() -> void:
   var a := deg_to_rad(-45.0+i*2)
   var fence := G.box(self,layout.point3(layout.plate_position+Vector2(sin(a),-cos(a))*layout.fence_radius,1.8),Vector3(3.8,3.6,0.35),TEAL,true)
   fence.rotation.y = -a
-  var rail := G.box(self,fence.position+Vector3.UP*1.85,Vector3(3.8,0.12,0.45),Color("d8b468"))
+  var rail := G.box(self,fence.position+Vector3.UP*1.85,Vector3(3.8,0.12,0.45),Color("aaa07c"))
   rail.rotation.y = -a
   var seam := G.box(self,fence.position+Vector3(sin(a)*-0.25,0,-cos(a)*-0.25),Vector3(0.06,3.5,0.08),Color("386666"))
   seam.rotation.y = -a
@@ -155,7 +156,7 @@ func fence_run(parent: Node3D,from: Vector3,to: Vector3,height: float,label: Str
 
 func build_neighborhood() -> void:
  # Concourse and workshop use the existing collision footprint and driving lane.
- var path := G.box(self,layout.point3(layout.concourse.get_center(),layout.concourse_center_height),Vector3(layout.concourse.size.x,layout.concourse_thickness,layout.concourse.size.y),Color("c9b590"))
+ var path := G.box(self,layout.point3(layout.concourse.get_center(),layout.concourse_center_height),Vector3(layout.concourse.size.x,layout.concourse_thickness,layout.concourse.size.y),Color("ada18a"))
  path.material_override = ground_material(Color("bbab8e"),Color("d0bf9f"),1.5)
  for z in [layout.concourse.position.y+0.1,layout.concourse.end.y-0.1]:
   G.box(self,Vector3(layout.concourse.get_center().x,0.07,z),Vector3(layout.concourse.size.x,0.12,0.18),CREAM)
@@ -190,12 +191,12 @@ func build_neighborhood() -> void:
 
 func build_atmosphere() -> void:
  var sun := DirectionalLight3D.new()
- sun.rotation_degrees = Vector3(-38,-38,0)
- sun.light_color = Color("fff0d5")
- sun.light_energy = 0.72
- sun.light_angular_distance = 1.2
+ sun.rotation_degrees = Vector3(-32,-48,0)
+ sun.light_color = Color("ffe9cf")
+ sun.light_energy = 0.85
+ sun.light_angular_distance = 2.5
  sun.shadow_enabled = true
- sun.shadow_bias = 0.04
+ sun.shadow_bias = 0.025
  sun.directional_shadow_max_distance = 220
  add_child(sun)
  var world := WorldEnvironment.new()
@@ -203,17 +204,22 @@ func build_atmosphere() -> void:
  env.background_mode = Environment.BG_SKY
  var sky := Sky.new()
  var atmosphere := ProceduralSkyMaterial.new()
- atmosphere.sky_top_color = Color("4e94bb")
- atmosphere.sky_horizon_color = Color("d4e4dd")
- atmosphere.ground_horizon_color = Color("d4e4dd")
- atmosphere.ground_bottom_color = Color("899f7c")
+ atmosphere.sky_top_color = Color("668baf")
+ atmosphere.sky_horizon_color = Color("bccbd0")
+ atmosphere.ground_horizon_color = Color("bccbd0")
+ atmosphere.ground_bottom_color = Color("64705d")
  sky.sky_material = atmosphere
  env.sky = sky
- env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
- env.ambient_light_energy = 0.45
+ env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+ env.ambient_light_color = Color("b0becb")
+ env.ambient_light_energy = 0.55
  env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
  env.fog_enabled = true
- env.fog_light_color = Color("b9d1c7")
- env.fog_density = 0.0007
+ env.fog_light_color = Color("b4c3ca")
+ env.fog_density = 0.00045
+ env.ssao_enabled = true
+ env.ssao_radius = 1.1
+ env.ssao_intensity = 1.25
+ env.ssao_power = 1.4
  world.environment = env
  add_child(world)

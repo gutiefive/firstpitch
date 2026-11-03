@@ -4,9 +4,9 @@ A playable Godot 3D groundskeeping prototype set at **Cedar Grove Ballpark**. Mo
 
 Built with GDScript, procedural meshes and original generated sound effects. No plugins, downloaded art, or external runtime dependencies are required.
 
-**Current build: M1–M5 prototypes implemented, plus a first minor-league club story, stadium growth and career loop.** The latest verified build passed **715 headless assertions** and scripted graphical checks. Windows and Forward+ hardware testing remain outstanding.
+**Current build: M1–M5 prototypes, Owls club seasons, six stadium projects and a four-pass visual revision.** The latest art pass verified **219 targeted assertions** and rendered review views. The earlier full-suite baseline was 715 assertions; see [verification history](docs/VERIFICATION.md) for subsequent feature checks. Windows and native Forward+ hardware testing remain outstanding.
 
-![Cedar Grove's connected dugouts and playing enclosure](docs/screenshots/dugout-layout.png)
+![Cedar Grove stadium after the four-pass visual revision](docs/screenshots/art-after-stadium.png)
 
 [Start playing](#start-playing) · [Controls](#controls) · [Club story](#club-story-loop) · [Field tools](#field-tools) · [Shifts and contracts](#shifts-and-contracts) · [Career and upgrades](#career-and-upgrades) · [Saving](#save-and-resume) · [Development](#development-and-verification)
 
@@ -19,7 +19,7 @@ Built with GDScript, procedural meshes and original generated sound effects. No 
 | **M3 — Grass mowing** | Persistent spatial cutting, directional stripes, disappearing grass tufts and overlap-safe coverage. |
 | **M4 — Field tools** | Tow-behind infield drag, pushable chalk marker, on-foot hose and timed hand tamper; five independent field jobs. |
 | **M5 — Shifts, scores and saving** | Free practice, training/full-park shifts, paused board, repair goals, finish quality, frozen results, manual save and autosave/paused resume. |
-| **M6 — Club and career** | Owls story chapters, starter tools, home-game prep/hosting, supporters, gate income, three stadium projects, four tool upgrades, crew ranks and side contracts. |
+| **M6 — Club and career** | Owls story chapters, starter tools, home-game prep/hosting, supporters, gate income, six stadium projects, four tool upgrades, crew ranks and side contracts. |
 | **Guide and controller** | Seven-step first-run tutorial, checkpoint/skip/replay, InputMap Controls, pad tools/camera/menu navigation and saved sensitivity. |
 | **Field and sound polish** | Field-facing dugouts connected to fencing/backstop, proper home plate and reference markings, positional tool sounds, ambience and saved volume settings. |
 
@@ -274,7 +274,7 @@ More views: [full field](docs/screenshots/field-layout.png), [home area](docs/sc
 
 ## Development and verification
 
-The last feature pass verified **715 headless assertions**, editor import, main-scene startup and scripted graphical flows. These include actual tool work, native board/shop controls, saved-attempt replay protection, upgrades and contract completion. Graphical checks used Linux Xorg/Mesa **OpenGL Compatibility**; synthetic fixtures and fast-forwarded branches are identified in [VERIFICATION.md](docs/VERIFICATION.md).
+The club-story full-suite baseline verified **715 headless assertions**, editor import, main-scene startup and scripted graphical flows. Later targeted feature results are recorded in the verification history. These include actual tool work, native board/shop controls, saved-attempt replay protection, upgrades and contract completion. Graphical checks used Linux Xorg/Mesa **OpenGL Compatibility**; synthetic fixtures and fast-forwarded branches are identified in [VERIFICATION.md](docs/VERIFICATION.md).
 
 Run from the project directory:
 
@@ -393,3 +393,7 @@ The grill adds a striped concession building and picnic tables behind the stands
 Expansion regression test: `godot --headless --path . --script tests/test_stadium_expansion.gd`.
 
 Watering: take the hose at its station with **F** (controller **LB**), then hold **left mouse** (**RT**) to spray. The stream now remains visible when aiming into the air or against obstacles; only reachable, unobstructed dirt gains moisture. Aim down and hold steady until **AIM** reaches **TARGET**. If the cursor is free, **Esc** recaptures it. The tutorial now explicitly tells you to release the chalk cart before picking up the hose and displays live spray blockers/moisture.
+
+### Visual direction
+
+The ballpark now uses more natural character proportions, softened tractor shapes, organic foliage, subdued paint and workwear, material grain, warmer daylight and more detailed stadium/concession construction. See the [four-pass art review and before/after screenshots](docs/ART_REVIEW.md). Field work, purchases and saved progress retain their existing rules.

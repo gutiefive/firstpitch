@@ -24,3 +24,5 @@
 - Stadium amenities: second grill concession, electronic scoreboard and later video board, with physical additions, purchase prerequisites and stacked ticket/food/fan benefits.
 
 - Watering usability fix: visible free-aim spray, obstacle-clipped stream, live tutorial moisture/blocker feedback, and explicit chalk-cart-to-hose handoff.
+
+- Four-pass visual revision complete: character/equipment silhouettes, restrained material palette, lighting/atmosphere and architectural detail. See `ART_REVIEW.md` for before/after views and remaining hardware verification.

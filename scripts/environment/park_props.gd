@@ -2,8 +2,8 @@ class_name ParkProps
 extends RefCounted
 const G = preload("res://scripts/gameplay/geometry.gd")
 const TEAL := Color("28585a")
-const CREAM := Color("eee3c6")
-const WOOD := Color("b78754")
+const CREAM := Color("d0c9b6")
+const WOOD := Color("8e795c")
 const STEEL := Color("526569")
 
 static func group(parent: Node3D, title: String, pos: Vector3) -> Node3D:
@@ -16,6 +16,7 @@ static func group(parent: Node3D, title: String, pos: Vector3) -> Node3D:
 static func shed(parent: Node3D,layout: FieldLayout) -> void:
  var root := group(parent,"GroundsWorkshop",layout.workshop_position)
  G.box(root,Vector3(0,1.8,0),Vector3(8,3.6,7),TEAL,true)
+ G.cladding(root,8,3.6,7,Color("344e4b"))
  # Siding, corners, fascia, and a pitched standing-seam roof.
  for height in range(12):
   G.box(root,Vector3(0,0.2+height*0.28,3.515),Vector3(7.9,0.035,0.045),Color("367071"))
@@ -91,9 +92,9 @@ static func dugout(parent: Node3D,side: int,layout: FieldLayout) -> Node3D:
 static func bench(parent: Node3D,pos: Vector3,width: float = 3.0) -> void:
  var root := group(parent,"Bench",pos)
  for z in [-0.2,0.05,0.3]:
-  G.box(root,Vector3(0,0.52,z),Vector3(width,0.1,0.2),WOOD)
+  G.timber(root,Vector3(0,0.52,z),Vector3(width,0.1,0.2),WOOD)
  for y in [0.85,1.1]:
-  G.box(root,Vector3(0,y,-0.38),Vector3(width,0.18,0.09),WOOD)
+  G.timber(root,Vector3(0,y,-0.38),Vector3(width,0.18,0.09),WOOD)
  for x in [-width*0.38,width*0.38]:
   G.box(root,Vector3(x,0.27,0),Vector3(0.08,0.54,0.6),STEEL)
   G.box(root,Vector3(x,0.7,-0.38),Vector3(0.07,0.8,0.07),STEEL)
@@ -147,12 +148,15 @@ static func scoreboard(parent: Node3D,layout: FieldLayout) -> void:
 
 static func tree(parent: Node3D,pos: Vector3,height: float,variant: int) -> void:
  var root := group(parent,"ShadeTree",pos)
- G.cylinder(root,Vector3(0,height*0.25,0),0.22,height*0.5,Color("775d42"))
- G.beam(root,Vector3(0,height*0.35,0),Vector3(height*0.19,height*0.63,0),0.13,Color("775d42"))
- var foliage: Color = [Color("44734b"),Color("66874b"),Color("346953")][variant%3]
- G.sphere(root,Vector3(0,height*0.77,0),Vector3(height*0.65,height*0.65,height*0.6),foliage)
- G.sphere(root,Vector3(height*0.22,height*0.65,height*0.1),Vector3.ONE*height*0.5,foliage.lightened(0.06))
- G.sphere(root,Vector3(-height*0.2,height*0.62,-height*0.08),Vector3.ONE*height*0.48,foliage.darkened(0.05))
+ var trunk := G.cylinder(root,Vector3(0,height*0.30,0),0.20,height*0.60,Color("685d4d"))
+ trunk.material_override = G.surface_material(Color("685d4d"),1)
+ (trunk.mesh as CylinderMesh).top_radius = 0.09
+ for side in [-1,1]:
+  G.beam(root,Vector3(0,height*0.35,0),Vector3(side*height*0.18,height*0.67,side*height*0.08),0.12,Color("685d4d"))
+ var foliage: Color = [Color("4f6747"),Color("627447"),Color("405e48")][variant%3]
+ G.canopy(root,Vector3(0,height*0.78,0),Vector3(height*0.65,height*0.63,height*0.58),foliage,variant)
+ G.canopy(root,Vector3(height*0.20,height*0.62,height*0.10),Vector3(height*0.42,height*0.46,height*0.45),foliage.lightened(0.04),variant+1)
+ G.canopy(root,Vector3(-height*0.20,height*0.64,-height*0.10),Vector3(height*0.45,height*0.47,height*0.42),foliage.darkened(0.04),variant+2)
 
 static func light_tower(parent: Node3D,pos: Vector3) -> void:
  var root := group(parent,"LightTower",pos)

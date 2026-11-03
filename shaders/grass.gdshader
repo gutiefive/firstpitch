@@ -13,8 +13,8 @@ void fragment() {
  vec4 state=texture(state_mask,UV);
  if(state.a<0.5) { discard; }
  float variation=noise(world_pos.xz*1.2)*0.7+noise(world_pos.xz*22.0)*0.3;
- vec3 uncut=mix(vec3(0.075,0.19,0.055),vec3(0.10,0.24,0.065),variation);
- vec3 cut=mix(vec3(0.16,0.32,0.08),vec3(0.23,0.40,0.10),state.g);
+ vec3 uncut=mix(vec3(0.09,0.15,0.055),vec3(0.115,0.19,0.075),variation);
+ vec3 cut=mix(vec3(0.13,0.235,0.075),vec3(0.175,0.29,0.105),state.g);
  cut*=0.95+0.1*variation;
  ALBEDO=mix(uncut,cut,state.r);
  ROUGHNESS=mix(0.97,0.85,state.r);
