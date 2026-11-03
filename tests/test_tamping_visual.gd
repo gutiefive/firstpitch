@@ -41,7 +41,7 @@ func run() -> void:
  game.player.global_position = point+Vector3(0,0.1,1.3)
  await frames(30)
  camera.position = Vector3(5,5,-12)
- camera.look_at(Vector3(0,0.36,-18.44))
+ camera.look_at(game.layout.point3(game.layout.mound_position,game.layout.mound_height))
  await capture("/tmp/firstpitch-mound-before.png")
  camera.position = point+Vector3(2.5,3.5,4.4)
  camera.look_at(point)
@@ -87,7 +87,7 @@ func run() -> void:
    await frames(45)
  game._process(0)
  camera.position = Vector3(5,5,-12)
- camera.look_at(Vector3(0,0.36,-18.44))
+ camera.look_at(game.layout.point3(game.layout.mound_position,game.layout.mound_height))
  await capture("/tmp/firstpitch-mound-after.png")
  if game.mound.work_done != game.mound.total_work or game.mound.repaired_count != game.mound.hits.size():
   push_error("Graphical mound repair was incomplete")

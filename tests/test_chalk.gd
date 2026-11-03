@@ -16,7 +16,7 @@ func run() -> void:
  check(chalk.percentage() == 0,"guides begin with zero chalk coverage")
  check(chalk.covered.size() == chalk.sections_per_line*2,"two independent foul lines are tracked")
  check(chalk.valid_count < chalk.covered.size(),"base pads are excluded from target totals")
- check(chalk.is_protected(Vector2(19.396,-19.396)) and chalk.is_protected(Vector2.ZERO),"bases and plate are protected from chalk")
+ check(chalk.is_protected(chalk.layout.base_positions()[0]) and chalk.is_protected(chalk.layout.plate_position),"bases and plate are protected from chalk")
  check(chalk.section_center(0,0).x < 0 and chalk.section_center(1,0).x > 0,"left and right sections map to their field sides")
  chalk.paint_segment(Vector3(0,0,-60),Vector3(0,0,-65))
  check(chalk.covered_count == 0,"off-guide strokes earn no line credit")

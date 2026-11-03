@@ -34,12 +34,12 @@ func run() -> void:
  var count := water.wet_count
  water.spray_at(Vector3(0,0,-60),5)
  water.spray_at(Vector3(0,0,-25),5)
- water.spray_at(Vector3(0,0,-18.44),5)
+ water.spray_at(dirt.layout.point3(dirt.layout.mound_position),5)
  water.spray_at(Vector3.ZERO,5)
  water.spray_at(Vector3(500,0,-500),5)
  check(water.wet_count == count,"grass, lawn, mound, plate and outside bounds earn no water credit")
- water.spray_at(Vector3(19.396,0,-19.396),5)
- check(water.moisture_at(Vector3(19.396,0,-19.396)) == 0,"base pad stays protected when spray overlaps nearby dirt")
+ water.spray_at(dirt.layout.point3(dirt.layout.base_positions()[0]),5)
+ check(water.moisture_at(dirt.layout.point3(dirt.layout.base_positions()[0])) == 0,"base pad stays protected when spray overlaps nearby dirt")
  for i in range(8):
   water.spray_at(point,1)
  count = water.wet_count

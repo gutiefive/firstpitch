@@ -1,8 +1,8 @@
 shader_type spatial;
 render_mode cull_disabled, unshaded;
 uniform sampler2D state_mask : filter_nearest, repeat_disable;
-uniform vec2 field_origin=vec2(-75.0,-110.0);
-uniform vec2 field_size=vec2(150.0,110.0);
+uniform vec2 field_origin=vec2(0.0);
+uniform vec2 field_size=vec2(1.0);
 varying vec2 mask_uv;
 varying float height_fraction;
 void vertex() {

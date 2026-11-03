@@ -1,8 +1,8 @@
 class_name MowingGrass
 extends Node3D
 signal completion_changed(percent: float)
-@export var field_size := Vector2(150,110)
-@export var resolution := Vector2i(450,330)
+@export var layout: FieldLayout = preload("res://resources/layouts/cedar_grove.tres")
+@export var resolution := Vector2i.ZERO
 @export var tuft_count := 28000
 @export var deck_width := 2.4
 @export var update_frequency := 10.0
@@ -14,16 +14,16 @@ var total := 0
 var cut_count := 0
 var dirty := false
 var elapsed := 0.0
-@export var field_origin := Vector2(-75,-110)
-@export var outfield_radius := 99.0
-@export var diamond_center := Vector2(0,-19.396)
-@export var diamond_half_diagonal := 22.0
+
+var field_origin: Vector2:
+ get:
+  return layout.grass_origin
+var field_size: Vector2:
+ get:
+  return layout.grass_size
 
 func is_grass(p: Vector2) -> bool:
- if p.y >= -1 or absf(p.x) >= -p.y or p.length() > outfield_radius:
-  return false
- # Diamond exclusion matches the rotated 31 m dirt square.
- return absf(p.x-diamond_center.x) + absf(p.y-diamond_center.y) > diamond_half_diagonal and p.length() > 6.1
+ return layout.is_grass(p)
 
 func world_to_grid(p: Vector3) -> Vector2i:
  var local := to_local(p)
@@ -33,6 +33,8 @@ func cell_world(x: int,y: int) -> Vector2:
  return field_origin + (Vector2(x,y)+Vector2.ONE*0.5)*field_size/Vector2(resolution)
 
 func _ready() -> void:
+ if resolution == Vector2i.ZERO:
+  resolution = layout.grass_resolution
  image = Image.create(resolution.x,resolution.y,false,Image.FORMAT_RGBA8)
  valid.resize(resolution.x*resolution.y)
  cut.resize(valid.size())
@@ -48,7 +50,7 @@ func _ready() -> void:
  var surface := MeshInstance3D.new()
  surface.mesh = mesh
  var center := field_origin + field_size*0.5
- surface.position = Vector3(center.x,0.055,center.y)
+ surface.position = Vector3(center.x,layout.grass_height,center.y)
  var mat := ShaderMaterial.new()
  mat.shader = load("res://shaders/grass.gdshader")
  mat.set_shader_parameter("state_mask",texture)
@@ -126,7 +128,7 @@ func build_tufts() -> void:
   var basis := Basis(Vector3.UP,rng.randf()*TAU).scaled(Vector3.ONE*rng.randf_range(0.75,1.35))
   if not found:
    basis = basis.scaled(Vector3.ZERO)
-  batch.set_instance_transform(index,Transform3D(basis,Vector3(point.x,0.058,point.y)))
+  batch.set_instance_transform(index,Transform3D(basis,Vector3(point.x,layout.grass_height+0.003,point.y)))
  var tufts := MultiMeshInstance3D.new()
  tufts.name = "UncutGrassTufts"
  tufts.multimesh = batch

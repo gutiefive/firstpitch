@@ -1,4 +1,5 @@
 extends Node3D
+@export var layout: FieldLayout = preload("res://resources/layouts/cedar_grove.tres")
 const G = preload("res://scripts/gameplay/geometry.gd")
 const Props = preload("res://scripts/environment/park_props.gd")
 const CREAM := Color("eee3c6")
@@ -12,38 +13,40 @@ func _ready() -> void:
  build_atmosphere()
 
 func build_field() -> void:
- G.box(self,Vector3(0,-0.3,-40),Vector3(400,0.6,400),Color("68845b"),true)
+ G.box(self,layout.ground_center,layout.ground_size,Color("68845b"),true)
  var dirt := Color("b7794c")
- var track := G.sector(self,99,104,0.06,dirt)
+ var track := G.sector(self,layout.outfield_radius,layout.fence_radius,layout.track_height,dirt)
+ track.position = layout.point3(layout.plate_position)
  track.material_override = ground_material(Color("ad7951"),Color("ba8c63"),0.8)
- var diamond := G.box(self,Vector3(0,0.025,-19.396),Vector3(31,0.025,31),dirt)
+ var diamond := G.box(self,layout.point3(layout.diamond_center,layout.diamond_height-layout.diamond_thickness*0.5),Vector3(layout.diamond_side,layout.diamond_thickness,layout.diamond_side),dirt)
  diamond.rotation.y = PI/4
  diamond.material_override = ground_material(Color("a96140"),Color("bd7950"),1.3)
  # A manicured infield island is decorative: the mowing objective scores the outfield only.
- var island := G.box(self,Vector3(0,0.065,-19.396),Vector3(22,0.035,22),Color("427a50"))
+ var island := G.box(self,layout.point3(layout.diamond_center,layout.island_height-layout.island_thickness*0.5),Vector3(layout.island_side,layout.island_thickness,layout.island_side),Color("427a50"))
  island.rotation.y = PI/4
  island.material_override = ground_material(Color("3c7248"),Color("477c4e"),1.8)
- var home := G.cylinder(self,Vector3(0,0.07,0),6,0.12,dirt)
+ var home := G.cylinder(self,layout.point3(layout.plate_position,layout.home_height-layout.home_thickness*0.5),layout.home_radius,layout.home_thickness,dirt)
  home.material_override = diamond.material_override
  infield_surfaces.assign([diamond,home])
- var mound := G.cylinder(self,Vector3(0,0.18,-18.44),2.8,0.36,dirt)
+ var mound := G.cylinder(self,layout.point3(layout.mound_position,layout.mound_height*0.5),layout.mound_base_radius,layout.mound_height,dirt)
  mound.material_override = diamond.material_override
  var mound_mesh := mound.mesh as CylinderMesh
- mound_mesh.top_radius = 2.2
+ mound_mesh.top_radius = layout.mound_top_radius
  mound_mesh.radial_segments = 48
  var mound_body := StaticBody3D.new()
  var mound_shape := CollisionShape3D.new()
  mound_shape.shape = mound_mesh.create_convex_shape()
  mound_body.add_child(mound_shape)
  mound.add_child(mound_body)
- G.box(self,Vector3(0,0.38,-18.44),Vector3(0.61,0.05,0.15),CREAM)
- for pos in [Vector3(19.396,0,-19.396),Vector3(0,0,-38.792),Vector3(-19.396,0,-19.396)]:
-  var base := G.box(self,pos+Vector3.UP*0.1,Vector3(0.5,0.16,0.5),CREAM)
+ G.box(self,layout.point3(layout.mound_position,layout.mound_height+0.02),Vector3(0.61,0.05,0.15),CREAM)
+ for pos in layout.base_positions():
+  var base := G.box(self,layout.point3(pos,layout.base_height-layout.base_thickness*0.5),Vector3(layout.base_width,layout.base_thickness,layout.base_width),CREAM)
   base.rotation.y = PI/4
  var markings := FieldMarkings.new()
+ markings.layout = layout
  add_child(markings)
  for side in [-1,1]:
-  G.cylinder(self,Vector3(side*73.5,9,-73.5),0.12,18,Color("e7bd54"))
+  G.cylinder(self,layout.point3(layout.plate_position+Vector2(side*layout.foul_pole_axis,-layout.foul_pole_axis),9),0.12,18,Color("e7bd54"))
 
 func ground_material(dark: Color,light: Color,scale_value: float) -> ShaderMaterial:
  var mat := ShaderMaterial.new()
@@ -56,7 +59,7 @@ func ground_material(dark: Color,light: Color,scale_value: float) -> ShaderMater
 func build_boundary() -> void:
  for i in range(46):
   var a := deg_to_rad(-45.0+i*2)
-  var fence := G.box(self,Vector3(sin(a)*104,1.8,-cos(a)*104),Vector3(3.8,3.6,0.35),TEAL,true)
+  var fence := G.box(self,layout.point3(layout.plate_position+Vector2(sin(a),-cos(a))*layout.fence_radius,1.8),Vector3(3.8,3.6,0.35),TEAL,true)
   fence.rotation.y = -a
   var rail := G.box(self,fence.position+Vector3.UP*1.85,Vector3(3.8,0.12,0.45),Color("d8b468"))
   rail.rotation.y = -a
@@ -65,7 +68,7 @@ func build_boundary() -> void:
  var advertisers := ["MILLER'S HARDWARE","THE CORNER DELI","CEDAR GROVE\nCOMMUNITY CREDIT","PLAY BALL. STAY LOCAL.","PINE & POST\nFARM SUPPLY"]
  for i in range(5):
   var angle := deg_to_rad(-32+i*16)
-  var pos := Vector3(sin(angle)*103.65,2,-cos(angle)*103.65)
+  var pos := layout.point3(layout.plate_position+Vector2(sin(angle),-cos(angle))*(layout.fence_radius-0.35),2)
   var panel := Props.group(self,"CommunitySign",pos)
   panel.rotation.y = -angle
   G.box(panel,Vector3.ZERO,Vector3(14,1.7,0.06),CREAM if i%2 == 0 else Color("c18c58"))
@@ -79,28 +82,28 @@ func build_boundary() -> void:
  build_foul_boundary()
  for side in [-1,1]:
   Props.grandstand(self,side)
- Props.scoreboard(self)
+ Props.scoreboard(self,layout)
  for pos in [Vector3(-55,0,-35),Vector3(55,0,-35),Vector3(-35,0,15),Vector3(35,0,15)]:
   Props.light_tower(self,pos)
 
 # Fence routes share the dugouts' sideline basis. Fair territory and task masks stay fixed.
 func build_foul_boundary() -> void:
  var boundary := Props.group(self,"FoulTerritoryBoundary",Vector3.ZERO)
- fence_run(boundary,Vector3(-8,0,6),Vector3(8,0,6),6.0,"Backstop")
+ fence_run(boundary,layout.boundary_start(-1),layout.boundary_start(1),6.0,"Backstop")
  for side in [-1,1]:
-  var start := Vector3(side*8,0,6)
-  var corner := Vector3(side*82,0,-73.5)
+  var start := layout.boundary_start(side)
+  var corner := layout.boundary_corner(side)
   var along := (corner-start).normalized()
   var outward := Vector3(side*absf(along.z),0,absf(along.x))
-  var dugout := Props.dugout(self,side)
+  var dugout := Props.dugout(self,side,layout)
   # Roof and solid rear/side walls sit outside the field; front entries join the fence.
-  var front := start+along*20
-  fence_run(boundary,start,front-along*5.5,2.4,"HomeWing" if side < 0 else "VisitorWing")
-  var after := front+along*5.5
+  var front := start+along*layout.dugout_distance
+  fence_run(boundary,start,front-along*layout.dugout_half_width,2.4,"HomeWing" if side < 0 else "VisitorWing")
+  var after := front+along*layout.dugout_half_width
   if side > 0:
    # Keep the existing pad, mower, marker, hose and tamper approaches usable.
-   var gate_near := start+along*((6.0+14.5)/absf(along.z))
-   var gate_far := start+along*((6.0+27.5)/absf(along.z))
+   var gate_near := start+along*((layout.sideline_start.y-layout.equipment_gate_z.x)/absf(along.z))
+   var gate_far := start+along*((layout.sideline_start.y-layout.equipment_gate_z.y)/absf(along.z))
    fence_run(boundary,after,gate_near,2.4,"WorkshopWing")
    fence_run(boundary,gate_far,corner,2.4,"FirstBaseFence")
    var gate := Props.group(boundary,"OpenEquipmentGate",(gate_near+gate_far)*0.5)
@@ -113,7 +116,7 @@ func build_foul_boundary() -> void:
    fence_run(boundary,gate_far+outward*0.3,gate_far+outward*0.3+along*3,2.0,"OpenGateLeaf")
   else:
    fence_run(boundary,after,corner,2.4,"ThirdBaseFence")
-  fence_run(boundary,corner,Vector3(side*sqrt(0.5)*104,0,-sqrt(0.5)*104),2.4,"FoulPoleReturn")
+  fence_run(boundary,corner,layout.point3(layout.plate_position+Vector2(side,-1)*sqrt(0.5)*layout.fence_radius),2.4,"FoulPoleReturn")
   # A continuous narrow walkway outside the fence anchors dugouts to the park.
   var path := G.box(self,(start+corner)*0.5+outward*4+Vector3.UP*0.012,Vector3(3,0.024,start.distance_to(corner)),Color("b9aa8e"))
   path.rotation.y = atan2(along.x,along.z)
@@ -151,14 +154,14 @@ func fence_run(parent: Node3D,from: Vector3,to: Vector3,height: float,label: Str
 
 func build_neighborhood() -> void:
  # Concourse and workshop use the existing collision footprint and driving lane.
- var path := G.box(self,Vector3(0,0.018,22),Vector3(63,0.035,8),Color("c9b590"))
+ var path := G.box(self,layout.point3(layout.concourse.get_center(),layout.concourse_center_height),Vector3(layout.concourse.size.x,layout.concourse_thickness,layout.concourse.size.y),Color("c9b590"))
  path.material_override = ground_material(Color("bbab8e"),Color("d0bf9f"),1.5)
- for z in [18.1,25.9]:
-  G.box(self,Vector3(0,0.07,z),Vector3(63,0.12,0.18),CREAM)
- G.box(self,Vector3(33,0.03,-19),Vector3(13,0.04,9),Color("8b9987"))
- for x in [27.2,32,36.8]:
-  G.box(self,Vector3(x,0.065,-21),Vector3(0.07,0.02,4),CREAM)
- Props.shed(self)
+ for z in [layout.concourse.position.y+0.1,layout.concourse.end.y-0.1]:
+  G.box(self,Vector3(layout.concourse.get_center().x,0.07,z),Vector3(layout.concourse.size.x,0.12,0.18),CREAM)
+ G.box(self,layout.point3(layout.workshop_pad.get_center(),layout.workshop_pad_height-layout.workshop_pad_thickness*0.5),Vector3(layout.workshop_pad.size.x,layout.workshop_pad_thickness,layout.workshop_pad.size.y),Color("8b9987"))
+ for x in [-5.8,-1.0,3.8]:
+  G.box(self,layout.point3(layout.workshop_pad.get_center()+Vector2(x,-2),layout.workshop_pad_height+0.015),Vector3(0.07,0.02,4),CREAM)
+ Props.shed(self,layout)
  for side in [-1,1]:
   Props.bench(self,Vector3(side*26,0,22))
   for i in range(5):

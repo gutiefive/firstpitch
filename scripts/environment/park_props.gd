@@ -13,8 +13,8 @@ static func group(parent: Node3D, title: String, pos: Vector3) -> Node3D:
  parent.add_child(root)
  return root
 
-static func shed(parent: Node3D) -> void:
- var root := group(parent,"GroundsWorkshop",Vector3(38,0,-11))
+static func shed(parent: Node3D,layout: FieldLayout) -> void:
+ var root := group(parent,"GroundsWorkshop",layout.workshop_position)
  G.box(root,Vector3(0,1.8,0),Vector3(8,3.6,7),TEAL,true)
  # Siding, corners, fascia, and a pitched standing-seam roof.
  for height in range(12):
@@ -63,12 +63,12 @@ static func barrel(parent: Node3D,pos: Vector3) -> void:
  for y in [0.15,0.8]:
   G.ring(parent,pos+Vector3.UP*y,0.36,0.4,Color("7d563f"))
 
-static func dugout(parent: Node3D,side: int) -> Node3D:
+static func dugout(parent: Node3D,side: int,layout: FieldLayout) -> Node3D:
  # Local +Z is the open front; align it with the inward sideline normal.
- var along := Vector3(side*74,0,-79.5).normalized()
+ var along := (layout.boundary_corner(side)-layout.boundary_start(side)).normalized()
  var inward := Vector3(-side*absf(along.z),0,-absf(along.x))
- var front := Vector3(side*8,0,6)+along*20
- var root := group(parent,"HomeDugout" if side < 0 else "VisitorDugout",front-inward*2.2)
+ var front := layout.boundary_start(side)+along*layout.dugout_distance
+ var root := group(parent,"HomeDugout" if side < 0 else "VisitorDugout",front-inward*layout.dugout_front_depth)
  root.rotation.y = atan2(inward.x,inward.z)
  G.box(root,Vector3(0,0.015,0),Vector3(11.5,0.03,4.6),Color("c4b795"))
  G.box(root,Vector3(0,1.35,-1.8),Vector3(11,2.7,0.25),TEAL,true)
@@ -130,8 +130,8 @@ static func grandstand(parent: Node3D,side: int) -> void:
  sign.pixel_size = 0.008
  sign.modulate = TEAL
 
-static func scoreboard(parent: Node3D) -> void:
- var root := group(parent,"Scoreboard",Vector3(0,0,-106))
+static func scoreboard(parent: Node3D,layout: FieldLayout) -> void:
+ var root := group(parent,"Scoreboard",layout.point3(layout.plate_position+Vector2(0,-layout.fence_radius-2)))
  for x in [-7,7]:
   G.box(root,Vector3(x,4.5,0),Vector3(0.55,9,0.55),WOOD,true)
  G.box(root,Vector3(0,9,0),Vector3(21,8.3,0.55),CREAM,true)

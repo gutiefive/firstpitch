@@ -1,5 +1,6 @@
 class_name ToolBay
 extends Node3D
+@export var layout: FieldLayout = preload("res://resources/layouts/cedar_grove.tres")
 @export var service_radius := 9.0
 var parked_drag: DragAttachment
 var spare_deck: Node3D
@@ -7,9 +8,10 @@ const G = preload("res://scripts/gameplay/geometry.gd")
 
 func _ready() -> void:
  name = "ToolBay"
- position = Vector3(35,0,-23)
+ position = layout.tool_bay_position
  G.box(self,Vector3(0,0.15,0),Vector3(3.4,0.3,1.8),Color("a38c62"),true)
  parked_drag = DragAttachment.new()
+ parked_drag.layout = layout
  parked_drag.position.y = 0.22
  parked_drag.follow_field = false
  add_child(parked_drag)

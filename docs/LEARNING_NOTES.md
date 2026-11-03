@@ -30,7 +30,7 @@ The deck paints a circular footprint with a 2.4 m diameter. Sampling along each 
 
 The mask is modest (450 × 330). A dirty flag batches full uploads to at most 10 Hz; idle grass uploads nothing. This is simpler than a partial-update rendering pipeline and has predictable small upload size. CPU footprint work only visits a local bounding box around the cutting deck. There is one grass surface and one MultiMesh batch for the sparse uncut tufts, not a node per blade. Session state stays in the same grass node when you leave the mower.
 
-Try `deck_width`, `resolution`, `update_frequency`, `field_origin`, and `field_size`. Keep the exported outfield radius and diamond exclusions matched to the stadium geometry. Shader colors are in `shaders/grass.gdshader`. A future layout resource should hold both stadium dimensions and scoring boundaries as their shared source of truth.
+Try `deck_width`, the scene resolution override, and `update_frequency`. Mask origin/size and geometry now come from `FieldLayout`; zero resolution selects its default. Shader colors are in `shaders/grass.gdshader`. The shared geometry/scoring source of truth is implemented, as described below.
 
 
 ## The visual pass
@@ -54,7 +54,7 @@ The dirt shader is applied directly to the stadium's existing diamond and home-a
 
 `ToolBay` checks the tractor's distance from the workshop rack. Main also checks that the player is on foot, nearby, and that the tractor is stopped before allowing Q to change tools. `RidingMower.set_tool()` changes the visuals and emits `tool_changed`. Main uses that signal to update the rack and objective. R raises a working drag immediately, but lowering requires a stopped, occupied tractor. Each task keeps its own state while the other tool is equipped.
 
-Try `working_width` and `working_depth` on the drag, `dragging_speed` on the tractor, the bay's `service_radius`, and the dirt grid resolution/update frequency. The mask exclusions currently match Cedar Grove's dimensions; keep them aligned with any future stadium layout changes. The next architectural step for multiple stadiums is a shared field-layout resource rather than duplicated dimensions.
+Try `working_width` and `working_depth` on the drag, `dragging_speed` on the tractor, the bay's `service_radius`, and the dirt grid resolution/update frequency. The next architectural step for multiple stadiums is now done: `FieldLayout` supplies shared dimensions and mask exclusions rather than duplicated coordinates.
 
 
 ## M4: Chalking as a separate walking tool
@@ -69,7 +69,7 @@ The foul-line objective uses two one-dimensional sets of approximately quarter-m
 
 Main remembers the selected task when you leave a tool. Returning to the tractor or changing its attachment restores its mowing/dragging objective. The HUD shows all five percentages and a left/right breakdown while chalking. Completion uses exact tracked counts rather than a rounded percentage, so nearly finished work cannot prematurely declare the park ready.
 
-Try `push_speed`, `steering_rate`, and `stroke_spacing` on the marker; `chalk_width`, line bounds, `section_length`, and `update_frequency` on the chalk system. Surface-height projection currently describes Cedar Grove's fixed geometry. A future shared field-layout resource should supply these heights and exclusions for multiple parks. Unlimited chalk and no erase/undo remain prototype limits. Manual saves now preserve chalk through a stroke archive; they do not add quality or supply mechanics.
+Try `push_speed`, `steering_rate`, and `stroke_spacing` on the marker; `chalk_width`, `section_length`, and `update_frequency` on the chalk system. Line bounds, surface heights and exclusions now come from the shared layout resource. Unlimited chalk and no erase/undo remain prototype limits. Manual saves now preserve chalk through a stroke archive; they do not add quality or supply mechanics.
 
 
 ## M4: Water exposure and the on-foot hose
@@ -97,7 +97,7 @@ The visual tamper follows a simple windup/contact/recovery path, with arm posing
 
 Main makes the hose and tamper mutually exclusive and stows either before handing control to a vehicle or marker. The fifth objective uses actual accepted-impact counts. Whole-park readiness requires full counts from all five tasks; the rounded percentage text is not used as the completion rule.
 
-Try `patch_positions`, `patch_radius`, and `hits_required` on the mound scene, or `working_reach`, `stroke_duration`, and `contact_time` on the rack scene. Keep contact time shorter than total stroke duration. Patch disks should remain on the plateau and away from the pitching rubber. If you move the mound, update the stadium geometry, repair scene, and surface-height data together until a shared layout resource replaces those duplicated dimensions.
+Try `mound_patches` and `mound_patch_radius` on the layout, `hits_required` on the mound scene, or `working_reach`, `stroke_duration`, and `contact_time` on the rack scene. Keep contact time shorter than total stroke duration. Patch disks should remain on the plateau and away from the pitching rubber. Mound position, shape and projected height now share the same layout.
 
 
 ## M5: Shift lifecycle and clean restarts
@@ -115,7 +115,7 @@ Try `patch_positions`, `patch_radius`, and `hits_required` on the mound scene, o
 
 The resource-free Variant payload has a format version, a SHA-256 layout signature, and a checksum header. Reads are bounded to 32 MiB and use object-disabled decoding. Layout, dimensions, protected cells, numeric ranges, stroke geometry, session clocks, and reconstructed result scores are validated before calling `reset_field()`. Temporary-file writes are flushed and renamed over the slot, keeping the old slot if replacement fails. This guards accidental corruption; it is not an anti-cheat format.
 
-`ShiftDirector` connects the board's explicit save/load buttons. Loading stows tools and parks equipment using the existing reset lifecycle, then restores field state and session data. The world stays paused until the player resumes. Positions, motion, camera angle, hand-tool animations, and held inputs are deliberately not serialized. Save files live under Godot's `user://`, never in the project directory. There is one manual slot, no autosave, no automatic startup load, no migration, and no cloud sync.
+`ShiftDirector` connects the board's explicit save/load buttons. Loading stows tools and parks equipment using the existing reset lifecycle, then restores field state and session data. The world stays paused until the player resumes. Positions, motion, camera angle, hand-tool animations, and held inputs are deliberately not serialized. Save files live under Godot's `user://`, never in the project directory. There is one manual slot, no autosave, no automatic startup load, and no cloud sync. The recorded Cedar Grove v1 field now has an explicit v2 migration.
 
 
 ## Sound: Separate presentation from accepted work
@@ -163,3 +163,21 @@ The career file has its own bounded, checksummed, resource-free payload. A compl
 `ContractsPanel` shows the selected jobs, deadline, maximum total payout including bonus, personal best and rank requirement. Starting routes through `ShiftDirector.start_shift()`, which rejects active, unknown or rank-locked requests before resetting the field. The first requested job is selected for the HUD. Earning 500 lifetime credits unlocks the two-job infield contract regardless of wallet spending. Offers are fixed and repeatable rather than scheduled online jobs.
 
 Career payout now reads each profile's rate/bonus; training and full-prep terms remain unchanged. Derived best scores initialize for every profile. Field-save and career-result validation use the requested-job count rather than assuming five completed jobs. Result dictionaries and field layout remain compatible with earlier saves. Frozen result goal counts come from the snapshot, not later practice progress. Whole-park readiness continues using all five original exact field counters.
+
+
+## Part 1: Shared FieldLayout resource — completed
+
+`FieldLayout` is a Resource, with Cedar Grove's explicit configuration in `resources/layouts/cedar_grove.tres`. Main assigns the same resource to stadium, surfaces, markings, tools and equipment before `add_child()`, because construction happens in `_ready()`. Mask origins/sizes are resource-backed read-only properties; scene resolution remains a tuning override, with zero selecting the resource default. Moisture shares its infield surface's bounds. No new per-cell nodes or idle layout-processing loop was added. Existing packed arrays, state textures, dirty flags and upload throttling remain in place.
+
+Base coordinates derive from `basepath_length / sqrt(2)`, with a 27.432 m (90 ft) baseline, rather than separately rounded axis coordinates. The drawn diamond and island give canonical outer/inner distances of `31 / sqrt(2)` and `22 / sqrt(2)`. Both scoring and height queries now use those edges. Previously independent rounded thresholds differed; removing those differences adds 124 grass cells and 138 dirt cells, with no previously valid cells removed. Chalk sections and mound work totals are unchanged. Height projection also uses the actual island/concourse top surfaces, eliminating their half-millimeter rounding discrepancies.
+
+The geometry correction necessarily changes the saved layout signature. FieldSave now writes v2. Its only legacy migration recognizes the captured pre-refactor Cedar Grove v1 signature and the current canonical v2 signature. Immutable v1 validity arrays are bundled as a compressed native Resource, so old protected cells are still validated against the old rules. All old work and direction pixels remain intact; added cells are visible, rough/uncut and dry. Attempt IDs, clock, chalk strokes, mound hits and frozen results are preserved. Pre-career snapshots without an ID receive the original v1 fallback hash before migration, preserving the identity used for payout replay protection. Unknown v1 layouts and work that was invalid under the original masks are rejected before mutation. The compressed original save fixture was generated by main at commit `4ff75db`, not reconstructed using new geometry.
+
+To configure a second park:
+
+1. Duplicate `resources/layouts/cedar_grove.tres` to a new `.tres`.
+2. Edit its dimensions, radii, mask bounds/resolutions, mound patches and equipment/structure placements together in the Inspector. Keep valid areas inside their mask bounds and equipment approaches clear.
+3. Assign the new resource to the main scene's `layout` property (or to `game.layout` before adding the scene). Main propagates it before construction. Do not mutate the shared Cedar Grove resource at runtime.
+4. Check the generated park and run the layout/resource tests. A different mask signature intentionally cannot load a Cedar Grove slot without an explicit migration. This configures a park; it does not add a career park-selection screen.
+
+Game-day wear, quality penalties, tutorial, autosave and controller support belong to later parts and were not implemented in this refactor.

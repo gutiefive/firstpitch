@@ -2,8 +2,8 @@ shader_type spatial;
 render_mode cull_disabled;
 uniform sampler2D condition_mask : filter_nearest, repeat_disable;
 uniform sampler2D moisture_mask : hint_default_black, filter_linear, repeat_disable;
-uniform vec2 field_origin=vec2(-25.0,-45.0);
-uniform vec2 field_size=vec2(50.0,53.0);
+uniform vec2 field_origin=vec2(0.0);
+uniform vec2 field_size=vec2(1.0);
 varying vec3 world_pos;
 float hash(vec2 p) { return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
 float noise(vec2 p) {

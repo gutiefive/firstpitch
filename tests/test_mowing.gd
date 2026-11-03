@@ -16,7 +16,7 @@ func run() -> void:
  check(grass.world_to_grid(Vector3(-75,0,-110)) == Vector2i.ZERO,"grid origin")
  check(grass.world_to_grid(Vector3.ZERO) == Vector2i(225,330),"world origin mapping")
  check(grass.total > 0,"mowable grass exists")
- grass.paint(Vector3(0,0,-18.44),Vector3.FORWARD)
+ grass.paint(grass.layout.point3(grass.layout.mound_position),Vector3.FORWARD)
  check(grass.cut_count == 0,"mound and dirt excluded")
  grass.paint(Vector3(0,0,-102),Vector3.FORWARD)
  check(grass.cut_count == 0,"warning track excluded")

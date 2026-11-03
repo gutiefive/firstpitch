@@ -1,7 +1,10 @@
 class_name WateringTool
 extends Node3D
 signal equipped_changed(equipped: bool)
-@export var station_position := Vector3(33,0,-3.8)
+@export var layout: FieldLayout = preload("res://resources/layouts/cedar_grove.tres")
+var station_position: Vector3:
+ get:
+  return layout.water_station_position
 @export var pickup_distance := 3.0
 @export var hose_reach := 65.0
 @export var spray_reach := 12.0

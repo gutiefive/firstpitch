@@ -10,12 +10,12 @@ func _initialize() -> void:
  call_deferred("run")
 func run() -> void:
  var mound := MoundSurface.new()
- mound.position = Vector3(0,0,-18.44)
+ mound.position = mound.layout.point3(mound.layout.mound_position)
  root.add_child(mound)
  check(mound.hits.size() == 6 and mound.total_work == 18,"six clay patches require eighteen total strokes")
  check(mound.percentage() == 0 and mound.repaired_count == 0,"mound begins worn and unrepaired")
  check(mound.patch_at(mound.patch_world(0)) == 0,"world target maps to correct patch")
- check(mound.patch_at(Vector3(0,0.36,-18.44)) == -1,"pitching rubber is not a repair patch")
+ check(mound.patch_at(mound.layout.point3(mound.layout.mound_position,mound.layout.mound_height)) == -1,"pitching rubber is not a repair patch")
  check(mound.patch_at(Vector3(10,0,-10)) == -1,"off-mound dirt is not a repair target")
  check(not mound.apply_tamp(-1) and not mound.apply_tamp(99),"invalid patch indices cannot earn work")
  var events := [0]

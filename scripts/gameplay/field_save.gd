@@ -1,7 +1,9 @@
 class_name FieldSave
 extends RefCounted
 # Resource-free Variant data only. Validate the complete snapshot before mutation.
-const VERSION := 1
+const VERSION := 2
+const V1_CEDAR_HASH := "4b93508a852f996a404526525630f7fcb6b2271cd10d8adedd4c9f2364fd70b5"
+const V2_CEDAR_HASH := "7b9130bdf3d3ece6fd0bdc711a4028ad8613ebebabf58008a3603857720664bd"
 const MAX_BYTES := 32*1024*1024
 var path := "user://field-save.dat"
 var error := ""
@@ -52,17 +54,54 @@ func read(g: Node) -> Dictionary:
  if magic != "FPGCSAVE" or checksum != digest(bytes):
   error = "Save is damaged. Current field kept."
   return {}
- var data: Variant = bytes_to_var(bytes)
+ var data: Variant = migrate(bytes_to_var(bytes),g)
  if not validate(data,g):
   return {}
  return data
 
+func migrate(data: Variant,g: Node) -> Dictionary:
+ if not data is Dictionary:
+  return {}
+ if data.get("version") == VERSION:
+  return data
+ # Only this recorded v1 park can gain the corrected boundary cells safely.
+ if data.get("version") != 1 or data.get("layout") != V1_CEDAR_HASH or layout(g) != V2_CEDAR_HASH:
+  return {}
+ var candidate: Dictionary = data.duplicate(true)
+ candidate.version = VERSION
+ candidate.layout = layout(g)
+ if not validate(candidate,g):
+  return {}
+ if not candidate.session.has("attempt_id"):
+  candidate.session.attempt_id = "legacy-"+digest(var_to_bytes(data)).hex_encode()
+ var reference := preload("res://resources/layouts/cedar_grove_v1_masks.res")
+ var old := {"grass":reference.get_meta("grass"),"dirt":reference.get_meta("dirt")}
+ if not old is Dictionary or not mask_data_ok(candidate.grass,old.grass) or not mask_data_ok(candidate.dirt,old.dirt):
+  return {}
+ for i in range(candidate.moisture.size()):
+  if old.dirt[i] == 0 and candidate.moisture[i] != 0:
+   return {}
+ for key in ["grass","dirt"]:
+  var current: PackedByteArray = g.grass.valid if key == "grass" else g.infield.valid
+  var pixels: PackedByteArray = candidate[key]
+  for i in range(current.size()):
+   if current[i] == 1 and old[key][i] == 0:
+    pixels[i*4] = 0
+    pixels[i*4+1] = 128 if key == "dirt" else 0
+    pixels[i*4+2] = 0
+    pixels[i*4+3] = 255
+  candidate[key] = pixels
+ return candidate
+
 func mask_ok(data: Variant,model: Node) -> bool:
- if not data is PackedByteArray or data.size() != model.image.get_data_size():
+ return mask_data_ok(data,model.valid)
+
+func mask_data_ok(data: Variant,valid: PackedByteArray) -> bool:
+ if not data is PackedByteArray or data.size() != valid.size()*4:
   return false
- for i in range(model.valid.size()):
+ for i in range(valid.size()):
   var red: int = data[i*4]
-  if red not in [0,255] or (model.valid[i] == 0 and red != 0):
+  if red not in [0,255] or (valid[i] == 0 and red != 0):
    return false
  return true
 
@@ -148,6 +187,7 @@ func session_ok(data: Variant) -> bool:
  return valid
 
 func restore(g: Node,director: ShiftDirector,data: Dictionary) -> bool:
+ data = migrate(data,g)
  if not validate(data,g):
   return false
  director.reset_field()

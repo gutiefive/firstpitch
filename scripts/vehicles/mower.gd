@@ -4,6 +4,7 @@ signal occupied_changed(occupied: bool)
 signal tool_changed(tool: int)
 signal drag_state_changed(lowered: bool)
 enum WorkTool { MOWER, DRAG }
+@export var layout: FieldLayout = preload("res://resources/layouts/cedar_grove.tres")
 @export var max_speed := 8.0
 @export var reverse_speed := 3.0
 @export var acceleration := 4.0
@@ -37,6 +38,7 @@ func _ready() -> void:
  steering = appearance.steering
  deck = appearance.deck
  drag = DragAttachment.new()
+ drag.layout = layout
  drag.name = "TowBehindDrag"
  drag.position = Vector3(0,0,2.7)
  add_child(drag)

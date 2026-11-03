@@ -161,3 +161,54 @@ Career data is separate from field saves and is automatically committed on rewar
 - `test_contracts_visual.gd`: native Tab/Contracts/start buttons selected a mound callout; eighteen actual timed hand-tool impacts automatically completed it and committed **40 credits**, with other job counters still zero. Completion fixtures then exercised the lock boundary: **490 lifetime credits remained locked; 640 unlocked** the infield card. Verified the two-job infield checklist, active-contract replacement guards, Escape/Tab pause navigation, and a fast-forwarded timeout. Inspected 1280×720 contract-board and completion captures; controls and text fit.
 
 Captures are `contracts-locked.png`, `contract-mound-active.png`, `contract-complete.png`, `contracts-unlocked.png`, and `contract-infield-active.png`. Rank-funding and infield timeout are synthetic branches; no full human mowing/infield contract route, pay-balance assessment, or Windows Forward+ run was performed. Existing audio teardown warnings remain intermittent and do not affect assertions.
+
+
+## Part 1 — Shared FieldLayout resource
+
+Baseline recorded from unmodified main at `4ff75db` before edits. Helpers and masks now use the geometry actually drawn: outer edge `31 / sqrt(2) = 21.9203102168` instead of separately rounded `21.92` / `21.921`; inner edge `22 / sqrt(2) = 15.5563491861` instead of `15.6` / `15.556`. Base axes derive from `27.432 / sqrt(2) = 19.3973532215`, replacing the old rounded coordinates. The grass exclusion now follows that same outer edge.
+
+| Tracked area | Before | After | Change |
+| --- | ---: | ---: | ---: |
+| Grass cells | 61,445 | 61,568 | +124 |
+| Dirt cells | 12,618 | 12,756 | +138 |
+| Moisture cells | 12,618 | 12,756 | +138 (same dirt mask) |
+| Chalk sections | 808 | 808 | 0 |
+| Mound impacts | 18 | 18 | 0 |
+
+No previously valid cells were removed. No existing assertion changed its expected gameplay outcome; six tests now obtain sample coordinates from the resource. Island and concourse height projection uses the actual drawn top surfaces, removing half-millimeter rounding differences.
+
+The v1 layout hash is hard-coded in the regression test:
+`4b93508a852f996a404526525630f7fcb6b2271cd10d8adedd4c9f2364fd70b5`.
+Canonical v2 hash:
+`7b9130bdf3d3ece6fd0bdc711a4028ad8613ebebabf58008a3603857720664bd`.
+
+Because valid cells changed, FieldSave.VERSION was bumped to **2**. A real checksummed v1 slot captured before the refactor is committed as `tests/fixtures/cedar_grove_v1.dat.gz`; the test loads it through the migration, checks all old direction pixels and counts, preserves its attempt ID and paused clock (including the original fallback ID for pre-career saves), initializes new cells unworked/dry, and writes/reads the migrated v2 slot. Original validity arrays are bundled in `resources/layouts/cedar_grove_v1_masks.res`. Migration rejects unknown layouts and originally invalid work rather than weakening validation. Tests use dedicated `user://test-*` files and isolated XDG roots, never player saves.
+
+All README headless suites plus the new resource suite ran successfully:
+
+| Suite | Passed assertions |
+| --- | ---: |
+| `test_mowing.gd` | 14 |
+| `test_gameplay.gd` | 13 |
+| `test_infield.gd` | 16 |
+| `test_drag_gameplay.gd` | 23 |
+| `test_chalk.gd` | 23 |
+| `test_chalk_gameplay.gd` | 28 |
+| `test_moisture.gd` | 17 |
+| `test_watering_gameplay.gd` | 22 |
+| `test_mound.gd` | 16 |
+| `test_tamping_gameplay.gd` | 30 |
+| `test_shift_session.gd` | 25 |
+| `test_shift_gameplay.gd` | 32 |
+| `test_field_save.gd` | 28 |
+| `test_audio.gd` | 27 |
+| `test_field_layout.gd` | 20 |
+| `test_career.gd` | 26 |
+| `test_career_gameplay.gd` | 18 |
+| `test_contracts.gd` | 30 |
+| `test_field_layout_resource.gd` | 37 |
+| **Total** | **445** |
+
+The new resource suite additionally covers base derivation, diamond/fair/basepath helpers, all requested ground-height surfaces, shared resource identity, baseline/corrected totals, legacy protection and pixel preservation, and an alternate resource reaching masks, mound, tools and actor spawns before `_ready()`. Altering a duplicated resource leaves Cedar Grove untouched.
+
+Headless editor import and main startup passed. `test_field_layout_visual.gd` rendered field, dugouts, equipment access, home plate and reference markings under OpenGL Compatibility; inspected the overhead field capture after refactoring. A code-coordinate audit found the old copied coordinates only in layout definitions, not controllers, surfaces, shaders or test bodies. Runtime shader mappings are supplied explicitly from the resource-backed masks. Existing intermittent audio playback-resource warnings on process teardown remain; Windows/Forward+ validation is still outstanding. Parts 2 and 3 were not started.

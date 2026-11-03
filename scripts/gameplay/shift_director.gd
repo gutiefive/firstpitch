@@ -32,10 +32,10 @@ func _ready() -> void:
  build_noticeboard()
 
 func build_noticeboard() -> void:
- for x in [27.8,30.2]:
-  ParkGeometry.box(game,Vector3(x,1,-3.4),Vector3(0.1,2,0.1),Color("28585a"))
- ParkGeometry.box(game,Vector3(29,1.65,-3.4),Vector3(2.8,1.25,0.15),Color("eee3c6"))
- var sign := ParkGeometry.label(game,"CEDAR GROVE\nPREPARATION SHIFTS\nTAB  SHIFT BOARD",Vector3(29,1.65,-3.3),36)
+ for x in [-1.2,1.2]:
+  ParkGeometry.box(game,game.layout.noticeboard_position+Vector3(x,-0.65,0),Vector3(0.1,2,0.1),Color("28585a"))
+ ParkGeometry.box(game,game.layout.noticeboard_position,Vector3(2.8,1.25,0.15),Color("eee3c6"))
+ var sign := ParkGeometry.label(game,"CEDAR GROVE\nPREPARATION SHIFTS\nTAB  SHIFT BOARD",game.layout.noticeboard_position+Vector3(0,0,0.1),36)
  sign.pixel_size = 0.005
  sign.modulate = Color("28585a")
 
@@ -113,19 +113,19 @@ func reset_field() -> void:
  game.pushing_chalk = false
  game.mower.speed = 0
  game.mower.velocity = Vector3.ZERO
- game.mower.position = Vector3(30,0.1,-19)
- game.mower.rotation = Vector3(0,PI/4,0)
+ game.mower.position = game.layout.mower_spawn
+ game.mower.rotation = Vector3(0,game.layout.mower_yaw,0)
  game.mower.set_tool(RidingMower.WorkTool.MOWER)
  game.mower.previous_deck = game.mower.deck.global_position
  game.mower.previous_drag = game.mower.drag.global_position
  game.chalk_marker.speed = 0
  game.chalk_marker.velocity = Vector3.ZERO
- game.chalk_marker.position = Vector3(38,0.05,-21)
+ game.chalk_marker.position = game.layout.chalk_marker_spawn
  game.chalk_marker.rotation = Vector3.ZERO
  game.chalk_marker.last_nozzle = game.chalk_marker.nozzle.global_position
  game.player.set_seated(false)
  game.player.velocity = Vector3.ZERO
- game.player.position = Vector3(29,0.1,-11)
+ game.player.position = game.layout.player_spawn
  game.player.visual.rotation = Vector3.ZERO
  game.yaw = 0.12
  game.pitch = -0.45

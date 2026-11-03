@@ -1,10 +1,17 @@
 class_name MoundSurface
 extends Node3D
 signal completion_changed(percent: float)
-@export var top_height := 0.36
-@export var patch_radius := 0.42
+@export var layout: FieldLayout = preload("res://resources/layouts/cedar_grove.tres")
+var top_height: float:
+ get:
+  return layout.mound_height
+var patch_radius: float:
+ get:
+  return layout.mound_patch_radius
 @export var hits_required := 3
-@export var patch_positions := PackedVector2Array([Vector2(-0.75,0.25),Vector2(0,1.25),Vector2(0.8,0.7),Vector2(-1.35,-0.55),Vector2(1.25,-0.6),Vector2(0.25,-1.4)])
+var patch_positions: PackedVector2Array:
+ get:
+  return layout.mound_patches
 var hits := PackedInt32Array()
 var work_done := 0
 var repaired_count := 0
@@ -13,6 +20,7 @@ var materials: Array[ShaderMaterial] = []
 var clumps: Array[Node3D] = []
 
 func _ready() -> void:
+ position = layout.point3(layout.mound_position)
  hits.resize(patch_positions.size())
  total_work = hits_required*patch_positions.size()
  for index in range(patch_positions.size()):

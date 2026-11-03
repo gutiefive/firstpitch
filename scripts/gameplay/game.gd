@@ -1,4 +1,5 @@
 extends Node3D
+@export var layout: FieldLayout = preload("res://resources/layouts/cedar_grove.tres")
 var player: Groundskeeper
 var mower: RidingMower
 var grass: MowingGrass
@@ -31,35 +32,42 @@ var shift: ShiftDirector
 func _ready() -> void:
  configure_input()
  var stadium = preload("res://scenes/stadium/stadium.tscn").instantiate()
+ stadium.layout = layout
  add_child(stadium)
  mound = preload("res://scenes/environment/mound_repairs.tscn").instantiate()
+ mound.layout = layout
  add_child(mound)
  infield = preload("res://scenes/environment/infield.tscn").instantiate()
+ infield.layout = layout
  add_child(infield)
  infield.apply_to(stadium.infield_surfaces)
  moisture = preload("res://scenes/environment/dirt_moisture.tscn").instantiate()
  add_child(moisture)
  moisture.bind_surface(infield)
  tool_bay = ToolBay.new()
+ tool_bay.layout = layout
  add_child(tool_bay)
  grass = preload("res://scenes/environment/grass.tscn").instantiate()
+ grass.layout = layout
  add_child(grass)
  player = preload("res://scenes/player/player.tscn").instantiate()
- player.position = Vector3(29,0.1,-11)
+ player.position = layout.player_spawn
  add_child(player)
  mower = preload("res://scenes/vehicles/mower.tscn").instantiate()
- mower.position = Vector3(30,0.1,-19)
- mower.rotation.y = PI/4
+ mower.position = layout.mower_spawn
+ mower.rotation.y = layout.mower_yaw
+ mower.layout = layout
  add_child(mower)
  mower.grass = grass
  mower.infield = infield
  chalk = ChalkSystem.new()
+ chalk.layout = layout
  add_child(chalk)
  chalk_marker = preload("res://scenes/vehicles/chalk_marker.tscn").instantiate()
- chalk_marker.position = Vector3(38,0.05,-21)
+ chalk_marker.position = layout.chalk_marker_spawn
  add_child(chalk_marker)
  chalk_marker.chalk = chalk
- var marker_sign := ParkGeometry.label(self,"CHALK MARKER\nE  USE  /  R  GATE",Vector3(38,1.8,-22),34)
+ var marker_sign := ParkGeometry.label(self,"CHALK MARKER\nE  USE  /  R  GATE",layout.chalk_marker_sign,34)
  marker_sign.pixel_size = 0.005
 
  pivot = Node3D.new()
@@ -82,12 +90,14 @@ func _ready() -> void:
  watering.player = player
  watering.camera = camera
  watering.moisture = moisture
- watering.surface_height = chalk.ground_height
+ watering.surface_height = layout.ground_height
+ watering.layout = layout
  add_child(watering)
  tamper = preload("res://scenes/environment/tamper_rack.tscn").instantiate()
  tamper.player = player
  tamper.camera = camera
  tamper.mound = mound
+ tamper.layout = layout
  add_child(tamper)
  create_hud()
  grass.completion_changed.connect(update_progress)

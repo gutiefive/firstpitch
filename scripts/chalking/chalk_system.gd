@@ -1,8 +1,13 @@
 class_name ChalkSystem
 extends Node3D
 signal completion_changed(percent: float)
-@export var line_start := 0.8
-@export var line_end := 103.0
+@export var layout: FieldLayout = preload("res://resources/layouts/cedar_grove.tres")
+var line_start: float:
+ get:
+  return layout.line_start
+var line_end: float:
+ get:
+  return layout.line_end
 @export var section_length := 0.25
 @export var chalk_width := 0.22
 @export var update_frequency := 10.0
@@ -28,41 +33,10 @@ func line_direction(side: int) -> Vector2:
  return Vector2(-1 if side == 0 else 1,-1).normalized()
 
 func section_center(side: int,index: int) -> Vector2:
- return line_direction(side)*(line_start+(index+0.5)*segment_step)
+ return layout.plate_position+line_direction(side)*(line_start+(index+0.5)*segment_step)
 
 func is_protected(p: Vector2) -> bool:
- if p.length() < 0.7:
-  return true
- for base in [Vector2(19.396,-19.396),Vector2(-19.396,-19.396)]:
-  if p.distance_to(base) < 0.55:
-   return true
- return false
-
-func ground_height(p: Vector2) -> float:
- var mound_distance := p.distance_to(Vector2(0,-18.44))
- if mound_distance <= 2.2:
-  return 0.36
- if mound_distance < 2.8:
-  return 0.36*(2.8-mound_distance)/0.6
- for base in [Vector2(19.396,-19.396),Vector2(0,-38.792),Vector2(-19.396,-19.396)]:
-  if p.distance_to(base) < 0.38:
-   return 0.18
- if p.length() < 6:
-  return 0.13
- var diamond := absf(p.x)+absf(p.y+19.396)
- if diamond <= 15.556:
-  return 0.083
- if diamond <= 21.921:
-  return 0.0375
- if p.y < 0 and absf(p.x) <= -p.y and p.length() <= 99:
-  return 0.055
- if p.y < 0 and absf(p.x) <= -p.y and p.length() <= 104:
-  return 0.06
- if p.x >= 26.5 and p.x <= 39.5 and p.y >= -23.5 and p.y <= -14.5:
-  return 0.05
- if absf(p.x) <= 31.5 and p.y >= 18 and p.y <= 26:
-  return 0.035
- return 0
+ return layout.is_chalk_protected(p)
 
 func _ready() -> void:
  sections_per_line = maxi(1,ceili((line_end-line_start)/section_length))
@@ -92,9 +66,9 @@ func build_guides() -> void:
   var direction := line_direction(side)
   var basis := Basis(Vector3.UP,atan2(-direction.x,-direction.y))
   for i in range(count):
-   var point := direction*(line_start+i*1.25+0.25)
+   var point := layout.plate_position+direction*(line_start+i*1.25+0.25)
    var pose := basis.scaled(Vector3.ZERO) if is_protected(point) else basis
-   batch.set_instance_transform(side*count+i,Transform3D(pose,Vector3(point.x,ground_height(point)+0.006,point.y)))
+   batch.set_instance_transform(side*count+i,Transform3D(pose,Vector3(point.x,layout.ground_height(point)+0.006,point.y)))
  guides = MultiMeshInstance3D.new()
  guides.name = "FoulLineGuides"
  guides.multimesh = batch
@@ -109,8 +83,8 @@ func paint_segment(from: Vector3,to: Vector3) -> void:
  # Section coverage is measured against the actual continuous chalk stroke.
  for side in range(2):
   var direction := line_direction(side)
-  var lo := mini(floori((a.dot(direction)-line_start)/segment_step),floori((b.dot(direction)-line_start)/segment_step))-1
-  var hi := maxi(ceili((a.dot(direction)-line_start)/segment_step),ceili((b.dot(direction)-line_start)/segment_step))+1
+  var lo := mini(floori(((a-layout.plate_position).dot(direction)-line_start)/segment_step),floori(((b-layout.plate_position).dot(direction)-line_start)/segment_step))-1
+  var hi := maxi(ceili(((a-layout.plate_position).dot(direction)-line_start)/segment_step),ceili(((b-layout.plate_position).dot(direction)-line_start)/segment_step))+1
   for index in range(maxi(0,lo),mini(sections_per_line,hi+1)):
    var key := side*sections_per_line+index
    if valid[key] == 0 or covered[key] == 1:
@@ -131,7 +105,7 @@ func paint_segment(from: Vector3,to: Vector3) -> void:
   var across := Vector2(-(finish-start).y,(finish-start).x).normalized()*chalk_width*0.5
   var corners := PackedVector3Array()
   for point in [start-across,start+across,finish+across,finish-across]:
-   corners.append(Vector3(point.x,ground_height(point)+0.025,point.y))
+   corners.append(Vector3(point.x,layout.ground_height(point)+0.025,point.y))
   pending.append(corners)
   stroke_archive.append(corners)
 
@@ -146,7 +120,7 @@ func distance_to_guide(point: Vector3) -> float:
  var result := INF
  for side in range(2):
   var direction := line_direction(side)
-  result = minf(result,p.distance_to(Geometry2D.get_closest_point_to_segment(p,direction*line_start,direction*line_end)))
+  result = minf(result,p.distance_to(Geometry2D.get_closest_point_to_segment(p,layout.plate_position+direction*line_start,layout.plate_position+direction*line_end)))
  return result
 
 func rebuild_active_mesh() -> void:

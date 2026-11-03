@@ -1,5 +1,6 @@
 class_name DragAttachment
 extends Node3D
+@export var layout: FieldLayout = preload("res://resources/layouts/cedar_grove.tres")
 @export var working_width := 2.8
 @export var working_depth := 1.2
 var lowered := false
@@ -40,7 +41,7 @@ func _process(_delta: float) -> void:
   # The tractor collision body sits slightly below its visual wheel origin.
   # Anchor the mesh to the existing dirt height rather than to that body offset.
   var point := Vector2(global_position.x,global_position.z)
-  var dirt_height := 0.13 if point.length() < 6 else 0.0375
+  var dirt_height := layout.ground_height(point)
   frame.global_position.y = dirt_height+0.06
  update_tow_bars()
 

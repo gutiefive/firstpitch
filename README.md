@@ -4,7 +4,7 @@ A playable Godot 3D groundskeeping prototype set at **Cedar Grove Ballpark**. Mo
 
 Built with GDScript, procedural meshes and original generated sound effects. No plugins, downloaded art, or external runtime dependencies are required.
 
-**Current build: M1–M5 prototypes implemented, plus the first M6 career and contracts loop.** The latest verified build passed **408 headless assertions** and scripted graphical checks. Windows and Forward+ hardware testing remain outstanding.
+**Current build: M1–M5 prototypes implemented, plus the first M6 career and contracts loop.** The latest verified build passed **445 headless assertions** and scripted graphical checks. Windows and Forward+ hardware testing remain outstanding.
 
 ![Cedar Grove's connected dugouts and playing enclosure](docs/screenshots/dugout-layout.png)
 
@@ -179,7 +179,7 @@ On the next launch, open Tab and choose **Load saved field + shift**. Loading re
 
 Use Godot's **Project → Open User Data Folder** to find these files. On Windows they are under the game's folder in `%APPDATA%/Godot/app_userdata/`. Saves are local, with no cloud/device sync or GitHub upload.
 
-Missing, damaged or incompatible field files report an error and leave current work intact. Older field snapshots without attempt IDs remain loadable. Future layout/format changes may require additional migration support.
+Missing, damaged or incompatible field files report an error and leave current work intact. Older field snapshots without attempt IDs remain loadable. The recorded Cedar Grove v1 layout also migrates to the corrected v2 boundaries while preserving existing work; newly valid boundary cells start unworked and dry. Future layout/format changes may require additional migration support.
 
 ## Sound and volume
 
@@ -201,7 +201,7 @@ More views: [full field](docs/screenshots/field-layout.png), [home area](docs/sc
 
 ## Development and verification
 
-The last feature pass verified **408 headless assertions**, editor import, main-scene startup and scripted graphical flows. These include actual tool work, native board/shop controls, saved-attempt replay protection, upgrades and contract completion. Graphical checks used Linux Xorg/Mesa **OpenGL Compatibility**; synthetic fixtures and fast-forwarded branches are identified in [VERIFICATION.md](docs/VERIFICATION.md).
+The last feature pass verified **445 headless assertions**, editor import, main-scene startup and scripted graphical flows. These include actual tool work, native board/shop controls, saved-attempt replay protection, upgrades and contract completion. Graphical checks used Linux Xorg/Mesa **OpenGL Compatibility**; synthetic fixtures and fast-forwarded branches are identified in [VERIFICATION.md](docs/VERIFICATION.md).
 
 Run from the project directory:
 
@@ -225,6 +225,7 @@ godot --headless --path . --script tests/test_field_layout.gd
 godot --headless --path . --script tests/test_career.gd
 godot --headless --path . --script tests/test_career_gameplay.gd
 godot --headless --path . --script tests/test_contracts.gd
+godot --headless --path . --script tests/test_field_layout_resource.gd
 godot --headless --path . --quit-after 180
 ```
 
@@ -257,6 +258,7 @@ Captures use `/tmp/firstpitch-*.png` on Linux. These scripts run controlled auto
 | Area | Entry points |
 | --- | --- |
 | Main scene and interactions | `scenes/main/main.tscn`, `scripts/gameplay/game.gd` |
+| Shared park geometry | `scripts/gameplay/field_layout.gd`, `resources/layouts/cedar_grove.tres` |
 | Stadium and reference markings | `scripts/gameplay/stadium.gd`, `scripts/environment/park_props.gd`, `scripts/environment/field_markings.gd` |
 | Player, mower and appearance | `scripts/player/`, `scripts/vehicles/mower.gd`, `scripts/vehicles/mower_visual.gd` |
 | Mowing and dirt preparation | `scripts/mowing/grass.gd`, `scripts/infield/`, `scripts/vehicles/drag_attachment.gd` |
@@ -265,7 +267,7 @@ Captures use `/tmp/firstpitch-*.png` on Linux. These scripts run controlled auto
 | Field saves, career and audio | `scripts/gameplay/field_save.gd`, `scripts/gameplay/career_profile.gd`, `scripts/gameplay/grounds_audio.gd`, `scripts/gameplay/sound_preferences.gd` |
 | HUD and board screens | `scripts/ui/` |
 
-Reusable scenes under `scenes/environment/` expose field-mask bounds/resolution, spray rate/reach and mound stroke requirements. Prototype geometry builds at startup; inspect the editor's **Remote** scene tree while running. See [LEARNING_NOTES.md](docs/LEARNING_NOTES.md) for implementation explanations and tuning guidance.
+`FieldLayout` is the shared source for park dimensions, base positions, height queries, mask bounds and equipment placements. Duplicate `resources/layouts/cedar_grove.tres` and assign the copy to `game.gd` to configure another park; see the layout section in the learning notes. Reusable scenes under `scenes/environment/` retain resolution overrides, spray rate/reach and mound stroke requirements. A zero mask resolution uses the layout default. Prototype geometry builds at startup; inspect the editor's **Remote** scene tree while running. See [LEARNING_NOTES.md](docs/LEARNING_NOTES.md) for implementation explanations and tuning guidance.
 
 ## Current limitations
 
@@ -276,4 +278,4 @@ Reusable scenes under `scenes/environment/` expose field-mask bounds/resolution,
 - One manual field slot, a 2,000-attempt local career ledger, no equipment resale and no cloud sync. Loading parks equipment rather than restoring its exact position.
 - Synthetic prototype sound; no music, crowds, surface-specific footsteps or acoustic occlusion. Desktop listening and mix tuning remain outstanding.
 - Windows exports, native Windows behavior, Forward+ GPU appearance/performance and controller support remain unverified.
-- Layout changes require corresponding mask/exclusion updates; no field-layout authoring UI or general migration system yet.
+- Park dimensions and exclusions now share one layout resource; there is no visual layout-authoring UI. Only the recorded Cedar Grove v1-to-v2 field migration is supported; future changes need an explicit compatibility policy.

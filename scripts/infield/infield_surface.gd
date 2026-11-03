@@ -1,9 +1,8 @@
 class_name InfieldSurface
 extends Node3D
 signal completion_changed(percent: float)
-@export var field_origin := Vector2(-25,-45)
-@export var field_size := Vector2(50,53)
-@export var resolution := Vector2i(250,265)
+@export var layout: FieldLayout = preload("res://resources/layouts/cedar_grove.tres")
+@export var resolution := Vector2i.ZERO
 @export var update_frequency := 10.0
 var image: Image
 var texture: ImageTexture
@@ -15,21 +14,15 @@ var prepared_count := 0
 var dirty := false
 var elapsed := 0.0
 
+var field_origin: Vector2:
+ get:
+  return layout.dirt_origin
+var field_size: Vector2:
+ get:
+  return layout.dirt_size
+
 func is_workable(p: Vector2) -> bool:
- var diamond := absf(p.x)+absf(p.y+19.396)
- var basepath := diamond <= 21.92 and diamond >= 15.6
- var home_area := p.length() <= 6 and p.length() > 2.8
- if not (basepath or home_area):
-  return false
- # Keep the rubber, mound, bases and the batter's boxes out of the scored area.
- if p.distance_to(Vector2(0,-18.44)) < 3.1:
-  return false
- for base in [Vector2(19.396,-19.396),Vector2(0,-38.792),Vector2(-19.396,-19.396),Vector2.ZERO]:
-  if p.distance_to(base) < 0.95:
-   return false
- if p.length() < 2.8:
-  return false
- return true
+ return layout.is_workable(p)
 
 func world_to_grid(p: Vector3) -> Vector2i:
  var local := to_local(p)
@@ -39,6 +32,8 @@ func cell_world(x: int,y: int) -> Vector2:
  return field_origin+(Vector2(x,y)+Vector2.ONE*0.5)*field_size/Vector2(resolution)
 
 func _ready() -> void:
+ if resolution == Vector2i.ZERO:
+  resolution = layout.dirt_resolution
  image = Image.create(resolution.x,resolution.y,false,Image.FORMAT_RGBA8)
  valid.resize(resolution.x*resolution.y)
  prepared.resize(valid.size())

@@ -2,7 +2,10 @@ class_name TampingTool
 extends Node3D
 signal impact(point: Vector3)
 signal equipped_changed(equipped: bool)
-@export var rack_position := Vector3(39.5,0,-5.8)
+@export var layout: FieldLayout = preload("res://resources/layouts/cedar_grove.tres")
+var rack_position: Vector3:
+ get:
+  return layout.tamper_rack_position
 @export var pickup_distance := 3.0
 @export var working_reach := 2.2
 @export var stroke_duration := 0.65
