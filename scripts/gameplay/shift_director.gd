@@ -7,6 +7,7 @@ var career := CareerProfile.new()
 var career_message := ""
 var standard_deck_width := 2.4
 var standard_water_rate := 0.8
+var standard_drag_width := 2.8
 var wear := FieldWear.new()
 var save_store := FieldSave.new()
 var notice_sign: Label3D
@@ -15,6 +16,7 @@ var mouse_before_board := Input.MOUSE_MODE_CAPTURED
 func _ready() -> void:
  standard_deck_width = game.grass.deck_width
  standard_water_rate = game.moisture.application_rate
+ standard_drag_width = game.mower.drag.working_width
  career.load_profile()
  career.changed.connect(apply_upgrades)
  apply_upgrades()
@@ -233,6 +235,10 @@ func apply_upgrades() -> void:
  game.mower.deck.scale.x = 1.25 if wide else 1.0
  game.tool_bay.spare_deck.scale.x = 1.25 if wide else 1.0
  game.moisture.application_rate = standard_water_rate*1.25 if career.owns("hose_nozzle") else standard_water_rate
+ var drag_width := standard_drag_width*float(CareerProfile.UPGRADES.wide_drag.width_multiplier) if career.owns("wide_drag") else standard_drag_width
+ game.mower.drag.set_working_width(drag_width)
+ game.tool_bay.parked_drag.set_working_width(drag_width)
+ game.chalk_marker.set_guide_wheel(career.owns("guide_wheel"))
 
 func retry_career() -> void:
  if career.load_profile() and session.phase == ShiftSession.Phase.FINISHED:

@@ -39,15 +39,26 @@ func _ready() -> void:
  text(content,"Training: 1 cr/point + 50 for completion. Full prep: 3 cr/point + 150.",13)
  text(content,"Partial work pays; practice does not. Each attempt pays once. Credits round down.",13)
  text(content,"EQUIPMENT UPGRADES",18).modulate = Color("e1bb67")
+ var equipment := GridContainer.new()
+ equipment.columns = 2
+ equipment.add_theme_constant_override("h_separation",12)
+ equipment.add_theme_constant_override("v_separation",12)
+ content.add_child(equipment)
  for id in CareerProfile.UPGRADES:
+  var item := VBoxContainer.new()
+  item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  item.add_theme_constant_override("separation",6)
+  equipment.add_child(item)
   var button := Button.new()
   button.custom_minimum_size.y = 40
+  button.add_theme_font_size_override("font_size",14)
   button.pressed.connect(func():
    director.career.purchase(id)
    refresh())
-  content.add_child(button)
+  item.add_child(button)
   shop[id] = button
-  text(content,CareerProfile.UPGRADES[id].detail,13)
+  var detail := text(item,CareerProfile.UPGRADES[id].detail,13)
+  detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  text(content,"RECENT SHIFTS",18).modulate = Color("e1bb67")
  history = text(content,"",14)
  history.custom_minimum_size.y = 92
@@ -74,8 +85,11 @@ func refresh() -> void:
  record.text = "%d shifts · %d completed · Best training %.1f / full %.1f" % [career.data.records.size(),career.completed,career.best.training,career.best.full]
  for id in shop:
   var item: Dictionary = CareerProfile.UPGRADES[id]
-  shop[id].text = "%s  ·  %s" % [item.title,"OWNED" if career.owns(id) else str(item.cost)+" cr"]
-  shop[id].disabled = not career.healthy or career.owns(id) or career.balance < int(item.cost)
+  var term := "OWNED" if career.owns(id) else str(item.cost)+" cr"
+  if not career.upgrade_unlocked(id):
+   term += " · Field Hand required"
+  shop[id].text = "%s  ·  %s" % [item.title,term]
+  shop[id].disabled = not career.healthy or not career.upgrade_unlocked(id) or career.owns(id) or career.balance < int(item.cost)
  var rows := PackedStringArray()
  for i in range(career.data.records.size()-1,maxi(-1,career.data.records.size()-6),-1):
   var result: Dictionary = career.data.records[i].result

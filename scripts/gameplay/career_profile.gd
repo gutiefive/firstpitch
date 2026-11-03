@@ -3,7 +3,9 @@ extends RefCounted
 signal changed
 const UPGRADES := {
  "wide_deck":{"title":"Wide mower deck","cost":300,"detail":"3.0 m cut width (standard: 2.4 m)"},
- "hose_nozzle":{"title":"High-flow nozzle","cost":200,"detail":"25% faster watering; same reach and moisture target"}
+ "hose_nozzle":{"title":"High-flow nozzle","cost":200,"detail":"25% faster watering; same reach and moisture target"},
+ "wide_drag":{"title":"Wide drag mat","cost":400,"minimum_earnings":500,"width_multiplier":1.25,"detail":"3.5 m preparation width (standard: 2.8 m). Requires Field Hand."},
+ "guide_wheel":{"title":"Chalk guide wheel","cost":350,"minimum_earnings":500,"capture_distance":0.65,"capture_angle":30.0,"lookahead":2.5,"correction_rate":0.65,"detail":"Helps follow a nearby foul guide while pushing with the gate open. Manual steering overrides. Requires Field Hand."}
 }
 const RANKS := [[0,"Rookie"],[500,"Field Hand"],[1500,"Crew Lead"],[3500,"Head Groundskeeper"]]
 const MAX_RECORDS := 2000
@@ -42,9 +44,10 @@ func validate(value: Variant) -> bool:
    return false
   ids[record.id] = true
   total += payout(record.result)
+ var lifetime := total
  var owned := {}
  for id in value.upgrades:
-  if not UPGRADES.has(id) or owned.has(id):
+  if not UPGRADES.has(id) or owned.has(id) or lifetime < int(UPGRADES[id].get("minimum_earnings",0)):
    return false
   owned[id] = true
   total -= int(UPGRADES[id].cost)
@@ -130,11 +133,14 @@ func claim(id: String,result: Dictionary) -> Dictionary:
  return {"status":"awarded","pay":pay,"message":"Earned %d cr%s" % [pay," · Promoted to "+rank_title() if previous_rank != rank_title() else ""]}
 
 func purchase(id: String) -> bool:
- if not healthy or not UPGRADES.has(id) or owns(id) or balance < int(UPGRADES[id].cost):
+ if not healthy or not upgrade_unlocked(id) or owns(id) or balance < int(UPGRADES[id].cost):
   return false
  var candidate := data.duplicate(true)
  candidate.upgrades.append(id)
  return commit(candidate)
+
+func upgrade_unlocked(id: String) -> bool:
+ return UPGRADES.has(id) and earned >= int(UPGRADES[id].get("minimum_earnings",0))
 
 func owns(id: String) -> bool:
  return id in data.upgrades

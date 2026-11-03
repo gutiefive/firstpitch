@@ -299,6 +299,8 @@ func _process(delta: float) -> void:
   mode_label.text = "CHALKING  /  " + ("GATE OPEN" if chalk_marker.gate_open else "GATE CLOSED")
   if chalk_marker.gate_open and chalk.distance_to_guide(chalk_marker.nozzle.global_position) > chalk.chalk_width*0.5:
    mode_label.text = "CHALKING  /  OFF GUIDE — NO LINE CREDIT"
+  if chalk_marker.guide_active:
+   mode_label.text += " / GUIDE WHEEL"
  elif not driving:
   mode_label.text = "ON FOOT  /  " + ("TAMPER STOWED" if selected_task == 4 else ("HOSE STOWED" if selected_task == 3 else ("CHALK MARKER PARKED" if selected_task == 2 else ("DRAG EQUIPPED" if dragging else "MOWER EQUIPPED"))))
  elif dragging:

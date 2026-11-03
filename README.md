@@ -4,7 +4,7 @@ A playable Godot 3D groundskeeping prototype set at **Cedar Grove Ballpark**. Mo
 
 Built with GDScript, procedural meshes and original generated sound effects. No plugins, downloaded art, or external runtime dependencies are required.
 
-**Current build: M1–M5 prototypes implemented, plus the first M6 career and contracts loop.** The latest verified build passed **612 headless assertions** and scripted graphical checks. Windows and Forward+ hardware testing remain outstanding.
+**Current build: M1–M5 prototypes implemented, plus the first M6 career and contracts loop.** The latest verified build passed **642 headless assertions** and scripted graphical checks. Windows and Forward+ hardware testing remain outstanding.
 
 ![Cedar Grove's connected dugouts and playing enclosure](docs/screenshots/dugout-layout.png)
 
@@ -19,7 +19,7 @@ Built with GDScript, procedural meshes and original generated sound effects. No 
 | **M3 — Grass mowing** | Persistent spatial cutting, directional stripes, disappearing grass tufts and overlap-safe coverage. |
 | **M4 — Field tools** | Tow-behind infield drag, pushable chalk marker, on-foot hose and timed hand tamper; five independent field jobs. |
 | **M5 — Shifts, scores and saving** | Free practice, training/full-park shifts, paused board, repair goals, finish quality, frozen results, manual save and autosave/paused resume. |
-| **M6 — First career slice** | Credits, four crew ranks, personal bests, recent results, two permanent upgrades and four focused contracts with two rank unlocks. |
+| **M6 — First career slice** | Credits, four crew ranks, personal bests, recent results, four permanent upgrades and four focused contracts with two rank unlocks. |
 | **Guide and controller** | Seven-step first-run tutorial, checkpoint/skip/replay, InputMap Controls, pad tools/camera/menu navigation and saved sensitivity. |
 | **Field and sound polish** | Field-facing dugouts connected to fencing/backstop, proper home plate and reference markings, positional tool sounds, ambience and saved volume settings. |
 
@@ -191,16 +191,22 @@ Open **Tab → Crew career** for your wallet, lifetime earnings, rank, personal 
 
 Spending credits never reduces rank progress. Training pays one credit per score point plus 50 for completion; full prep pays three per point plus 150. Contract terms appear on their cards. Free practice earns nothing.
 
-| Permanent upgrade | Price | Effect |
-| --- | --- | --- |
-| Wide mower deck | **300 cr** | Actual cut width grows from 2.4 to 3.0 m; fitted and spare deck visuals widen too. |
-| High-flow nozzle | **200 cr** | Moisture application is 25% faster, with unchanged spray radius, reach and target. |
+| Permanent upgrade | Price | Unlock | Effect |
+| --- | --- | --- | --- |
+| Wide mower deck | **300 cr** | Always | Cut width grows from 2.4 to 3.0 m; fitted and spare deck visuals widen too. |
+| High-flow nozzle | **200 cr** | Always | 25% faster watering; unchanged spray radius, reach and target. |
+| Wide drag mat | **400 cr** | Field Hand / 500 lifetime credits | Preparation width grows from 2.8 to 3.5 m; mounted and parked mat visuals match. |
+| Chalk guide wheel | **350 cr** | Field Hand / 500 lifetime credits | Helps hold a nearby foul guide while pushing forward with the gate open. Manual steering overrides. |
 
 Purchases apply immediately and survive fresh shifts, field loads and game restarts. Owned equipment cannot be bought twice. Loading an older field does not refund spending or roll back upgrades.
 
+The guide wheel works in either travel direction along a foul line. Line up within **0.65 m** and **30°** of a guide, open the gate and push forward. The HUD shows **GUIDE WHEEL** while it assists. Steering, braking, reversing or closing the gate returns control to you. It only corrects heading: chalk still paints at the nozzle’s actual position, and off-guide marks still reduce quality. The wider drag uses the same protected areas, puddle blocking and wet-dirt rut rules as the standard mat.
+
 If a career write fails, no credits or purchases change. Use **Reload career / retry last reward** after addressing the file error. Damaged career files are preserved and financial changes stay blocked until readable again.
 
-![Career rewards and equipment shop](docs/screenshots/career-shop.png)
+![Expanded equipment shop](docs/screenshots/equipment-shop.png)
+
+Upgrade views: [wide drag preparing dirt](docs/screenshots/wide-drag.png), [guide wheel chalking](docs/screenshots/chalk-guide-wheel.png).
 
 ## Save and resume
 
@@ -242,7 +248,7 @@ More views: [full field](docs/screenshots/field-layout.png), [home area](docs/sc
 
 ## Development and verification
 
-The last feature pass verified **612 headless assertions**, editor import, main-scene startup and scripted graphical flows. These include actual tool work, native board/shop controls, saved-attempt replay protection, upgrades and contract completion. Graphical checks used Linux Xorg/Mesa **OpenGL Compatibility**; synthetic fixtures and fast-forwarded branches are identified in [VERIFICATION.md](docs/VERIFICATION.md).
+The last feature pass verified **642 headless assertions**, editor import, main-scene startup and scripted graphical flows. These include actual tool work, native board/shop controls, saved-attempt replay protection, upgrades and contract completion. Graphical checks used Linux Xorg/Mesa **OpenGL Compatibility**; synthetic fixtures and fast-forwarded branches are identified in [VERIFICATION.md](docs/VERIFICATION.md).
 
 Run from the project directory:
 
@@ -273,6 +279,7 @@ godot --headless --path . --script tests/test_tutorial.gd
 godot --headless --path . --script tests/test_autosave.gd
 godot --headless --path . --script tests/test_controller_input.gd
 godot --headless --path . --script tests/test_inspection.gd
+godot --headless --path . --script tests/test_equipment_upgrades.gd
 godot --headless --path . --quit-after 180
 ```
 
@@ -296,6 +303,7 @@ godot --path . --rendering-method gl_compatibility --script tests/test_contracts
 | `test_sound_visual.gd` | Volume/mute controls and recorded mixer preview. |
 | `test_field_layout_visual.gd` | Field, dugouts, gate, plate and reference markings. |
 | `test_career_visual.gd` | Real earnings, native shop purchases and upgraded deck. |
+| `test_equipment_visual.gd` | Native rank-locked shop purchases, wider drag work and assisted chalking. |
 | `test_inspection_visual.gd` | Five inspection views, exact missing-section markers and Controls. |
 | `test_onboarding_visual.gd` | First launch, native skip/replay, pad menus and persisted paused resume. |
 | `test_wear_visual.gd` | Game-day start, worn field, puddles/ruts, quality results and Crew Lead card. |

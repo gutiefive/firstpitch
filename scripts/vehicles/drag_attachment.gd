@@ -3,6 +3,7 @@ extends Node3D
 @export var layout: FieldLayout = preload("res://resources/layouts/cedar_grove.tres")
 @export var working_width := 2.8
 @export var working_depth := 1.2
+var built_width := 2.8
 var lowered := false
 var follow_field := true
 var frame: Node3D
@@ -10,6 +11,7 @@ var tow_bars: Array[MeshInstance3D] = []
 const G = preload("res://scripts/gameplay/geometry.gd")
 
 func _ready() -> void:
+ built_width = working_width
  frame = Node3D.new()
  frame.name = "DragFrame"
  add_child(frame)
@@ -55,3 +57,10 @@ func update_tow_bars() -> void:
   bar.position = (hitch+end)*0.5
   bar.quaternion = Quaternion(Vector3.UP,direction.normalized())
   (bar.mesh as BoxMesh).size = Vector3(0.055,direction.length(),0.055)
+
+func set_working_width(value: float) -> void:
+ if not is_finite(value) or value <= 0:
+  return
+ working_width = value
+ frame.scale.x = working_width/built_width
+ update_tow_bars()
