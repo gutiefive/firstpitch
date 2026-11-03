@@ -98,3 +98,12 @@ The visual tamper follows a simple windup/contact/recovery path, with arm posing
 Main makes the hose and tamper mutually exclusive and stows either before handing control to a vehicle or marker. The fifth objective uses actual accepted-impact counts. Whole-park readiness requires full counts from all five tasks; the rounded percentage text is not used as the completion rule.
 
 Try `patch_positions`, `patch_radius`, and `hits_required` on the mound scene, or `working_reach`, `stroke_duration`, and `contact_time` on the rack scene. Keep contact time shorter than total stroke duration. Patch disks should remain on the plateau and away from the pitching rubber. If you move the mound, update the stadium geometry, repair scene, and surface-height data together until a shared layout resource replaces those duplicated dimensions.
+
+
+## M5: Shift lifecycle and clean restarts
+
+`ShiftSession` owns practice/active/finished state, profile quotas, elapsed time, proportional scoring, and deep-copied results. It consumes raw task percentages plus exact full-count flags; rounded HUD text cannot complete a full goal. Each job is worth 20 points. An incomplete attempt is capped at 99.9; completion wins if goals are reached on the deadline frame.
+
+`ShiftDirector` collects the five existing models, advances the active clock, and coordinates fresh starts. Each model exposes `reset_state()` to clear both accounting and visible work. Reset also stows hand tools, cancels windups, clears chalk meshes, parks vehicles, raises/closes attachments, and restores the player/camera. Active attempts cannot be reset through a fresh-start request.
+
+`ShiftOverlay` processes while the SceneTree is paused. Opening the board cancels an unfinished tamp and releases held tool actions; closing releases them again so a GUI click cannot become a spray or strike. The previous mouse mode is restored. Results are snapshots: later practice may change the field but cannot revise the last score. Profile durations and goals live in `ShiftSession.PROFILES`; no save data or quality simulation is implied by the score.

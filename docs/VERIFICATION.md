@@ -97,4 +97,15 @@ The art is still generated prototype geometry. The uncut tufts are sparse, not a
 19. Approach the repair rack and press G. Walk up the mound, aim a dark patch, stop, and click LMB. Confirm the stroke has a windup and only credits work at contact. Three separate strikes should flatten that patch and turn its target ring blue.
 20. Try holding/spamming clicks, moving or looking away before impact, stowing during windup, releasing the cursor, and clicking from too far away or behind an obstacle. None should create free repair work.
 21. Swap between hose and tamper, then enter the tractor or chalk marker. Check automatic stow and persistent repair progress. Repair all six patches and check that this completes only the mound task while other work remains.
-22. Check Forward+ appearance and performance on the target Windows GPU before beginning M5.
+22. Check Forward+ appearance and performance on the target Windows GPU during the next desktop playtest.
+
+
+## M5: Timed shifts and results
+
+- All ten existing headless suites passed again: **198 assertions**.
+- `test_shift_session.gd`: **25 assertions passed** for profile/start guards, quotas, proportional scores, exact full-completion flags, invalid progress, clock boundaries, early finish, frozen results, and restarts.
+- `test_shift_gameplay.gd`: **32 assertions passed** for the real scene's practice/pause/resume/reset lifecycle, all five models and their visuals, actor clock pause, hand-tool cancellation, click isolation, result snapshots, timeout, and completion. Total: **255 passing headless assertions**.
+- `test_shift_visual.gd`: real Tab input and native GUI mouse clicks started, paused, resumed, ended, and restarted attempts. Actual mower movement plus eighteen timed mound impacts produced **20.4 points / one completed goal**. The test teleports between repair patches for repeatability. Timeout is fast-forwarded; the full-completion headless fixture supplies synthetic full counts. No full 15/30-minute human route has been validated.
+- Inspected active checklist and results captures at 1280×720: text and buttons fit. Seven software-rendered captures are stored as `shift-*.png` in `docs/screenshots/`.
+
+The board pauses the world and shift clock; Escape outside it only releases the cursor. Windows Forward+ appearance/performance and challenge timing balance remain unverified.

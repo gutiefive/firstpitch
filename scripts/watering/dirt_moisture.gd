@@ -72,3 +72,13 @@ func _process(delta: float) -> void:
   completion_changed.emit(percentage())
   elapsed = 0
   dirty = false
+
+func reset_state() -> void:
+ moisture.fill(0)
+ watered.fill(0)
+ wet_count = 0
+ image.fill(Color(0,0,0,1))
+ texture.update(image)
+ dirty = false
+ elapsed = 0
+ completion_changed.emit(0)

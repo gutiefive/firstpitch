@@ -100,12 +100,12 @@ func _ready() -> void:
  reticle.add_theme_constant_override("shadow_outline_size",3)
  reticle.visible = false
  add_child(reticle)
- var reminder := text_label("MOUSE  Orbit     SCROLL  Zoom     ESC  Cursor",12)
+ var reminder := text_label("TAB  Shift board / pause\nMOUSE  Orbit     SCROLL  Zoom     ESC  Cursor",12)
  reminder.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
- reminder.offset_left = -360
+ reminder.offset_left = -420
  reminder.offset_right = -24
  reminder.offset_top = 26
- reminder.offset_bottom = 52
+ reminder.offset_bottom = 70
  reminder.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
  reminder.add_theme_color_override("font_shadow_color",Color("203e36"))
  reminder.add_theme_constant_override("shadow_outline_size",4)

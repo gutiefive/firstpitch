@@ -184,3 +184,18 @@ func _process(delta: float) -> void:
   completion_changed.emit(percentage())
   dirty = false
  elapsed = 0
+
+func reset_state() -> void:
+ covered.fill(0)
+ covered_count = 0
+ line_counts = [0,0]
+ pending.clear()
+ active_strokes.clear()
+ active_mesh = null
+ for child in get_children():
+  if child != guides:
+   remove_child(child)
+   child.queue_free()
+ dirty = false
+ elapsed = 0
+ completion_changed.emit(0)

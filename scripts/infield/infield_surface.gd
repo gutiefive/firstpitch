@@ -98,3 +98,16 @@ func _process(delta: float) -> void:
   completion_changed.emit(percentage())
   dirty = false
   elapsed = 0
+
+func reset_state() -> void:
+ prepared.fill(0)
+ prepared_count = 0
+ image.fill(Color(0,0,0,0))
+ for y in range(resolution.y):
+  for x in range(resolution.x):
+   if valid[y*resolution.x+x] == 1:
+    image.set_pixel(x,y,Color(0,0.5,0,1))
+ texture.update(image)
+ dirty = false
+ elapsed = 0
+ completion_changed.emit(0)

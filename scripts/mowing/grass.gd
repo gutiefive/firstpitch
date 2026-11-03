@@ -132,3 +132,16 @@ func build_tufts() -> void:
  tufts.multimesh = batch
  tufts.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  add_child(tufts)
+
+func reset_state() -> void:
+ cut.fill(0)
+ cut_count = 0
+ image.fill(Color(0,0,0,0))
+ for y in range(resolution.y):
+  for x in range(resolution.x):
+   if valid[y*resolution.x+x] == 1:
+    image.set_pixel(x,y,Color(0,0,0,1))
+ texture.update(image)
+ dirty = false
+ elapsed = 0
+ completion_changed.emit(0)

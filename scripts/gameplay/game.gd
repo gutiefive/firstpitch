@@ -24,6 +24,7 @@ var moisture: DirtMoisture
 var watering: WateringTool
 var mound: MoundSurface
 var tamper: TampingTool
+var shift: ShiftDirector
 
 func _ready() -> void:
  configure_input()
@@ -95,10 +96,13 @@ func _ready() -> void:
  tamper.equipped_changed.connect(on_tamper_changed)
  mound.completion_changed.connect(update_progress)
  mower.tool_changed.connect(on_tool_changed)
+ shift = ShiftDirector.new()
+ shift.game = self
+ add_child(shift)
  Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func configure_input() -> void:
- var keys := {"forward":KEY_W,"back":KEY_S,"left":KEY_A,"right":KEY_D,"sprint":KEY_SHIFT,"jump":KEY_SPACE,"interact":KEY_E,"brake":KEY_SPACE,"swap_tool":KEY_Q,"lift_drag":KEY_R,"water_tool":KEY_F,"mound_tool":KEY_G}
+ var keys := {"forward":KEY_W,"back":KEY_S,"left":KEY_A,"right":KEY_D,"sprint":KEY_SHIFT,"jump":KEY_SPACE,"interact":KEY_E,"brake":KEY_SPACE,"swap_tool":KEY_Q,"lift_drag":KEY_R,"water_tool":KEY_F,"mound_tool":KEY_G,"shift_board":KEY_TAB}
  for action in keys:
   if not InputMap.has_action(action):
    InputMap.add_action(action)
@@ -124,6 +128,9 @@ func _input(event: InputEvent) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
  if event is InputEventKey and event.echo:
+  return
+ if event.is_action_pressed("shift_board"):
+  shift.toggle_board()
   return
  if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
   Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED else Input.MOUSE_MODE_CAPTURED

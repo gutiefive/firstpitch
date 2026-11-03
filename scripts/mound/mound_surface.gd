@@ -67,3 +67,13 @@ func apply_tamp(index: int) -> bool:
 
 func percentage() -> float:
  return 100.0*work_done/maxi(total_work,1)
+
+func reset_state() -> void:
+ hits.fill(0)
+ work_done = 0
+ repaired_count = 0
+ for index in range(hits.size()):
+  materials[index].set_shader_parameter("compaction",0.0)
+  clumps[index].scale.y = 1
+  clumps[index].visible = true
+ completion_changed.emit(0)

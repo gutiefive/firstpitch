@@ -31,7 +31,8 @@ If your graphics device cannot run Forward+, use Godot's Compatibility renderer 
 | Spray while holding hose and cursor captured | Hold left mouse button |
 | Orbit third-person camera | Mouse |
 | Zoom camera | Mouse wheel |
-| Release or recapture cursor | Escape |
+| Open / close shift board and pause | Tab |
+| Release or recapture cursor (does not pause) | Escape |
 
 Spawn beside the equipment shed. The mower is ahead, on the paved equipment pad. Approach until **Press E to enter mower** appears. Drive across the foul line onto grass. Cutting starts automatically while driving. Dirt does not contribute to the percentage. Repeated passes count only once. Exit after stopping; your cut pattern stays for this session.
 
@@ -81,6 +82,16 @@ The mound now has a shallow sloped edge and matching convex collision, so you ca
 
 ![Repairing worn clay on the mound](docs/screenshots/tamping.png)
 
+## M5 — Timed preparation shifts
+
+You begin in **free practice**, with no countdown. Press **Tab** to open the shift board and pause the world. Choose **Fresh training** for 15 minutes (mow 25%, drag/chalk/water 50% each, mound 100%) or **Fresh full prep** for 30 minutes and 100% of every job. Starting fresh resets all field work and returns equipment to the workshop.
+
+The live checklist shows your goals and remaining time. Each job earns up to 20 points, proportional to its quota. Full-completion goals require exact tracked counts. Finish all five goals, run out of time, or use **End shift now** on the board to see results. Results stay fixed when you continue practicing; a new shift starts a clean attempt. Tab pauses both the world and clock; Escape outside the board only releases the cursor.
+
+These are initial coverage-based challenges. Timings still need human playtesting; finish-quality penalties, saved results, and career progression are future work.
+
+![Training shift results](docs/screenshots/shift-results.png)
+
 ## Implemented M1–M3
 
 - 27.43 m basepaths, dirt diamond, mound, bases, foul lines, grass outfield, warning track, padded outfield wall, dugouts, bleachers, scoreboard, light towers, shed, and mower parking.
@@ -122,6 +133,8 @@ godot --headless --path . --script tests/test_moisture.gd
 godot --headless --path . --script tests/test_watering_gameplay.gd
 godot --headless --path . --script tests/test_mound.gd
 godot --headless --path . --script tests/test_tamping_gameplay.gd
+godot --headless --path . --script tests/test_shift_session.gd
+godot --headless --path . --script tests/test_shift_gameplay.gd
 godot --headless --path . --quit-after 180
 ```
 
