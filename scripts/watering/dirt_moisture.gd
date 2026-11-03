@@ -14,6 +14,8 @@ var active_puddles := PackedInt32Array()
 var overwatered_count := 0
 var image: Image
 var texture: ImageTexture
+var watered_image: Image
+var watered_texture: ImageTexture
 var puddle_image: Image
 var puddle_texture: ImageTexture
 var total := 0
@@ -32,9 +34,12 @@ func bind_surface(value: InfieldSurface) -> void:
  overwatered.resize(surface.valid.size())
  image = Image.create(surface.resolution.x,surface.resolution.y,false,Image.FORMAT_R8)
  puddle_image = Image.create(surface.resolution.x,surface.resolution.y,false,Image.FORMAT_R8)
+ watered_image = Image.create(surface.resolution.x,surface.resolution.y,false,Image.FORMAT_R8)
+ watered_texture = ImageTexture.create_from_image(watered_image)
  texture = ImageTexture.create_from_image(image)
  puddle_texture = ImageTexture.create_from_image(puddle_image)
  surface.surface_material.set_shader_parameter("moisture_mask",texture)
+ surface.surface_material.set_shader_parameter("watered_mask",watered_texture)
  surface.surface_material.set_shader_parameter("puddle_mask",puddle_texture)
  set_process(false)
 
@@ -75,6 +80,7 @@ func spray_at(point: Vector3,delta: float) -> void:
    if watered[index] == 0 and moisture[index] >= target_moisture:
     watered[index] = 1
     wet_count += 1
+    watered_image.set_pixel(x,y,Color(1,0,0,1))
    if moisture[index] >= float(quality_rules.puddle_threshold):
     if puddle_time[index] <= 0:
      active_puddles.append(index)
@@ -103,6 +109,7 @@ func advance_drying(delta: float) -> void:
    var qualified := int(moisture[index] >= target_moisture)
    wet_count += qualified-watered[index]
    watered[index] = qualified
+   watered_image.set_pixel(index%surface.resolution.x,index/surface.resolution.x,Color(qualified,0,0,1))
    var p := Vector2i(index%surface.resolution.x,index/surface.resolution.x)
    image.set_pixelv(p,Color(moisture[index],0,0,1))
    puddle_image.set_pixelv(p,Color(0,0,0,1))
@@ -119,6 +126,7 @@ func _process(delta: float) -> void:
 
 func refresh_texture() -> void:
  texture.update(image)
+ watered_texture.update(watered_image)
  puddle_texture.update(puddle_image)
  elapsed = 0
  dirty = false
@@ -151,11 +159,13 @@ func recount() -> void:
  watered.fill(0)
  active_puddles.clear()
  image.fill(Color(0,0,0,1))
+ watered_image.fill(Color(0,0,0,1))
  puddle_image.fill(Color(0,0,0,1))
  for i in surface.work_indices():
   var p := Vector2i(i%surface.resolution.x,i/surface.resolution.x)
   watered[i] = int(moisture[i] >= target_moisture)
   wet_count += watered[i]
+  watered_image.set_pixelv(p,Color(watered[i],0,0,1))
   overwatered_count += overwatered[i]
   image.set_pixelv(p,Color(moisture[i],0,0,1))
   if puddle_time[i] > 0:
@@ -180,5 +190,6 @@ func reset_state() -> void:
  reset_quality()
  wet_count = 0
  image.fill(Color(0,0,0,1))
+ watered_image.fill(Color(0,0,0,1))
  puddle_image.fill(Color(0,0,0,1))
  refresh_texture()

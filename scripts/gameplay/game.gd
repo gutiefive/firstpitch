@@ -37,6 +37,7 @@ var settings := CrewSettings.new()
 var input_device: CrewInput
 var tutorial: CrewTutorial
 var autosave: CrewAutosave
+var inspection: CrewInspection
 func binding_text(action: String) -> String:
  return input_device.binding_text(action)
 
@@ -145,6 +146,9 @@ func _ready() -> void:
  autosave.game = self
  autosave.store.path = autosave_save_path
  add_child(autosave)
+ inspection = CrewInspection.new()
+ inspection.game = self
+ add_child(inspection)
  Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func configure_input() -> void:
@@ -333,6 +337,7 @@ func _process(delta: float) -> void:
 
  prompt.text = prompt.text.format({"move":binding_text("move"),"sprint":binding_text("sprint"),"brake":binding_text("brake"),"jump":binding_text("jump"),"tamp":binding_text("tamp_mound"),"spray":binding_text("spray_water"),"cursor":binding_text("cursor_menu"),"interact":binding_text("interact"),"swap":binding_text("swap_tool"),"lift":binding_text("lift_drag"),"water":binding_text("water_tool"),"mound":binding_text("mound_tool"),"look":"right stick" if input_device.last_input_device == "pad" else "mouse"})
  hud.reminder.text = "%s  Shift board / pause\n%s  Camera   %s  Cursor / back" % [binding_text("shift_board"),"Right stick" if input_device.last_input_device == "pad" else "Mouse / scroll",binding_text("cursor_menu")]
+ hud.reminder.text += "\n%s Inspect field · %s / %s Jobs" % [binding_text("inspect_field"),binding_text("previous_job"),binding_text("next_job")]
 
 func create_hud() -> void:
  hud = GroundsHUD.new()
@@ -344,6 +349,8 @@ func create_hud() -> void:
  update_progress(0)
 
 func update_progress(_value: float) -> void:
+ if inspection != null and inspection.is_node_ready():
+  inspection.refresh_selection()
  var mowing := grass.percentage()
  var dirt := infield.percentage()
  var lining := chalk.percentage()

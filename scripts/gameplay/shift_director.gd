@@ -162,6 +162,8 @@ func start_shift(profile: String) -> bool:
  return true
 
 func reset_equipment() -> void:
+ if game.inspection != null:
+  game.inspection.set_enabled(false)
  game.watering.set_equipped(false)
  game.tamper.set_equipped(false)
  game.tamper.dust_time = 1

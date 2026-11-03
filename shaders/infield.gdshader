@@ -6,6 +6,8 @@ uniform sampler2D puddle_mask : hint_default_black, filter_nearest, repeat_disab
 uniform sampler2D rut_mask : hint_default_black, filter_nearest, repeat_disable;
 uniform vec2 field_origin=vec2(0.0);
 uniform vec2 field_size=vec2(1.0);
+uniform int inspection_job=-1;
+uniform sampler2D watered_mask : hint_default_black, filter_nearest, repeat_disable;
 varying vec3 world_pos;
 float hash(vec2 p) { return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
 float noise(vec2 p) {
@@ -35,4 +37,16 @@ void fragment() {
  ALBEDO*=mix(1.0,0.65+0.12*gouge,rut);
  ALBEDO*=mix(1.0,0.58,puddle);
  ROUGHNESS=mix(mix(mix(1.0,0.91,state.r),0.62,moisture),0.12,puddle);
+ if(state.a>0.5 && (inspection_job==1 || inspection_job==3)) {
+  float qualified=texture(watered_mask,(world_pos.xz-field_origin)/field_size).r;
+  float done=inspection_job==1 ? state.r : qualified;
+  vec3 inspection_color=mix(vec3(0.75,0.50,0.14),vec3(0.04,0.13,0.10),done);
+  if(inspection_job==1 && rut>0.5) { inspection_color=vec3(0.85,0.17,0.04); }
+  if(puddle>0.5) { inspection_color=vec3(0.05,0.30,0.65); }
+  ALBEDO=vec3(0.0);
+  EMISSION=inspection_color;
+  SPECULAR=0.0;
+  ROUGHNESS=1.0;
+ }
+
 }

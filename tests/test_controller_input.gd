@@ -78,6 +78,7 @@ func run() -> void:
  g.player.global_position = g.watering.station_position+Vector3(-1.5,0.05,1.5)
  await tap(JOY_BUTTON_LEFT_SHOULDER)
  check(g.watering.equipped,"LB equips real hose")
+ g.inspection.set_enabled(true)
  var camera := Camera3D.new()
  g.add_child(camera)
  camera.current = true

@@ -4,7 +4,7 @@ A playable Godot 3D groundskeeping prototype set at **Cedar Grove Ballpark**. Mo
 
 Built with GDScript, procedural meshes and original generated sound effects. No plugins, downloaded art, or external runtime dependencies are required.
 
-**Current build: M1–M5 prototypes implemented, plus the first M6 career and contracts loop.** The latest verified build passed **582 headless assertions** and scripted graphical checks. Windows and Forward+ hardware testing remain outstanding.
+**Current build: M1–M5 prototypes implemented, plus the first M6 career and contracts loop.** The latest verified build passed **612 headless assertions** and scripted graphical checks. Windows and Forward+ hardware testing remain outstanding.
 
 ![Cedar Grove's connected dugouts and playing enclosure](docs/screenshots/dugout-layout.png)
 
@@ -66,6 +66,8 @@ You spawn beside the workshop in **free practice**, with no countdown. The tract
 | One timed stroke while holding tamper | Click left mouse button |
 | Orbit third-person camera | Mouse |
 | Zoom | Mouse wheel |
+| Toggle field inspection | V |
+| Previous / next job | [ / ] |
 | Open/close shift board; pause/resume world and countdown | Tab |
 | Release/recapture cursor during play; return from a board submenu | Escape |
 
@@ -84,11 +86,21 @@ The board's **Controls** screen reads the current InputMap and switches key/pad 
 | LB / RB | Hose / tamper |
 | RT | Spray / one timed tamp |
 | Start | Shift board |
+| RS click | Toggle field inspection |
+| D-pad Left / Right during play | Previous / next job |
 | Back | Cursor toggle / menu back |
 | D-pad / A / B | Navigate / confirm / back |
 | D-pad Up during guide | Skip tutorial |
 
 A pad can aim and use hand tools while the mouse cursor is free. Switching back to the mouse restores the captured-cursor requirement. Tutorial progress and completion persist in local settings; the guide pauses during paid attempts. See [first-run guide](docs/screenshots/tutorial-first-run.png) and [controller Controls](docs/screenshots/controller-controls.png).
+
+## Field inspection
+
+Press **V / RS click** to inspect the selected job. Use **[ / ]** or **D-pad Left / Right** to cycle jobs; during a paid attempt, cycling follows its requested jobs. Equipping a tool still selects that tool's job.
+
+Gold highlights unfinished grass/dirt, missing chalk sections or mound patches needing impacts. Teal shows prepared/qualified cells; orange shows ruts and blue shows puddles. The legend reports exact remaining counts and ruts. Water readiness uses the actual qualified-cell flags, including cells close to the moisture threshold. Completed chalk sections lose their gold bars and repaired mound patches lose their discs as you work.
+
+Inspection is a temporary view. It changes no work, quality, score, pay or saved field data. Starting a job, replaying the guide or loading a field clears it. Press the same button again to return to normal visuals. Screenshots: [grass](docs/screenshots/inspection-grass.png), [dirt/ruts/puddles](docs/screenshots/inspection-dirt.png), [missing chalk](docs/screenshots/inspection-chalk.png).
 
 ## Field tools
 
@@ -230,7 +242,7 @@ More views: [full field](docs/screenshots/field-layout.png), [home area](docs/sc
 
 ## Development and verification
 
-The last feature pass verified **582 headless assertions**, editor import, main-scene startup and scripted graphical flows. These include actual tool work, native board/shop controls, saved-attempt replay protection, upgrades and contract completion. Graphical checks used Linux Xorg/Mesa **OpenGL Compatibility**; synthetic fixtures and fast-forwarded branches are identified in [VERIFICATION.md](docs/VERIFICATION.md).
+The last feature pass verified **612 headless assertions**, editor import, main-scene startup and scripted graphical flows. These include actual tool work, native board/shop controls, saved-attempt replay protection, upgrades and contract completion. Graphical checks used Linux Xorg/Mesa **OpenGL Compatibility**; synthetic fixtures and fast-forwarded branches are identified in [VERIFICATION.md](docs/VERIFICATION.md).
 
 Run from the project directory:
 
@@ -260,6 +272,7 @@ godot --headless --path . --script tests/test_quality.gd
 godot --headless --path . --script tests/test_tutorial.gd
 godot --headless --path . --script tests/test_autosave.gd
 godot --headless --path . --script tests/test_controller_input.gd
+godot --headless --path . --script tests/test_inspection.gd
 godot --headless --path . --quit-after 180
 ```
 
@@ -283,6 +296,7 @@ godot --path . --rendering-method gl_compatibility --script tests/test_contracts
 | `test_sound_visual.gd` | Volume/mute controls and recorded mixer preview. |
 | `test_field_layout_visual.gd` | Field, dugouts, gate, plate and reference markings. |
 | `test_career_visual.gd` | Real earnings, native shop purchases and upgraded deck. |
+| `test_inspection_visual.gd` | Five inspection views, exact missing-section markers and Controls. |
 | `test_onboarding_visual.gd` | First launch, native skip/replay, pad menus and persisted paused resume. |
 | `test_wear_visual.gd` | Game-day start, worn field, puddles/ruts, quality results and Crew Lead card. |
 | `test_contracts_visual.gd` | Real mound-contract completion, rank lock/unlock and focused goals. |
@@ -301,6 +315,7 @@ Captures use `/tmp/firstpitch-*.png` on Linux. These scripts run controlled auto
 | Chalking, watering and mound repair | `scripts/chalking/`, `scripts/watering/`, `scripts/mound/` |
 | Profiles, clock, goals and contracts | `scripts/gameplay/shift_session.gd`, `scripts/gameplay/shift_director.gd` |
 | Field saves, career and audio | `scripts/gameplay/field_save.gd`, `scripts/gameplay/career_profile.gd`, `scripts/gameplay/grounds_audio.gd`, `scripts/gameplay/sound_preferences.gd` |
+| Field inspection | `scripts/gameplay/crew_inspection.gd`, grass/infield state shaders |
 | Guide, autosave and input | `scripts/gameplay/tutorial.gd`, `crew_autosave.gd`, `crew_input.gd`, `crew_settings.gd` |
 | HUD and board screens | `scripts/ui/` |
 

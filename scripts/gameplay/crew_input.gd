@@ -3,15 +3,15 @@ extends Node
 signal device_changed
 var game: Node
 var last_input_device := "keyboard"
-const ACTIONS := ["forward","back","left","right","sprint","jump","interact","brake","swap_tool","lift_drag","water_tool","mound_tool","spray_water","tamp_mound","shift_board","cursor_menu","tutorial_skip"]
-const PAD_NAMES := {JOY_BUTTON_A:"A",JOY_BUTTON_B:"B",JOY_BUTTON_X:"X",JOY_BUTTON_Y:"Y",JOY_BUTTON_BACK:"Back",JOY_BUTTON_START:"Start",JOY_BUTTON_LEFT_SHOULDER:"LB",JOY_BUTTON_RIGHT_SHOULDER:"RB",JOY_BUTTON_LEFT_STICK:"LS",JOY_BUTTON_DPAD_UP:"D-pad Up"}
+const ACTIONS := ["forward","back","left","right","sprint","jump","interact","brake","swap_tool","lift_drag","water_tool","mound_tool","spray_water","tamp_mound","shift_board","cursor_menu","tutorial_skip","inspect_field","previous_job","next_job"]
+const PAD_NAMES := {JOY_BUTTON_A:"A",JOY_BUTTON_B:"B",JOY_BUTTON_X:"X",JOY_BUTTON_Y:"Y",JOY_BUTTON_BACK:"Back",JOY_BUTTON_START:"Start",JOY_BUTTON_LEFT_SHOULDER:"LB",JOY_BUTTON_RIGHT_SHOULDER:"RB",JOY_BUTTON_LEFT_STICK:"LS",JOY_BUTTON_DPAD_UP:"D-pad Up",JOY_BUTTON_RIGHT_STICK:"RS",JOY_BUTTON_DPAD_LEFT:"D-pad Left",JOY_BUTTON_DPAD_RIGHT:"D-pad Right"}
 static func add_event(action: String,event: InputEvent) -> void:
  if not InputMap.has_action(action):
   InputMap.add_action(action,0.2)
  if not InputMap.action_has_event(action,event):
   InputMap.action_add_event(action,event)
 static func configure_input() -> void:
- var keys := {"forward":KEY_W,"back":KEY_S,"left":KEY_A,"right":KEY_D,"sprint":KEY_SHIFT,"jump":KEY_SPACE,"interact":KEY_E,"brake":KEY_SPACE,"swap_tool":KEY_Q,"lift_drag":KEY_R,"water_tool":KEY_F,"mound_tool":KEY_G,"shift_board":KEY_TAB,"cursor_menu":KEY_ESCAPE,"tutorial_skip":KEY_F8}
+ var keys := {"forward":KEY_W,"back":KEY_S,"left":KEY_A,"right":KEY_D,"sprint":KEY_SHIFT,"jump":KEY_SPACE,"interact":KEY_E,"brake":KEY_SPACE,"swap_tool":KEY_Q,"lift_drag":KEY_R,"water_tool":KEY_F,"mound_tool":KEY_G,"shift_board":KEY_TAB,"cursor_menu":KEY_ESCAPE,"tutorial_skip":KEY_F8,"inspect_field":KEY_V,"previous_job":KEY_BRACKETLEFT,"next_job":KEY_BRACKETRIGHT}
  for action in keys:
   var event := InputEventKey.new()
   event.physical_keycode = keys[action]
@@ -20,7 +20,7 @@ static func configure_input() -> void:
   var event := InputEventMouseButton.new()
   event.button_index = MOUSE_BUTTON_LEFT
   add_event(action,event)
- var buttons := {"jump":JOY_BUTTON_A,"brake":JOY_BUTTON_A,"interact":JOY_BUTTON_X,"swap_tool":JOY_BUTTON_Y,"lift_drag":JOY_BUTTON_B,"water_tool":JOY_BUTTON_LEFT_SHOULDER,"mound_tool":JOY_BUTTON_RIGHT_SHOULDER,"shift_board":JOY_BUTTON_START,"cursor_menu":JOY_BUTTON_BACK,"sprint":JOY_BUTTON_LEFT_STICK,"tutorial_skip":JOY_BUTTON_DPAD_UP,"ui_accept":JOY_BUTTON_A,"ui_cancel":JOY_BUTTON_B}
+ var buttons := {"jump":JOY_BUTTON_A,"brake":JOY_BUTTON_A,"interact":JOY_BUTTON_X,"swap_tool":JOY_BUTTON_Y,"lift_drag":JOY_BUTTON_B,"water_tool":JOY_BUTTON_LEFT_SHOULDER,"mound_tool":JOY_BUTTON_RIGHT_SHOULDER,"shift_board":JOY_BUTTON_START,"cursor_menu":JOY_BUTTON_BACK,"sprint":JOY_BUTTON_LEFT_STICK,"tutorial_skip":JOY_BUTTON_DPAD_UP,"inspect_field":JOY_BUTTON_RIGHT_STICK,"previous_job":JOY_BUTTON_DPAD_LEFT,"next_job":JOY_BUTTON_DPAD_RIGHT,"ui_accept":JOY_BUTTON_A,"ui_cancel":JOY_BUTTON_B}
  for action in buttons:
   var event := InputEventJoypadButton.new()
   event.device = -1
@@ -67,7 +67,8 @@ func binding_text(action: String) -> String:
    elif event is InputEventJoypadMotion:
     value = "RT" if event.axis == JOY_AXIS_TRIGGER_RIGHT else ("Left stick" if event.axis in [JOY_AXIS_LEFT_X,JOY_AXIS_LEFT_Y] else "Right stick")
   elif event is InputEventKey:
-   value = OS.get_keycode_string(event.physical_keycode if event.physical_keycode else event.keycode)
+   var code: int = event.physical_keycode if event.physical_keycode else event.keycode
+   value = {KEY_BRACKETLEFT:"[",KEY_BRACKETRIGHT:"]"}.get(code,OS.get_keycode_string(code))
   elif event is InputEventMouseButton:
    value = "LMB" if event.button_index == MOUSE_BUTTON_LEFT else event.as_text()
   if not value.is_empty() and value not in names:

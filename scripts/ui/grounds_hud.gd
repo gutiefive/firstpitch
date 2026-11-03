@@ -16,6 +16,10 @@ var tutorial_title: Label
 var tutorial_instruction: Label
 var tutorial_reason: Label
 var tutorial_skip: Button
+var inspection_panel: PanelContainer
+var inspection_title: Label
+var inspection_legend: Label
+var inspection_controls: Label
 
 func text_label(text: String,size: int,color: Color = CREAM) -> Label:
  var label := Label.new()
@@ -138,3 +142,21 @@ func _ready() -> void:
  tutorial_skip.pressed.connect(func(): get_parent().tutorial.finish())
  guide.add_child(tutorial_skip)
  tutorial_panel.visible = false
+
+ inspection_panel = PanelContainer.new()
+ inspection_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+ inspection_panel.offset_left = -370
+ inspection_panel.offset_right = -24
+ inspection_panel.offset_top = 340
+ inspection_panel.add_theme_stylebox_override("panel",panel_style(Color(0.055,0.14,0.14,0.96)))
+ add_child(inspection_panel)
+ var inspection := VBoxContainer.new()
+ inspection_panel.add_child(inspection)
+ inspection_title = text_label("FIELD INSPECTION",14,GOLD)
+ inspection_legend = text_label("",13)
+ inspection_legend.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ inspection_controls = text_label("",11,Color("aac2ad"))
+ inspection_controls.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ for label in [inspection_title,inspection_legend,inspection_controls]:
+  inspection.add_child(label)
+ inspection_panel.visible = false

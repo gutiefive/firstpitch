@@ -14,6 +14,8 @@ var total := 0
 var cut_count := 0
 var dirty := false
 var elapsed := 0.0
+var surface_material: ShaderMaterial
+var tufts: MultiMeshInstance3D
 var pristine: Image
 var stripe_samples := 0
 var stripe_matches := 0
@@ -57,7 +59,8 @@ func _ready() -> void:
  surface.mesh = mesh
  var center := field_origin + field_size*0.5
  surface.position = Vector3(center.x,layout.grass_height,center.y)
- var mat := ShaderMaterial.new()
+ surface_material = ShaderMaterial.new()
+ var mat := surface_material
  mat.shader = load("res://shaders/grass.gdshader")
  mat.set_shader_parameter("state_mask",texture)
  surface.material_override = mat
@@ -142,7 +145,7 @@ func build_tufts() -> void:
   if not found:
    basis = basis.scaled(Vector3.ZERO)
   batch.set_instance_transform(index,Transform3D(basis,Vector3(point.x,layout.grass_height+0.003,point.y)))
- var tufts := MultiMeshInstance3D.new()
+ tufts = MultiMeshInstance3D.new()
  tufts.name = "UncutGrassTufts"
  tufts.multimesh = batch
  tufts.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -162,3 +165,8 @@ func reset_state() -> void:
  reset_quality()
  set_process(false)
  completion_changed.emit(0)
+
+func set_inspection(enabled: bool) -> void:
+ surface_material.set_shader_parameter("inspection_enabled",enabled)
+ if tufts != null:
+  tufts.visible = not enabled
