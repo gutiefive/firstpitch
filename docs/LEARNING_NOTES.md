@@ -285,3 +285,7 @@ Review the same camera views between silhouette, material, lighting and detail p
 ### Close-up refinements
 
 Cached seat-shell meshes reuse MultiMesh transforms and preserve 120/240/480 capacity. Decorative rails and serving displays add no gameplay collision changes. Crowd clothing selection now varies within banks, avoiding the old modulo-four/interleaved-bank pattern that made an entire bank one color. Crowd facial/hair/leg details remain batched under one group rather than creating supporter scenes. Knee pivots live beneath existing leg roots; the public limb ordering and hand-tool pose branches remain intact. The art capture tool freezes only the fixture player's physics while recording a walking pose, then restores it.
+
+### Entrance and surroundings
+
+`ParkArrival` keeps the decorative entrance and distant landscape separate from the field/work systems. Existing box collisions, field geometry resources and masks are retained; new decorations add no physics bodies. The rolling landscape begins beyond the outfield fence/tree line. A shared paving shader uses world-space slab joints with derivative antialiasing and restrained per-slab variation. The art-review fixture now walks the real player through the right-hand entrance approach and asserts forward clearance before recording the actual orbit camera.

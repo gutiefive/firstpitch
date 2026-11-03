@@ -157,7 +157,9 @@ func fence_run(parent: Node3D,from: Vector3,to: Vector3,height: float,label: Str
 func build_neighborhood() -> void:
  # Concourse and workshop use the existing collision footprint and driving lane.
  var path := G.box(self,layout.point3(layout.concourse.get_center(),layout.concourse_center_height),Vector3(layout.concourse.size.x,layout.concourse_thickness,layout.concourse.size.y),Color("ada18a"))
- path.material_override = ground_material(Color("bbab8e"),Color("d0bf9f"),1.5)
+ var paving := ShaderMaterial.new()
+ paving.shader = preload("res://shaders/paving.gdshader")
+ path.material_override = paving
  for z in [layout.concourse.position.y+0.1,layout.concourse.end.y-0.1]:
   G.box(self,Vector3(layout.concourse.get_center().x,0.07,z),Vector3(layout.concourse.size.x,0.12,0.18),CREAM)
  G.box(self,layout.point3(layout.workshop_pad.get_center(),layout.workshop_pad_height-layout.workshop_pad_thickness*0.5),Vector3(layout.workshop_pad.size.x,layout.workshop_pad_thickness,layout.workshop_pad.size.y),Color("8b9987"))
@@ -188,6 +190,7 @@ func build_neighborhood() -> void:
  var tickets := G.label(booth,"T I C K E T S",Vector3(0,2.9,2.95),40)
  tickets.pixel_size = 0.008
  tickets.modulate = TEAL
+ ParkArrival.build(self,layout)
 
 func build_atmosphere() -> void:
  var sun := DirectionalLight3D.new()

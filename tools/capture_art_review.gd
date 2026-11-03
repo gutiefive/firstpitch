@@ -56,9 +56,26 @@ func run() -> void:
   c.host_game(award(c,"home_game"))
  for id in ["bleachers","snack_shack","grandstand","grill_stand","scoreboard","video_board"]:
   g.club.build(id)
+ await capture(camera,Vector3(12,2.3,42),Vector3(0,2,29),"arrival")
+ await capture(camera,Vector3(-18,2.0,24),Vector3(8,1.6,22),"concourse")
  await capture(camera,Vector3(-43,16,37),Vector3(-3,1,12),"stadium")
  await capture(camera,Vector3(-7,2.2,7.5),Vector3(-7,1.4,11),"seating")
  await capture(camera,Vector3(-32,2.1,11),Vector3(-32,1.5,20),"concession")
+ # Inspect the new approach using the real orbit camera and walking controller.
+ g.player.global_position = Vector3(6,0.05,39)
+ g.yaw = 0
+ g.pitch = -0.25
+ g.camera.current = true
+ g.hud.visible = true
+ Input.action_press("forward")
+ for i in range(100):
+  await physics_frame
+ Input.action_release("forward")
+ assert(g.player.global_position.z < 33,"entrance walking route must remain clear")
+ for i in range(6):
+  await process_frame
+ await RenderingServer.frame_post_draw
+ root.get_texture().get_image().save_png("/tmp/firstpitch-art/%s-player-arrival.png" % tag)
  DirAccess.remove_absolute(g.career_save_path)
  g.queue_free()
  await process_frame

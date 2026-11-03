@@ -399,3 +399,5 @@ Watering: take the hose at its station with **F** (controller **LB**), then hold
 The ballpark now uses more natural character proportions, softened tractor shapes, organic foliage, subdued paint and workwear, material grain, warmer daylight and more detailed stadium/concession construction. See the [four-pass art review and before/after screenshots](docs/ART_REVIEW.md). Field work, purchases and saved progress retain their existing rules.
 
 The close-up refinement adds molded seating and rails, stocked concession serving displays, varied batched crowd details, articulated walking knees/boots and tractor lens/vent details. Updated screenshots are in the [art review](docs/ART_REVIEW.md#close-up-refinement).
+
+The park entrance now includes a paved ticket plaza, mounted signs, lamps, bins and planted borders. Subtle slab paving connects the concourse, and low hills frame the outfield beyond the trees. See the [entrance and surroundings review](docs/ART_REVIEW.md#entrance-and-surroundings), including the normal player-camera view.

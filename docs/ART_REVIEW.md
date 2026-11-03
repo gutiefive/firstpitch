@@ -42,7 +42,7 @@ godot --path . --rendering-method gl_compatibility \
   --script tools/capture_art_review.gd -- review
 ```
 
-The helper uses dedicated fixture paths, advances a synthetic club career to show all stadium projects and writes seven screenshots to `/tmp/firstpitch-art`. It is an art-review tool, not a balance playthrough.
+The helper uses dedicated fixture paths, advances a synthetic club career to show all stadium projects and writes ten screenshots to `/tmp/firstpitch-art`. It is an art-review tool, not a balance playthrough.
 
 ## Verification scope
 
@@ -61,3 +61,15 @@ The capture helper now also records a walking pose and a close seating view, for
 ![Framed concession serving window and counter details](screenshots/refined-concession.png)
 
 ![Articulated walking pose and tractor detail](screenshots/refined-walking.png)
+
+## Entrance and surroundings
+
+Added a ticket-booth arrival plaza and mounted entrance signs, slab paving with subtle joints, concourse lamps, bins and native-style planters. Low rolling landscape beyond the outfield tree line gives the far views depth. These are visual additions; existing field masks, equipment access and career rules remain intact.
+
+The review helper now captures ten views, including the entrance, concourse and an actual player-camera walk through the approach. This pass verified 187 targeted assertions across gameplay, field layout, shared layout resources, field saves, club gameplay, stadium expansion and tutorial. Render review remains Compatibility-only.
+
+![Arrival plaza and mounted entrance signs](screenshots/park-arrival.png)
+
+![Paved concourse at pedestrian height](screenshots/park-concourse.png)
+
+![Entrance approach through the normal player camera](screenshots/park-player-arrival.png)

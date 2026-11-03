@@ -294,3 +294,7 @@ Godot Compatibility graphical playback also passed all 9 hose checks; inspected 
 ### Close-up art refinement
 
 154 targeted assertions passed: gameplay 13, tutorial 33, watering gameplay 22, equipment upgrades 30, club gameplay 39, stadium expansion 17. Reviewed Compatibility renders of the molded seats/rails, concession display/sign clearance, crew walking pose, tractor, field and expanded park. The existing club tests retain exact seat counts, batch-size guard, saved building restoration, equipment operation and field-layout compatibility. New screenshots: `refined-seating.png`, `refined-concession.png`, `refined-walking.png`. Visual fixture histories and isolated XDG paths were used. Native Forward+ and hardware performance are not newly verified.
+
+### Entrance and surroundings visual pass
+
+187 targeted assertions passed: gameplay 13, field layout 20, shared layout resource 37, field save 28, club gameplay 39, stadium expansion 17 and tutorial 33. Rendered entrance, concourse, field and expanded stadium views were reviewed in Godot 4.6.3 Compatibility. The capture helper additionally verifies a clear entrance approach using the real player controller and records its normal orbit camera. Saves/settings/cache use isolated `/tmp/firstpitch-arrival` XDG roots. New scenery is decorative, with existing collision footprints and scoring masks retained. Native Forward+ and Windows performance remain outside this verification.
