@@ -56,7 +56,7 @@ func _ready() -> void:
  percent_label = text_label("0.00%",26,GOLD)
  percent_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
  row.add_child(percent_label)
- var status := text_label("FIELD PREPARED",10,Color("aac2ad"))
+ var status := text_label("TASK PROGRESS",10,Color("aac2ad"))
  status.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
  row.add_child(status)
  progress = ProgressBar.new()

@@ -28,6 +28,14 @@ func build_field() -> void:
  infield_surfaces.assign([diamond,home])
  var mound := G.cylinder(self,Vector3(0,0.18,-18.44),2.8,0.36,dirt)
  mound.material_override = diamond.material_override
+ var mound_mesh := mound.mesh as CylinderMesh
+ mound_mesh.top_radius = 2.2
+ mound_mesh.radial_segments = 48
+ var mound_body := StaticBody3D.new()
+ var mound_shape := CollisionShape3D.new()
+ mound_shape.shape = mound_mesh.create_convex_shape()
+ mound_body.add_child(mound_shape)
+ mound.add_child(mound_body)
  G.box(self,Vector3(0,0.38,-18.44),Vector3(0.61,0.05,0.15),CREAM)
  for pos in [Vector3(19.396,0,-19.396),Vector3(0,0,-38.792),Vector3(-19.396,0,-19.396)]:
   var base := G.box(self,pos+Vector3.UP*0.1,Vector3(0.5,0.16,0.5),CREAM)

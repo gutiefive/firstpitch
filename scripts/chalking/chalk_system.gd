@@ -38,8 +38,11 @@ func is_protected(p: Vector2) -> bool:
  return false
 
 func ground_height(p: Vector2) -> float:
- if p.distance_to(Vector2(0,-18.44)) < 2.8:
+ var mound_distance := p.distance_to(Vector2(0,-18.44))
+ if mound_distance <= 2.2:
   return 0.36
+ if mound_distance < 2.8:
+  return 0.36*(2.8-mound_distance)/0.6
  for base in [Vector2(19.396,-19.396),Vector2(0,-38.792),Vector2(-19.396,-19.396)]:
   if p.distance_to(base) < 0.38:
    return 0.18

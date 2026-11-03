@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/mound/mound_surface.gd" id="1"]
+
+[node name="MoundRepairs" type="Node3D"]
+position = Vector3(0,0,-18.44)
+script = ExtResource("1")

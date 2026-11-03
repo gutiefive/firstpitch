@@ -99,15 +99,16 @@ func run() -> void:
  check(game.hud.objective_label.text == "Mow the outfield","returning to tractor restores its objective")
  check(game.chalk.covered_count == count,"changing tools preserves chalk coverage")
  # Exercise the completion boundary without claiming an end-to-end full-field playtest.
+ game.mound.work_done = game.mound.total_work
  game.grass.cut_count = game.grass.total-1
  game.infield.prepared_count = game.infield.total
  game.chalk.covered_count = game.chalk.valid_count
  game.moisture.wet_count = game.moisture.total
  game.update_progress(0)
  check(not game.hud.objective_label.text.begins_with("PARK READY"),"one remaining grass cell prevents park completion")
- check(game.percent_label.text != "TASK COMPLETE","rounded percentage cannot prematurely complete a task")
+ check(game.percent_label.text != "COMPLETE","rounded percentage cannot prematurely complete a task")
  game.grass.cut_count = game.grass.total
  game.update_progress(0)
- check(game.hud.objective_label.text.begins_with("PARK READY"),"park completion requires all four full task counts")
+ check(game.hud.objective_label.text.begins_with("PARK READY"),"park completion requires all five full task counts")
  print("Chalk gameplay failures: ",failures)
  quit(1 if failures else 0)

@@ -49,12 +49,24 @@ The graphical script repositions the cart for controlled comparisons; it is not 
 The water station adds F pickup/stow, held-left-click spray, a center reticle and footprint ring, a held nozzle/arm pose, a curved visual hose, and a batched droplet stream. Camera aim, nozzle line of sight, grounded player state, a 65 m station reach, and a 12 m nozzle reach gate spraying. The existing dirt-validity map protects grass, lawn, mound, bases, and plate/batter area. Entering either vehicle/tool stows the hose before transferring controls.
 
 - `test_moisture.gd`: **17 assertions passed** covering dry initialization, zero exposure, damp versus sufficiently soaked cells, equivalent elapsed-time doses, footprint width, protected/out-of-bounds areas, base-pad protection, saturation, overlap-safe completion, percentage math, independent dragging state, and dirty-only publication.
-- `test_watering_gameplay.gd`: **21 assertions passed** covering physical-key F routing, walking while equipped, task HUD, real camera/ground rays and spray action, other-task isolation, cursor release, both reach limits, wall obstruction and recovery, tractor/chalk-marker auto-stow, blocked vehicle-mode spraying, remote stow, persistence, and all-four-task completion boundaries.
+- `test_watering_gameplay.gd`: **21 assertions passed** covering physical-key F routing, walking while equipped, task HUD, real camera/ground rays and spray action, other-task isolation, cursor release, both reach limits, wall obstruction and recovery, tractor/chalk-marker auto-stow, blocked vehicle-mode spraying, remote stow, persistence, and completion-count boundaries.
 - Existing six suites: **115 assertions passed** after watering integration. Total: **153 passing assertions** across eight suites.
 - `test_watering_visual.gd`: actual software-rendered station, before/after dirt, live spray, and overview captures. A controlled three-second exposure watered **256 cells (2.03%)**. A prepared strip and chalk stroke were seeded for the comparison; their tracked counts and visible patterns remained intact. The test also released the real graphical cursor with Escape while the spray action was held and verified spraying stopped without extra exposure.
 - The headless dummy display ignores requested cursor capture. The headless integration test injects that OS state only; the production default and graphical test use the actual cursor mode. This preserves the no-spray-while-cursor-free guard rather than disabling it to make tests pass.
 
 Captures are `water-station.png`, `water-before.png`, `watering.png`, `water-after.png`, and `wet-dirt.png` in `docs/screenshots/`. The test teleports the player and seeds drag/chalk state for repeatable comparison; it is not an end-to-end human preparation run. Moisture remains session-only, without drying or quality penalties. The hose has no physical collision, tension, or obstacle routing.
+
+## M4: Mound repair
+
+A G-operated tamper rack adds an on-foot timed-impact task. The mound has a shallow frustum mesh and matching convex collider. Six worn clay patches each need three distinct accepted strikes; partial compaction settles the visual clumps and a finished patch blends into the original clay. The HUD shows repaired patches and the current patch's hit count. Hand tools are mutually exclusive and stow on vehicle/marker entry.
+
+- `test_mound.gd`: **16 assertions passed** for initial layout/work totals, world-to-patch lookup, rubber/off-mound exclusions, invalid indices, accepted and partial strokes, material/clump updates, full repair, no repeat farming, independent patches, exact 100%, and accepted-work signals.
+- `test_tamping_gameplay.gd`: **29 assertions passed** for rack pickup, walking up the slope, standing on the mound, aiming, windup/contact timing, spam rejection, three-stroke repair, HUD, task isolation, cursor guard, looking away, movement, distance, obstruction, cancelled stow, hose/tamper mutual exclusion, vehicle stow, persistence, and five-task completion boundaries.
+- Existing eight suites: **153 assertions passed** after integration. Total: **198 passing assertions** across ten suites.
+- `test_tamping_visual.gd`: repaired **all six patches with eighteen valid strokes (100%)** in the actual graphical scene. Inspected the rack, worn mound, live stroke, one repaired patch, and fully repaired mound. The test also released the real cursor during a windup and confirmed no repair was credited. Other task counters remained zero.
+- Visual inspection found the old long completion label crowded its caption. The completed-task label is now compact, the caption says task progress, and finished-mound feedback no longer tells the player to find more worn clay.
+
+Captures are `tamper-rack.png`, `mound-before.png`, `tamping.png`, `mound-patch-repaired.png`, and `mound-after.png` in `docs/screenshots/`. The graphical test teleports between patches for controlled aim and does not constitute a human workshop-to-mound route or a complete all-five-task park playthrough. The headless controller test separately proves that walking climbs the slope. Patch wear/compaction is visual and logical; impacts do not deform the collider, consume clay, or affect the other masks. Motion is procedural, without hand-contact IK.
 
 ## Not established
 
@@ -78,8 +90,11 @@ The art is still generated prototype geometry. The uncut tufts are sparse, not a
 12. Walk to the chalk marker on the workshop pad and press E. Check that the walking player hides and the pushing operator appears, with no tractor control conflict.
 13. Follow a dashed gold guide with WASD. R opens/closes the chalk gate; check that only open-gate forward motion paints and credits the correct line. Close the gate while repositioning and confirm there is no connecting stripe when reopening it.
 14. Make a parallel off-guide stroke on a new patch: it must remain visible without increasing line coverage. Repeated passes, reversing, and idling must not inflate completion.
-15. Stop, leave, use the tractor again, and return to the marker. Check that all four percentages and the chalk trails persist. Test marker braking and exit near the workshop wall.
+15. Stop, leave, use the tractor again, and return to the marker. Check that all five percentages and the chalk trails persist. Test marker braking and exit near the workshop wall.
 16. Approach the water station on foot and press F. Aim at dirt and hold LMB: the patch must darken over time, then count only sufficiently wet cells. Watch the aim-point moisture and blue reticle.
 17. Release the cursor with Escape while holding LMB. Spray must stop. Recapture, test grass/protected areas, targets beyond the 12 m spray reach, and walking beyond the 65 m hose reach.
 18. Test spray obstruction at a wall, then enter the tractor or chalk marker while holding the hose. It must stow, with no water progress during vehicle control. Stow manually with F away from the station and confirm moisture persists.
-19. Check Forward+ appearance and performance on the target Windows GPU before expanding the tool suite.
+19. Approach the repair rack and press G. Walk up the mound, aim a dark patch, stop, and click LMB. Confirm the stroke has a windup and only credits work at contact. Three separate strikes should flatten that patch and turn its target ring blue.
+20. Try holding/spamming clicks, moving or looking away before impact, stowing during windup, releasing the cursor, and clicking from too far away or behind an obstacle. None should create free repair work.
+21. Swap between hose and tamper, then enter the tractor or chalk marker. Check automatic stow and persistent repair progress. Repair all six patches and check that this completes only the mound task while other work remains.
+22. Check Forward+ appearance and performance on the target Windows GPU before beginning M5.

@@ -67,7 +67,7 @@ The R action is contextual: it lifts/lowers an occupied tractor's drag or toggle
 
 The foul-line objective uses two one-dimensional sets of approximately quarter-meter sections. For each swept nozzle segment, the system tests nearby section centers against the chalk footprint. The bases/plate are protected and excluded. Left and right counts have separate denominators. Off-guide chalk is drawn, but it cannot mark a target section that its footprint did not reach. The gold dashed guides themselves start with zero coverage.
 
-Main remembers the selected task when you leave a tool. Returning to the tractor or changing its attachment restores its mowing/dragging objective. The HUD shows all four percentages and a left/right breakdown while chalking. Completion uses exact tracked counts rather than a rounded percentage, so nearly finished work cannot prematurely declare the park ready.
+Main remembers the selected task when you leave a tool. Returning to the tractor or changing its attachment restores its mowing/dragging objective. The HUD shows all five percentages and a left/right breakdown while chalking. Completion uses exact tracked counts rather than a rounded percentage, so nearly finished work cannot prematurely declare the park ready.
 
 Try `push_speed`, `steering_rate`, and `stroke_spacing` on the marker; `chalk_width`, line bounds, `section_length`, and `update_frequency` on the chalk system. Surface-height projection currently describes Cedar Grove's fixed geometry. A future shared field-layout resource should supply these heights and exclusions for multiple parks. Unlimited chalk, no erase/undo, and no session save/load are deliberate prototype limits, not quality or supply mechanics.
 
@@ -85,3 +85,16 @@ The droplet stream is one MultiMesh with 36 instances. The hose is one small tub
 Desktop play reads the actual cursor mode. Godot's headless dummy display always reports a visible cursor, so the logic test supplies a capture-state adapter for this one OS detail. The graphical test uses the real cursor mode and verifies Escape blocks spraying while the spray action remains held. Camera rays, collision queries, walking, doses, progress, and equipment transitions still run through the real scene in the headless integration test.
 
 Try the moisture scene's `spray_radius`, `application_rate`, `target_moisture`, and `update_frequency`, plus the station scene's `pickup_distance`, `hose_reach`, and `spray_reach`. A lower target or higher application rate makes the job faster. Larger radii cover more area but still respect protected dirt cells. Mound repair remains a separate future task rather than silently including the mound in the dirt-watering objective.
+
+
+## M4: Mound patches and timed impacts
+
+`MoundSurface` tracks six explicit repair patches rather than a large grass/dirt mask. Each patch has an integer hit count, a small material, and a few visual clay clumps. Three accepted strokes fill its compaction state. Each impact increments work once, updates only that patch's shader uniform, and shrinks its clumps; a finished patch cannot earn extra work. The shared base-color noise makes the finished patch blend back into the mound.
+
+`TampingTool` separates a requested click, a windup, the contact instant, and recovery. Left-click input is queued to the physics loop. At contact, the controller rechecks that the player is grounded and stationary, still aims at the same patch, remains in reach, has an unobstructed hand-to-patch path, and has a captured cursor. Only then can `MoundSurface.apply_tamp()` run. Looking away or moving during windup therefore cannot repair a remote target. Click spam cannot queue additional strokes while busy. Escape, stowing, or entering equipment cancels an unfinished swing.
+
+The visual tamper follows a simple windup/contact/recovery path, with arm posing and one small instanced clay-dust effect. This is not inverse kinematics or a skeletal animation. The physical mound itself is a convex frustum: a 2.8 m base radius, 2.2 m plateau radius, and 0.36 m height. The gentle edge is walkable with the existing CharacterBody3D controller. The shared surface-height query was updated so hose and chalk visuals follow that slope too.
+
+Main makes the hose and tamper mutually exclusive and stows either before handing control to a vehicle or marker. The fifth objective uses actual accepted-impact counts. Whole-park readiness requires full counts from all five tasks; the rounded percentage text is not used as the completion rule.
+
+Try `patch_positions`, `patch_radius`, and `hits_required` on the mound scene, or `working_reach`, `stroke_duration`, and `contact_time` on the rack scene. Keep contact time shorter than total stroke duration. Patch disks should remain on the plateau and away from the pitching rubber. If you move the mound, update the stadium geometry, repair scene, and surface-height data together until a shared layout resource replaces those duplicated dimensions.

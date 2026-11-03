@@ -93,6 +93,7 @@ func run() -> void:
  press_key(game,KEY_F)
  check(not game.watering.equipped,"F can stow hose while away from station")
  check(game.moisture.wet_count == count,"stowing and switching tools preserve moisture")
+ game.mound.work_done = game.mound.total_work
  game.grass.cut_count = game.grass.total
  game.infield.prepared_count = game.infield.total
  game.chalk.covered_count = game.chalk.valid_count
@@ -101,6 +102,6 @@ func run() -> void:
  check(not game.hud.objective_label.text.begins_with("PARK READY"),"one dry cell prevents park completion")
  game.moisture.wet_count = game.moisture.total
  game.update_progress(0)
- check(game.hud.objective_label.text.begins_with("PARK READY"),"park completion requires all four full task counts")
+ check(game.hud.objective_label.text.begins_with("PARK READY"),"park completion requires all five full task counts")
  print("Watering gameplay failures: ",failures)
  quit(1 if failures else 0)

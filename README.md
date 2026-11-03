@@ -26,6 +26,8 @@ If your graphics device cannot run Forward+, use Godot's Compatibility renderer 
 | Swap mower deck / infield drag (on foot, by parked tractor at tool bay) | Q |
 | Raise drag / lower when stopped and seated; open/close chalk gate while pushing | R |
 | Take hose near water station / stow hose anywhere on foot | F |
+| Take tamper near repair rack / stow tamper anywhere on foot | G |
+| One timed tamping stroke while holding tamper | Click left mouse button |
 | Spray while holding hose and cursor captured | Hold left mouse button |
 | Orbit third-person camera | Mouse |
 | Zoom camera | Mouse wheel |
@@ -39,9 +41,9 @@ The tractor now accepts a tow-behind drag as well as its mowing deck. Start besi
 
 Press **E** to enter, drive onto a dirt basepath, stop, then press **R** to lower the drag. Drive forward to smooth the dirt into a lighter, fine-grooved finish. The working footprint is a swept, oriented **2.8 × 1.2 m rectangle**, tracked by a separate **250 × 265** condition mask. Dragging reduces maximum forward speed to **4 m/s**. You may raise the attachment at any time; lowering needs a stopped tractor. Reversing remains possible but does not prepare dirt.
 
-Grass, the decorative infield lawn, mound, bases, and the batter/plate area are excluded from dirt progress. Overlapping passes count once. The HUD shows the equipped tool's objective and progress, plus all four task percentages. Stop and exit to inspect the prepared path; it stays prepared for the session. Return to the bay and press Q to resume mowing. The two tasks never count toward each other's progress.
+Grass, the decorative infield lawn, mound, bases, and the batter/plate area are excluded from dirt progress. Overlapping passes count once. The HUD shows the equipped tool's objective and progress, plus all five task percentages. Stop and exit to inspect the prepared path; it stays prepared for the session. Return to the bay and press Q to resume mowing. The two tasks never count toward each other's progress.
 
-The drag follows the tractor as an arcade attachment; it has no independent trailer collision or articulated towing physics. Mound repair remains planned.
+The drag follows the tractor as an arcade attachment; it has no independent trailer collision or articulated towing physics. A compaction-based mound-repair tool is described below.
 
 ## M4 — Chalk marker
 
@@ -49,7 +51,7 @@ A separate **pushable chalk marker** is parked on the workshop pad, beside the t
 
 The two foul lines now begin as **dashed gold guides**, rather than finished white stripes. Push forward along a guide with the gate open to lay a persistent white trail. The gate starts closed and automatically closes when you leave the marker. Reverse or stationary travel does not paint. Close the gate before repositioning so you do not leave unwanted marks.
 
-Coverage is tracked in approximately **0.25 m target sections** on the left and right lines, from 0.8 to 103 m from home plate. Bases and the plate are protected. The HUD shows each line's completion and the total. Actual chalk strokes are **0.22 m wide**; off-guide strokes remain visible but earn no line credit. Repeated passes count once. All four task percentages remain independent, and park completion requires every task's full tracked count.
+Coverage is tracked in approximately **0.25 m target sections** on the left and right lines, from 0.8 to 103 m from home plate. Bases and the plate are protected. The HUD shows each line's completion and the total. Actual chalk strokes are **0.22 m wide**; off-guide strokes remain visible but earn no line credit. Repeated passes count once. All five task percentages remain independent, and park completion requires every task's full tracked count.
 
 Chalk trails use small persistent mesh batches, refreshed at most 10 times per second, rather than a node for each paint sample. Their height follows the current park's dirt, lawn, and track surfaces. Chalk is session-only, has unlimited supply in this prototype, and is not erased by mowing or dragging yet. The batter's boxes remain decorative and are not part of the chalk objective.
 
@@ -61,11 +63,23 @@ The **water station** stands beside the workshop and visitor dugout. Approach wi
 
 Water accumulates over time in a separate dirt-moisture mask. The **1.8 m radius** spray has a softer falloff at its edges. Each valid dirt cell counts once when it reaches **65% moisture**, not merely when a droplet passes over it. The reticle turns blue and the HUD reports the aim point's moisture when it is sufficiently soaked. The edges may still need more exposure. Wet dirt darkens and gains a slightly smoother finish while preserving existing drag grooves and chalk.
 
-The hose can water within **65 m of its station**, and the nozzle has a **12 m spray reach**. Walls and other colliders block the spray. Grass, the decorative infield lawn, mound, bases, and batter/plate area do not count toward watering. Watering does not advance mowing, dragging, or chalking. Park readiness now requires all four full task counts.
+The hose can water within **65 m of its station**, and the nozzle has a **12 m spray reach**. Walls and other colliders block the spray. Grass, the decorative infield lawn, mound, bases, and batter/plate area do not count toward watering. Watering does not advance mowing, dragging, or chalking. Park readiness now requires all five full task counts.
 
 This prototype has no drying, overwatering penalties, limited water supply, or physical rope simulation. The drawn hose follows a simple curve and can pass through props; reach checks and spray obstruction are separate from that visual. Moisture persists for the current session only. You cannot swap tractor attachments with a hose in hand; stow it or enter the tractor first.
 
 ![Watering prepared dirt without erasing the chalk](docs/screenshots/watering.png)
+
+## M4 — Mound repair
+
+The **tamper rack** is outside the workshop. Approach it on foot and press **G** to take the tool. Walk onto the pitcher's mound, aim the reticle at a dark clay patch, stop, and **click LMB** for one tamping stroke. Keep the patch under the reticle until impact. Three separate strokes repair one patch; there are **six patches / eighteen valid strokes** in total. The HUD shows both repaired patches and the aim patch's hit count.
+
+Each accepted impact settles the loose clay and blends away the worn spot. Completed patches turn the target ring blue and cannot be farmed for more progress. Holding the mouse does not auto-repeat; wait for the stroke to finish before clicking again. Moving, looking away, being too far away, an obstacle, or a released cursor prevents the impact from counting. The pitching rubber and ordinary infield dirt are not repair targets.
+
+G stows the tamper anywhere. Taking the hose stows it automatically, and taking the tamper stows the hose. Entering the tractor or chalk marker also stows it. Cancelled windups do not repair a patch; already completed impacts persist for the session.
+
+The mound now has a shallow sloped edge and matching convex collision, so you can walk up and stand on its top. This is compaction-based prototype repair, not digging, clay inventory, or deformable-terrain simulation. The character/tool animation is procedural rather than a rigged hand-contact animation.
+
+![Repairing worn clay on the mound](docs/screenshots/tamping.png)
 
 ## Implemented M1–M3
 
@@ -88,7 +102,7 @@ Uncut grass has 28,000 deterministic crossed-triangle tufts in one MultiMesh. Th
 
 ## Project map
 
-Start with `scenes/main/main.tscn` and `scripts/gameplay/game.gd` for scene composition and interactions. Then inspect `scripts/vehicles/mower.gd` and `scripts/mowing/grass.gd` for driving and cutting. `scripts/gameplay/stadium.gd` composes the ballpark; `scripts/environment/park_props.gd` builds reusable park props using shared geometry helpers. `scripts/vehicles/mower_visual.gd` and `scripts/player/crew_visual.gd` hold appearance code, separate from movement. The HUD is in `scripts/ui/grounds_hud.gd`. Dirt accounting and tool service live in `scripts/infield/`; the tow-behind visual is in `scripts/vehicles/drag_attachment.gd`. `scripts/watering/` holds moisture accounting and the hose controller. Open `scenes/environment/dirt_moisture.tscn` to tune spray radius, application rate, moisture target, and update frequency; `water_station.tscn` exposes station position and reach. `scripts/chalking/` contains the chalk marker controller and stroke/coverage system. The marker has a reusable scene at `scenes/vehicles/chalk_marker.tscn`. Open `scenes/environment/infield.tscn` to tune dirt mask bounds and resolution. The player, mower, and grass mask have separate reusable scenes. Open `scenes/environment/grass.tscn` to tune the exported grass settings. Prototype geometry is generated on scene startup; expand the running scene in the editor's **Remote** tree to inspect generated nodes.
+Start with `scenes/main/main.tscn` and `scripts/gameplay/game.gd` for scene composition and interactions. Then inspect `scripts/vehicles/mower.gd` and `scripts/mowing/grass.gd` for driving and cutting. `scripts/gameplay/stadium.gd` composes the ballpark; `scripts/environment/park_props.gd` builds reusable park props using shared geometry helpers. `scripts/vehicles/mower_visual.gd` and `scripts/player/crew_visual.gd` hold appearance code, separate from movement. The HUD is in `scripts/ui/grounds_hud.gd`. Dirt accounting and tool service live in `scripts/infield/`; the tow-behind visual is in `scripts/vehicles/drag_attachment.gd`. `scripts/mound/` contains repair state, tamper appearance, and the timed hand-tool controller. `scenes/environment/mound_repairs.tscn` exposes patch layout and stroke requirements; `tamper_rack.tscn` exposes pickup position, reach, and stroke timing. `scripts/watering/` holds moisture accounting and the hose controller. Open `scenes/environment/dirt_moisture.tscn` to tune spray radius, application rate, moisture target, and update frequency; `water_station.tscn` exposes station position and reach. `scripts/chalking/` contains the chalk marker controller and stroke/coverage system. The marker has a reusable scene at `scenes/vehicles/chalk_marker.tscn`. Open `scenes/environment/infield.tscn` to tune dirt mask bounds and resolution. The player, mower, and grass mask have separate reusable scenes. Open `scenes/environment/grass.tscn` to tune the exported grass settings. Prototype geometry is generated on scene startup; expand the running scene in the editor's **Remote** tree to inspect generated nodes.
 
 See [learning notes](docs/LEARNING_NOTES.md), [roadmap](docs/ROADMAP.md), and [verification](docs/VERIFICATION.md).
 
@@ -106,6 +120,8 @@ godot --headless --path . --script tests/test_chalk.gd
 godot --headless --path . --script tests/test_chalk_gameplay.gd
 godot --headless --path . --script tests/test_moisture.gd
 godot --headless --path . --script tests/test_watering_gameplay.gd
+godot --headless --path . --script tests/test_mound.gd
+godot --headless --path . --script tests/test_tamping_gameplay.gd
 godot --headless --path . --quit-after 180
 ```
 
@@ -118,16 +134,17 @@ godot --path . --rendering-method gl_compatibility --script tests/test_visual.gd
 godot --path . --rendering-method gl_compatibility --script tests/test_drag_visual.gd
 godot --path . --rendering-method gl_compatibility --script tests/test_chalk_visual.gd
 godot --path . --rendering-method gl_compatibility --script tests/test_watering_visual.gd
+godot --path . --rendering-method gl_compatibility --script tests/test_tamping_visual.gd
 ```
 
-The mowing graphical test captures six images; the dragging graphical test captures four, including the same dirt area before and after preparation. The chalking graphical test captures five views, including a repeatable on-guide pass and a separate off-guide stroke. The watering test adds five captures of the station, dry/wet comparison, live spray, and field overview. Captures use `/tmp/firstpitch-*.png` (Linux only). These scripts automate controlled passes; normal play uses the main scene, not a test script.
+The mowing graphical test captures six images; the dragging graphical test captures four, including the same dirt area before and after preparation. The chalking graphical test captures five views, including a repeatable on-guide pass and a separate off-guide stroke. The watering test adds five captures of the station, dry/wet comparison, live spray, and field overview. The tamping test captures the rack, worn mound, active stroke, repaired patch, and fully repaired mound. Captures use `/tmp/firstpitch-*.png` (Linux only). These scripts automate controlled passes; normal play uses the main scene, not a test script.
 
 ## Current limitations
 
-- Prototype primitive art and generated scene content; no artist-authored assets, rigged animations, stadium crowds, career, or tools beyond the infield drag, chalk marker, and hose.
+- Prototype primitive art and generated scene content; no artist-authored assets, rigged animations, stadium crowds, career, or tools beyond the infield drag, chalk marker, hose, and tamper.
 - Cut grass uses color/texture variation and hides the sparse uncut tufts. It is not a dense simulated lawn. No cross-session save/load yet for the task states or chalk strokes.
 - Cutting audio has a named `CuttingAudioHook` AudioStreamPlayer3D on the mower, with no sound assigned.
-- Flat terrain and arcade handling; no suspension. The walking player hides while a separate seated visual appears on the mower. The infield is visually raised slightly but the continuous ground collider remains flat.
+- Mostly flat terrain and arcade handling; no suspension. The mound now has a walkable sloped collider. The walking player hides while a separate seated visual appears on the mower. The remaining shallow infield surfaces still use the flat ground collider.
 - Only the outfield wall is a perimeter barrier; this is an explorable prototype, not a fully enclosed stadium. The dugouts now have open fronts, solid walls, and decorative benches.
 - Forward+ GPU visuals, native Windows behavior, controller support, and hardware performance remain unverified.
 - Field bounds and mask resolution are configurable; changing the stadium layout also requires matching the mowing area's exported exclusion settings. There is no layout-authoring UI yet.
