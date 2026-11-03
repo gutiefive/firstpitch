@@ -40,14 +40,8 @@ func build_field() -> void:
  for pos in [Vector3(19.396,0,-19.396),Vector3(0,0,-38.792),Vector3(-19.396,0,-19.396)]:
   var base := G.box(self,pos+Vector3.UP*0.1,Vector3(0.5,0.16,0.5),CREAM)
   base.rotation.y = PI/4
- # A recognizable five-sided home plate, with a rectangular batter's-box pair.
- var plate := G.cylinder(self,Vector3(0,0.15,0),0.32,0.045,CREAM)
- (plate.mesh as CylinderMesh).radial_segments = 5
- for x in [-1.15,1.15]:
-  for z in [-1.1,1.1]:
-   G.box(self,Vector3(x,0.15,z),Vector3(1.1,0.018,0.06),CREAM)
-  for edge in [-0.55,0.55]:
-   G.box(self,Vector3(x+edge,0.15,0),Vector3(0.06,0.018,2.2),CREAM)
+ var markings := FieldMarkings.new()
+ add_child(markings)
  for side in [-1,1]:
   G.cylinder(self,Vector3(side*73.5,9,-73.5),0.12,18,Color("e7bd54"))
 

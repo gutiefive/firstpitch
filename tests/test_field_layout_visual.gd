@@ -27,6 +27,9 @@ func run() -> void:
  await capture(camera,Vector3(7,4,-23),Vector3(23,1.2,-7),"/tmp/firstpitch-visitor-dugout.png")
  await capture(camera,Vector3(-7,4,-23),Vector3(-23,1.2,-7),"/tmp/firstpitch-home-dugout.png")
  await capture(camera,Vector3(18,5,-28),Vector3(34,1.2,-21),"/tmp/firstpitch-field-access.png")
+ await capture(camera,Vector3(0,18,8),Vector3(0,0,-1),"/tmp/firstpitch-home-area.png")
+ await capture(camera,Vector3(0,3,2.8),Vector3(0,0.13,-0.1),"/tmp/firstpitch-home-plate.png")
+ await capture(camera,Vector3(24,6,-19),Vector3(21,0,-13),"/tmp/firstpitch-coach-box.png")
  print("Field layout: overhead, both field-facing dugouts and equipment gate captured")
  g.queue_free()
  await create_timer(0.15).timeout

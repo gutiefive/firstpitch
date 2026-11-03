@@ -134,3 +134,10 @@ The diamond points toward negative Z, with foul lines at X = ±(-Z). `ParkProps.
 `Stadium.build_foul_boundary()` joins the backstop, dugout wings, side fencing and returns to the existing foul-pole/outfield-wall junctions. The first-base side has a broad open equipment gate around the existing pad. Fence visuals use one alpha-discard quad per run with UVs measured in meters, plus posts and rails; separate thin box colliders block traversal. The shader draws holes but the collision intentionally remains a continuous fence. Gate leaves lie outside the driving corridor.
 
 The work grids, task exclusions, equipment spawn points and save layout signature are unchanged. This pass changes enclosure geometry, not field dimensions or job quotas. Outside walkways are decorative surfaces rather than additional scored dirt.
+
+
+## Static field reference markings
+
+`FieldMarkings` keeps the fixed plate, batter's boxes, coaching boxes and on-deck circles separate from `ChalkSystem` and its playable foul-line strokes. Dimensions use meters converted from inches/feet. Coaching boxes use the foul-line direction and outward normal; both rectangles stay in foul territory. On-deck circles sit inside the foul-side fence, away from dugout walk-in openings.
+
+The home plate is a flat five-sided triangle mesh rather than a regular five-sided cylinder. Its rectangular front faces the pitcher and its point faces the backstop. A slightly larger dark underlay outlines it. On-deck paint uses a flat annulus rather than a raised torus. These surfaces need Godot's clockwise front-face winding as viewed from above; vertex normals alone do not prevent back-face culling. None of these details adds collision or enters the saved task masks.

@@ -54,7 +54,7 @@ The two foul lines now begin as **dashed gold guides**, rather than finished whi
 
 Coverage is tracked in approximately **0.25 m target sections** on the left and right lines, from 0.8 to 103 m from home plate. Bases and the plate are protected. The HUD shows each line's completion and the total. Actual chalk strokes are **0.22 m wide**; off-guide strokes remain visible but earn no line credit. Repeated passes count once. All five task percentages remain independent, and park completion requires every task's full tracked count.
 
-Chalk trails use small persistent mesh batches, refreshed at most 10 times per second, rather than a node for each paint sample. Their height follows the current park's dirt, lawn, and track surfaces. Chalk can be saved from the shift board, has unlimited supply in this prototype, and is not erased by mowing or dragging yet. The batter's boxes remain decorative and are not part of the chalk objective.
+Chalk trails use small persistent mesh batches, refreshed at most 10 times per second, rather than a node for each paint sample. Their height follows the current park's dirt, lawn, and track surfaces. Chalk can be saved from the shift board, has unlimited supply in this prototype, and is not erased by mowing or dragging yet. The batter's boxes, coaching boxes and on-deck circles are fixed reference markings and are not part of the chalk objective.
 
 ![Pushing the chalk marker along a foul line](docs/screenshots/chalking.png)
 
@@ -128,6 +128,14 @@ Both dugouts now run parallel to the first-/third-base sides, with their open fr
 Walk into either dugout through the openings at its front corners. Use the marked **GROUNDS CREW / FIELD ACCESS** opening beside the workshop for equipment. Its gate leaves stay folded back to preserve the driving lane. Fair territory, bases, foul-line targets, all five task masks and save compatibility remain unchanged.
 
 ![Connected dugouts and field boundary](docs/screenshots/dugout-layout.png)
+
+## Field details — plate and reference markings
+
+Home plate now has the proper 17-inch five-sided shape, with its point toward the catcher/backstop. The two batter's boxes measure 4 × 6 ft, with a 6-inch gap from the plate. Both baseline sides now have 5 × 20 ft coaching boxes in foul territory, plus 5 ft diameter on-deck circles on small clay pads near home.
+
+These are decorative reference markings. They do not grant chalk coverage, create new jobs, or change your saved field state. Dugout openings and the workshop gate remain accessible.
+
+![Home plate and on-deck areas](docs/screenshots/home-area.png)
 
 ## Visual pass — Cedar Grove Ballpark
 

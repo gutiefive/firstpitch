@@ -135,3 +135,10 @@ No Windows executable or Windows filesystem replacement behavior was tested. The
 - `test_field_layout_visual.gd`: captured the full field, an overhead infield layout, both dugout fronts and the equipment entrance. Inspected the actual 1280×720 OpenGL Compatibility captures: dugouts now face the playing surface, fence wings meet their ends, side fences return to the outfield, and the workshop entrance remains open. Captures are `field-layout.png`, `dugout-layout.png`, `visitor-dugout.png`, `home-dugout.png`, and `field-access.png` under `docs/screenshots/`.
 
 The tall backstop and side fences have collision; the workshop gate is intentionally open. Chain-link appearance is a cutout shader, not individually modeled wires. Existing field masks and saves keep their layout; this does not add playable baseball simulation. Windows Forward+ rendering remains unverified. An intermittent audio playback-resource warning appeared on one save-test shutdown; all assertions passed and the ordinary main-scene smoke launch remains clean.
+
+
+## Plate, coaching boxes and on-deck areas
+
+- Targeted existing suites passed: **20 field-layout**, **28 chalk gameplay**, and **28 save/load assertions** (**76 checks**). Actual dugout entry, gate driving, foul-line task progress, independent counts and persisted visuals remain intact.
+- Extended `test_field_layout_visual.gd` with overhead home-area, close plate and coaching-box captures. Inspected the rendered plate point toward the backstop, two correctly spaced batter's boxes, paired on-deck circles, and coaching rectangles between foul lines and dugouts. Corrected flat-mesh winding after the first rendering exposed back-face culling; the final plate and rings are visible from above.
+- New captures: `home-area.png`, `home-plate.png`, and `coach-box.png`. The geometry is static and has no collision or scoring effect. Existing field masks, save format and job quotas are unchanged. Windows Forward+ remains unverified.
