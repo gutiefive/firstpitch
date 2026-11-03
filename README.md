@@ -88,9 +88,31 @@ You begin in **free practice**, with no countdown. Press **Tab** to open the shi
 
 The live checklist shows your goals and remaining time. Each job earns up to 20 points, proportional to its quota. Full-completion goals require exact tracked counts. Finish all five goals, run out of time, or use **End shift now** on the board to see results. Results stay fixed when you continue practicing; a new shift starts a clean attempt. Tab pauses both the world and clock; Escape outside the board only releases the cursor.
 
-These are initial coverage-based challenges. Timings still need human playtesting; finish-quality penalties and career progression are future work.
+These are initial coverage-based challenges. Timings still need human playtesting; finish-quality penalties and further career content are future work.
 
 ![Training shift results](docs/screenshots/shift-results.png)
+
+## Crew career and equipment upgrades
+
+Preparation shifts now earn persistent **crew credits**. Partial work pays, and completing all goals adds a bonus. Free practice earns nothing. Results show the committed payout; open **Tab → Crew career** for your balance, rank, personal bests, recent shifts and equipment shop.
+
+| Shift | Work pay | Completion bonus |
+| --- | --- | --- |
+| Training | 1 credit per score point | 50 credits |
+| Full park prep | 3 credits per score point | 150 credits |
+
+Credits round down. A complete training shift earns **150**, and complete full prep earns **450**. Each attempt pays once, including when you reload an earlier field save. A fresh shift creates a new attempt. Crew ranks follow lifetime earnings: **Rookie → Field Hand (500) → Crew Lead (1,500) → Head Groundskeeper (3,500)**. Spending never reduces rank progress.
+
+Two permanent upgrades are available:
+
+- **Wide mower deck — 300 credits:** increases the actual cutting width from 2.4 to 3.0 m and widens the visible deck.
+- **High-flow nozzle — 200 credits:** delivers moisture 25% faster with the same spray radius, reach and target.
+
+Career rewards and purchases save automatically to `user://career.dat`, separately from your manual field slot. Loading an old field does not refund purchases or roll back owned equipment. If a career write fails, no credits or purchases change; use **Reload career / retry last reward** in the career screen after addressing the file error. Damaged career files are preserved and financial changes are blocked until readable again.
+
+This is the first career slice: one park, two upgrades, five recent results displayed, and a local ledger capped at 2,000 attempts. It has no cloud sync, multiple-park unlocks, or equipment resale. Economy balance still needs human playtesting.
+
+![Career rewards and equipment shop](docs/screenshots/career-shop.png)
 
 ## Save and resume
 
@@ -174,6 +196,8 @@ godot --headless --path . --script tests/test_shift_gameplay.gd
 godot --headless --path . --script tests/test_field_save.gd
 godot --headless --path . --script tests/test_audio.gd
 godot --headless --path . --script tests/test_field_layout.gd
+godot --headless --path . --script tests/test_career.gd
+godot --headless --path . --script tests/test_career_gameplay.gd
 godot --headless --path . --quit-after 180
 ```
 
@@ -193,7 +217,7 @@ The mowing graphical test captures six images; the dragging graphical test captu
 
 ## Current limitations
 
-- Prototype primitive art and generated scene content; no artist-authored assets, rigged animations, stadium crowds, career, or tools beyond the infield drag, chalk marker, hose, and tamper.
+- Prototype primitive art and generated scene content; no artist-authored assets, rigged animations, stadium crowds, multiple parks, or tools beyond the infield drag, chalk marker, hose, and tamper.
 - Cut grass uses color/texture variation and hides the sparse uncut tufts. It is not a dense simulated lawn. Manual saves include task states and chalk strokes; equipment positions and held tools reset on load.
 - Audio is an initial synthetic pass, with no music, crowd simulation, material-specific footsteps, or sound occlusion. Headphone/speaker balance still needs desktop playtesting.
 - Mostly flat terrain and arcade handling; no suspension. The mound now has a walkable sloped collider. The walking player hides while a separate seated visual appears on the mower. The remaining shallow infield surfaces still use the flat ground collider.

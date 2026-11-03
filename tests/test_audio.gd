@@ -48,6 +48,8 @@ func run() -> void:
  check(not restored.persist() and not restored.error.is_empty(),"settings write failures are visible")
  DirAccess.remove_absolute(prefs.path)
  var g = load("res://scenes/main/main.tscn").instantiate()
+ g.career_save_path = "user://test-test_audio-career.dat"
+ DirAccess.remove_absolute(g.career_save_path)
  root.add_child(g)
  await frames(45)
  g.audio.settings.path = "user://test-sound-scene.cfg"

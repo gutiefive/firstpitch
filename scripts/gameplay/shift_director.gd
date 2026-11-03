@@ -3,14 +3,24 @@ extends Node
 var game: Node3D
 var session: ShiftSession
 var overlay: ShiftOverlay
+var career := CareerProfile.new()
+var career_message := ""
+var standard_deck_width := 2.4
+var standard_water_rate := 0.8
 var save_store := FieldSave.new()
 var mouse_before_board := Input.MOUSE_MODE_CAPTURED
 
 func _ready() -> void:
+ standard_deck_width = game.grass.deck_width
+ standard_water_rate = game.moisture.application_rate
+ career.load_profile()
+ career.changed.connect(apply_upgrades)
+ apply_upgrades()
  session = ShiftSession.new()
  add_child(session)
  overlay = ShiftOverlay.new()
  overlay.session = session
+ overlay.director = self
  overlay.process_mode = Node.PROCESS_MODE_ALWAYS
  add_child(overlay)
  overlay.close_requested.connect(close_board)
@@ -70,12 +80,15 @@ func end_shift() -> void:
  collect_progress()
  session.end_early()
 
-func on_finished(_result: Dictionary) -> void:
+func on_finished(result: Dictionary) -> void:
+ var receipt := career.claim(session.attempt_id,result)
+ career_message = receipt.message
  open_board()
 
 func start_shift(profile: String) -> bool:
  if session.phase == ShiftSession.Phase.ACTIVE or not ShiftSession.PROFILES.has(profile):
   return false
+ career_message = ""
  reset_field()
  session.start(profile)
  mouse_before_board = Input.MOUSE_MODE_CAPTURED
@@ -138,6 +151,20 @@ func load_field() -> void:
  if data.is_empty() or not save_store.restore(game,self,data):
   overlay.save_message.text = save_store.error
   return
+ career_message = "Loaded result. Rewards can be checked from Crew career." if session.phase == ShiftSession.Phase.FINISHED else ""
  mouse_before_board = Input.MOUSE_MODE_CAPTURED
  overlay.refresh()
  overlay.save_message.text = "Loaded. Equipment parked at workshop. Resume when ready."
+
+func apply_upgrades() -> void:
+ var wide := career.owns("wide_deck")
+ game.grass.deck_width = standard_deck_width*1.25 if wide else standard_deck_width
+ game.mower.deck.scale.x = 1.25 if wide else 1.0
+ game.tool_bay.spare_deck.scale.x = 1.25 if wide else 1.0
+ game.moisture.application_rate = standard_water_rate*1.25 if career.owns("hose_nozzle") else standard_water_rate
+
+func retry_career() -> void:
+ if career.load_profile() and session.phase == ShiftSession.Phase.FINISHED:
+  var receipt := career.claim(session.attempt_id,session.get_result())
+  career_message = receipt.message
+ overlay.refresh()

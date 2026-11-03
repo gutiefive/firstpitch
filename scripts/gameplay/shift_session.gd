@@ -8,6 +8,7 @@ const PROFILES := {
  "training": {"title":"Training shift","duration":900.0,"goals":[25.0,50.0,50.0,50.0,100.0]},
  "full": {"title":"Full park prep","duration":1800.0,"goals":[100.0,100.0,100.0,100.0,100.0]}
 }
+var attempt_id := ""
 var phase: Phase = Phase.PRACTICE
 var profile_id := "full"
 var duration_seconds := 1800.0
@@ -20,6 +21,7 @@ var _result: Dictionary = {}
 func start(profile: String) -> bool:
  if phase == Phase.ACTIVE or not PROFILES.has(profile):
   return false
+ attempt_id = Crypto.new().generate_random_bytes(16).hex_encode()
  profile_id = profile
  duration_seconds = PROFILES[profile]["duration"]
  remaining_seconds = duration_seconds

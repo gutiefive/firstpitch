@@ -10,6 +10,8 @@ func capture(camera: Camera3D,from: Vector3,to: Vector3,path: String) -> void:
  root.get_texture().get_image().save_png(path)
 func run() -> void:
  var g = load("res://scenes/main/main.tscn").instantiate()
+ g.career_save_path = "user://test-test_field_layout_visual-career.dat"
+ DirAccess.remove_absolute(g.career_save_path)
  root.add_child(g)
  Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
  for i in range(30):

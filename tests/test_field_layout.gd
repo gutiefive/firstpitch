@@ -12,6 +12,8 @@ func _initialize() -> void:
  call_deferred("run")
 func run() -> void:
  var g = load("res://scenes/main/main.tscn").instantiate()
+ g.career_save_path = "user://test-test_field_layout-career.dat"
+ DirAccess.remove_absolute(g.career_save_path)
  root.add_child(g)
  for i in range(10):
   await physics_frame

@@ -10,7 +10,7 @@ func layout(g: Node) -> String:
  return digest(var_to_bytes([g.grass.resolution,g.grass.field_origin,g.grass.field_size,g.grass.valid,g.infield.resolution,g.infield.field_origin,g.infield.field_size,g.infield.valid,g.moisture.target_moisture,g.chalk.line_start,g.chalk.line_end,g.chalk.section_length,g.chalk.chalk_width,g.chalk.valid,g.mound.patch_positions,g.mound.hits_required,g.mound.transform,g.mound.top_height,g.mound.patch_radius])).hex_encode()
 
 func capture(g: Node,s: ShiftSession) -> Dictionary:
- return {"version":VERSION,"layout":layout(g),"grass":g.grass.image.get_data(),"dirt":g.infield.image.get_data(),"moisture":g.moisture.moisture.duplicate(),"chalk":g.chalk.covered.duplicate(),"strokes":g.chalk.stroke_archive.duplicate(true),"hits":g.mound.hits.duplicate(),"session":{"phase":int(s.phase),"profile":s.profile_id,"elapsed":s.elapsed_seconds,"result":s.get_result()}}
+ return {"version":VERSION,"layout":layout(g),"grass":g.grass.image.get_data(),"dirt":g.infield.image.get_data(),"moisture":g.moisture.moisture.duplicate(),"chalk":g.chalk.covered.duplicate(),"strokes":g.chalk.stroke_archive.duplicate(true),"hits":g.mound.hits.duplicate(),"session":{"attempt_id":s.attempt_id,"phase":int(s.phase),"profile":s.profile_id,"elapsed":s.elapsed_seconds,"result":s.get_result()}}
 
 func write(g: Node,s: ShiftSession) -> bool:
  error = ""
@@ -118,7 +118,11 @@ func number(value: Variant) -> bool:
 func session_ok(data: Variant) -> bool:
  if not data is Dictionary or not data.has_all(["phase","profile","elapsed","result"]):
   return false
+ if data.has("attempt_id") and (not data.attempt_id is String or (not data.attempt_id.is_empty() and not CareerProfile.valid_id(data.attempt_id))):
+  return false
  if typeof(data.phase) != TYPE_INT or data.phase not in [0,1,2] or not data.profile is String or not ShiftSession.PROFILES.has(data.profile):
+  return false
+ if data.has("attempt_id") and data.phase != ShiftSession.Phase.PRACTICE and data.attempt_id.is_empty():
   return false
  if not number(data.elapsed) or data.elapsed < 0 or data.elapsed > ShiftSession.PROFILES[data.profile].duration or not data.result is Dictionary:
   return false
@@ -170,6 +174,7 @@ func restore(g: Node,director: ShiftDirector,data: Dictionary) -> bool:
   for hit in range(data.hits[i]):
    g.mound.apply_tamp(i)
  var s := director.session
+ s.attempt_id = data.session.get("attempt_id","legacy-"+digest(var_to_bytes(data)).hex_encode())
  s.phase = data.session.phase
  s.profile_id = data.session.profile
  s.duration_seconds = ShiftSession.PROFILES[s.profile_id].duration

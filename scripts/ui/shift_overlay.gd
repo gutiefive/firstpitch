@@ -5,6 +5,11 @@ signal start_requested(profile: String)
 signal save_requested
 signal load_requested
 signal end_requested
+var director: ShiftDirector
+var career_screen: ScrollContainer
+var career_panel: CareerPanel
+var career_button: Button
+var career_reward: Label
 var session: ShiftSession
 var modal: Control
 var status_panel: PanelContainer
@@ -113,6 +118,9 @@ func _ready() -> void:
  content.add_child(description)
  score_label = label("",22,GOLD)
  content.add_child(score_label)
+ career_reward = label("",13,GOLD)
+ career_reward.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ content.add_child(career_reward)
  for i in range(5):
   var row := label("",16)
   board_rows.append(row)
@@ -149,14 +157,40 @@ func _ready() -> void:
  content.add_child(label("One slot. Loading replaces current work and parks equipment.",12,GOLD))
  save_message = label("Save manually before closing the game.",12,Color("adc7b7"))
  content.add_child(save_message)
+ var menus := HBoxContainer.new()
+ content.add_child(menus)
+ career_button = button("Crew career")
  sound_button = button("Sound settings")
- content.add_child(sound_button)
+ for item in [career_button,sound_button]:
+  item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  menus.add_child(item)
  close_button = button("Return to practice")
  content.add_child(close_button)
  close_button.pressed.connect(func(): close_requested.emit())
  modal.visible = false
+ attach_career()
  session.changed.connect(refresh)
  refresh()
+
+func attach_career() -> void:
+ career_screen = ScrollContainer.new()
+ career_screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+ modal.add_child(career_screen)
+ var center := CenterContainer.new()
+ center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+ center.size_flags_vertical = Control.SIZE_EXPAND_FILL
+ career_screen.add_child(center)
+ career_panel = CareerPanel.new()
+ career_panel.director = director
+ center.add_child(career_panel)
+ career_panel.back_requested.connect(show_board)
+ career_button.pressed.connect(func():
+  board_scroll.visible = false
+  career_screen.visible = true
+  career_panel.refresh()
+  career_panel.back_button.grab_focus())
+ director.career.changed.connect(refresh)
+ career_screen.visible = false
 
 func attach_audio(audio: GroundsAudio) -> void:
  sound_screen = CenterContainer.new()
@@ -175,17 +209,23 @@ func attach_audio(audio: GroundsAudio) -> void:
 func show_board() -> void:
  if sound_screen != null:
   sound_screen.visible = false
+ if career_screen != null:
+  career_screen.visible = false
  board_scroll.visible = true
 
 func _input(event: InputEvent) -> void:
  if modal.visible and event is InputEventKey and event.pressed and not event.echo and event.keycode in [KEY_TAB,KEY_ESCAPE]:
-  if event.keycode == KEY_ESCAPE and sound_screen != null and sound_screen.visible:
+  if event.keycode == KEY_ESCAPE and ((sound_screen != null and sound_screen.visible) or (career_screen != null and career_screen.visible)):
    show_board()
   else:
    close_requested.emit()
   get_viewport().set_input_as_handled()
 
 func refresh() -> void:
+ if career_button != null:
+  career_button.text = "Crew career · %d cr" % director.career.balance
+ career_reward.text = director.career_message
+ career_reward.visible = not director.career_message.is_empty()
  var active := session.phase == ShiftSession.Phase.ACTIVE
  var result := session.get_result()
  var finished := session.phase == ShiftSession.Phase.FINISHED and not result.is_empty()

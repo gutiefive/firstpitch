@@ -4,6 +4,8 @@ func _initialize() -> void:
  call_deferred("run")
 func run() -> void:
  var game = load("res://scenes/main/main.tscn").instantiate()
+ game.career_save_path = "user://test-test_visual-career.dat"
+ DirAccess.remove_absolute(game.career_save_path)
  root.add_child(game)
  Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
  for i in range(45):

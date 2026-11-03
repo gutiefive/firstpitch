@@ -28,6 +28,8 @@ func capture(path: String) -> void:
  root.get_texture().get_image().save_png(path)
 func run() -> void:
  var g = load("res://scenes/main/main.tscn").instantiate()
+ g.career_save_path = "user://test-test_sound_visual-career.dat"
+ DirAccess.remove_absolute(g.career_save_path)
  root.add_child(g)
  for i in range(30):
   await physics_frame

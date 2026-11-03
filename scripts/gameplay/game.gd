@@ -24,6 +24,7 @@ var moisture: DirtMoisture
 var watering: WateringTool
 var mound: MoundSurface
 var tamper: TampingTool
+@export var career_save_path := "user://career.dat"
 var audio: GroundsAudio
 var shift: ShiftDirector
 
@@ -99,6 +100,7 @@ func _ready() -> void:
  mower.tool_changed.connect(on_tool_changed)
  shift = ShiftDirector.new()
  shift.game = self
+ shift.career.path = career_save_path
  add_child(shift)
  audio = GroundsAudio.new()
  audio.game = self
