@@ -63,14 +63,19 @@ static func barrel(parent: Node3D,pos: Vector3) -> void:
  for y in [0.15,0.8]:
   G.ring(parent,pos+Vector3.UP*y,0.36,0.4,Color("7d563f"))
 
-static func dugout(parent: Node3D,side: int) -> void:
- var root := group(parent,"HomeDugout" if side < 0 else "VisitorDugout",Vector3(side*27,0,-7))
- G.box(root,Vector3(0,0.08,0),Vector3(11.5,0.16,4.6),Color("c4b795"))
+static func dugout(parent: Node3D,side: int) -> Node3D:
+ # Local +Z is the open front; align it with the inward sideline normal.
+ var along := Vector3(side*74,0,-79.5).normalized()
+ var inward := Vector3(-side*absf(along.z),0,-absf(along.x))
+ var front := Vector3(side*8,0,6)+along*20
+ var root := group(parent,"HomeDugout" if side < 0 else "VisitorDugout",front-inward*2.2)
+ root.rotation.y = atan2(inward.x,inward.z)
+ G.box(root,Vector3(0,0.015,0),Vector3(11.5,0.03,4.6),Color("c4b795"))
  G.box(root,Vector3(0,1.35,-1.8),Vector3(11,2.7,0.25),TEAL,true)
  for x in [-5.4,5.4]:
   G.box(root,Vector3(x,1.35,0),Vector3(0.24,2.7,4),TEAL,true)
   G.box(root,Vector3(x,1.5,1.9),Vector3(0.16,3,0.16),CREAM)
- G.box(root,Vector3(0,2.85,0),Vector3(12,0.22,5),Color("384f4c"))
+ G.box(root,Vector3(0,2.85,0),Vector3(12,0.22,5),Color("384f4c"),true)
  G.box(root,Vector3(0,2.65,2.45),Vector3(12,0.35,0.16),CREAM)
  var sign := G.label(root,"CEDAR GROVE  /  HOME" if side < 0 else "VISITING CLUB",Vector3(0,2.66,2.55),40)
  sign.pixel_size = 0.007
@@ -78,6 +83,10 @@ static func dugout(parent: Node3D,side: int) -> void:
  bench(root,Vector3(0,0.15,-0.7),8.5)
  for x in [-4.5,4.5]:
   G.cylinder(root,Vector3(x,0.48,0.8),0.24,0.7,Color("e7d5af"))
+ # Low front rail with walk-in openings at both ends.
+ G.box(root,Vector3(0,0.5,2.2),Vector3(7.5,1,0.13),TEAL,true)
+ G.box(root,Vector3(0,1.05,2.2),Vector3(7.7,0.1,0.18),CREAM)
+ return root
 
 static func bench(parent: Node3D,pos: Vector3,width: float = 3.0) -> void:
  var root := group(parent,"Bench",pos)

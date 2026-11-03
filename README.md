@@ -121,6 +121,14 @@ All nine clips are original generated prototype sounds, supplied in `assets/audi
 - Spatial 450 × 330 grass-state image. Swept 2.4 m cutting footprint, overlap-safe unique-cell percentage, dirt exclusion, directional cut color, dirty-only updates capped at 10 Hz.
 - HUD with mode, objective, contextual controls, percentage, and progress bar.
 
+## Field layout — connected dugouts and fencing
+
+Both dugouts now run parallel to the first-/third-base sides, with their open fronts facing the diamond. They form part of the field boundary instead of standing loose in foul territory. Chain-link wings connect them to a taller backstop behind home plate; side fences continue to the foul poles and padded outfield wall. Narrow outside walkways tie the dugouts into the park.
+
+Walk into either dugout through the openings at its front corners. Use the marked **GROUNDS CREW / FIELD ACCESS** opening beside the workshop for equipment. Its gate leaves stay folded back to preserve the driving lane. Fair territory, bases, foul-line targets, all five task masks and save compatibility remain unchanged.
+
+![Connected dugouts and field boundary](docs/screenshots/dugout-layout.png)
+
 ## Visual pass — Cedar Grove Ballpark
 
 The park now follows a warm small-town palette: deep teal, cream trim, golden mower paint, and brick-red dirt. The visual pass adds a manicured infield island, covered seat rows, open bench-lined dugouts, a clapboard workshop with tools and a tarp cart, a detailed scoreboard, community signs, concourse benches, a ticket booth, and a surrounding tree line. The island is decorative; the current objective still scores only the outfield.
@@ -157,6 +165,7 @@ godot --headless --path . --script tests/test_shift_session.gd
 godot --headless --path . --script tests/test_shift_gameplay.gd
 godot --headless --path . --script tests/test_field_save.gd
 godot --headless --path . --script tests/test_audio.gd
+godot --headless --path . --script tests/test_field_layout.gd
 godot --headless --path . --quit-after 180
 ```
 
@@ -180,6 +189,6 @@ The mowing graphical test captures six images; the dragging graphical test captu
 - Cut grass uses color/texture variation and hides the sparse uncut tufts. It is not a dense simulated lawn. Manual saves include task states and chalk strokes; equipment positions and held tools reset on load.
 - Audio is an initial synthetic pass, with no music, crowd simulation, material-specific footsteps, or sound occlusion. Headphone/speaker balance still needs desktop playtesting.
 - Mostly flat terrain and arcade handling; no suspension. The mound now has a walkable sloped collider. The walking player hides while a separate seated visual appears on the mower. The remaining shallow infield surfaces still use the flat ground collider.
-- Only the outfield wall is a perimeter barrier; this is an explorable prototype, not a fully enclosed stadium. The dugouts now have open fronts, solid walls, and decorative benches.
+- The playing enclosure now connects the outfield wall, foul-side fencing, backstop and dugouts. A marked workshop equipment gate stays open. Dugouts have walk-in openings, solid rear/side walls and a low front rail; surrounding grounds remain explorable through the gate.
 - Forward+ GPU visuals, native Windows behavior, controller support, and hardware performance remain unverified.
 - Field bounds and mask resolution are configurable; changing the stadium layout also requires matching the mowing area's exported exclusion settings. There is no layout-authoring UI yet.

@@ -82,16 +82,78 @@ func build_boundary() -> void:
   var marker := G.label(self,"330",Vector3(side*68,2,-77),64)
   marker.rotation.y = -side*PI/4
   marker.modulate = CREAM
- for x in [-8,-4,0,4,8]:
-  G.cylinder(self,Vector3(x,3.5,6),0.065,7,Color("526569"))
- for height in [1.0,3.0,5.0,7.0]:
-  G.box(self,Vector3(0,height,6),Vector3(16,0.035,0.035),Color("526569"))
+ build_foul_boundary()
  for side in [-1,1]:
-  Props.dugout(self,side)
   Props.grandstand(self,side)
  Props.scoreboard(self)
  for pos in [Vector3(-55,0,-35),Vector3(55,0,-35),Vector3(-35,0,15),Vector3(35,0,15)]:
   Props.light_tower(self,pos)
+
+# Fence routes share the dugouts' sideline basis. Fair territory and task masks stay fixed.
+func build_foul_boundary() -> void:
+ var boundary := Props.group(self,"FoulTerritoryBoundary",Vector3.ZERO)
+ fence_run(boundary,Vector3(-8,0,6),Vector3(8,0,6),6.0,"Backstop")
+ for side in [-1,1]:
+  var start := Vector3(side*8,0,6)
+  var corner := Vector3(side*82,0,-73.5)
+  var along := (corner-start).normalized()
+  var outward := Vector3(side*absf(along.z),0,absf(along.x))
+  var dugout := Props.dugout(self,side)
+  # Roof and solid rear/side walls sit outside the field; front entries join the fence.
+  var front := start+along*20
+  fence_run(boundary,start,front-along*5.5,2.4,"HomeWing" if side < 0 else "VisitorWing")
+  var after := front+along*5.5
+  if side > 0:
+   # Keep the existing pad, mower, marker, hose and tamper approaches usable.
+   var gate_near := start+along*((6.0+14.5)/absf(along.z))
+   var gate_far := start+along*((6.0+27.5)/absf(along.z))
+   fence_run(boundary,after,gate_near,2.4,"WorkshopWing")
+   fence_run(boundary,gate_far,corner,2.4,"FirstBaseFence")
+   var gate := Props.group(boundary,"OpenEquipmentGate",(gate_near+gate_far)*0.5)
+   var sign := G.label(gate,"GROUNDS CREW  /  FIELD ACCESS",Vector3(0,3.3,0),32)
+   sign.rotation.y = dugout.rotation.y
+   sign.pixel_size = 0.006
+   sign.modulate = CREAM
+   # Open gate leaves lie along the outside fence, clear of the driving lane.
+   fence_run(boundary,gate_near+outward*0.3,gate_near+outward*0.3-along*3,2.0,"OpenGateLeaf")
+   fence_run(boundary,gate_far+outward*0.3,gate_far+outward*0.3+along*3,2.0,"OpenGateLeaf")
+  else:
+   fence_run(boundary,after,corner,2.4,"ThirdBaseFence")
+  fence_run(boundary,corner,Vector3(side*sqrt(0.5)*104,0,-sqrt(0.5)*104),2.4,"FoulPoleReturn")
+  # A continuous narrow walkway outside the fence anchors dugouts to the park.
+  var path := G.box(self,(start+corner)*0.5+outward*4+Vector3.UP*0.012,Vector3(3,0.024,start.distance_to(corner)),Color("b9aa8e"))
+  path.rotation.y = atan2(along.x,along.z)
+
+func fence_run(parent: Node3D,from: Vector3,to: Vector3,height: float,label: String) -> void:
+ var length := from.distance_to(to)
+ if length < 0.05:
+  return
+ var root := Props.group(parent,label,(from+to)*0.5)
+ var direction := (to-from).normalized()
+ root.rotation.y = atan2(-direction.z,direction.x)
+ var mesh := MeshInstance3D.new()
+ var quad := QuadMesh.new()
+ quad.size = Vector2(length,height)
+ mesh.mesh = quad
+ mesh.position.y = height*0.5
+ var material := ShaderMaterial.new()
+ material.shader = preload("res://shaders/chain_link.gdshader")
+ material.set_shader_parameter("fence_size",Vector2(length,height))
+ mesh.material_override = material
+ root.add_child(mesh)
+ var body := StaticBody3D.new()
+ var collider := CollisionShape3D.new()
+ var bounds := BoxShape3D.new()
+ bounds.size = Vector3(length,height,0.12)
+ collider.shape = bounds
+ collider.position.y = height*0.5
+ body.add_child(collider)
+ root.add_child(body)
+ var sections := maxi(1,ceili(length/3))
+ for i in range(sections+1):
+  G.cylinder(root,Vector3(-length*0.5+length*i/sections,height*0.5,0),0.045,height+0.12,Color("526569"))
+ for y in [0.15,height]:
+  G.box(root,Vector3(0,y,0),Vector3(length,0.055,0.055),Color("71847c"))
 
 func build_neighborhood() -> void:
  # Concourse and workshop use the existing collision footprint and driving lane.

@@ -125,3 +125,12 @@ The resource-free Variant payload has a format version, a SHA-256 layout signatu
 The hand tamper emits `impact(point)` only after `MoundSurface.apply_tamp()` accepts the controller's timed contact. Audio listens to that event, rather than watching the mound counter: loading hits, resetting, missed strokes, and repeated strikes cannot generate fake impact feedback. Other model accounting is unchanged. Positional effects attenuate with distance, but do not yet model walls or acoustic occlusion.
 
 `SoundPreferences` owns two effects/ambience buses feeding Master, clamps finite numeric settings, restores safe defaults for malformed fields, and persists a separate small ConfigFile. Zero levels use bus mute for true silence. Failed writes report that the live change could not be saved. `SoundPanel` is a separate screen inside the paused overlay so controls do not crowd the checklist. The waveform generator uses deterministic standard-library synthesis, mono 16-bit PCM at 22,050 Hz, with quiet loop joins and bounded amplitude; no downloaded recordings or runtime synthesis dependency is required.
+
+
+## Field enclosure and dugout orientation
+
+The diamond points toward negative Z, with foul lines at X = ±(-Z). `ParkProps.dugout()` now places each dugout along its side's boundary direction and rotates its local +Z opening toward the diamond. Walls and the roof sit on the foul side; the front rail leaves walk-in gaps at both corners. Floors stay nearly flush so the walking controller needs no new step-climbing behavior.
+
+`Stadium.build_foul_boundary()` joins the backstop, dugout wings, side fencing and returns to the existing foul-pole/outfield-wall junctions. The first-base side has a broad open equipment gate around the existing pad. Fence visuals use one alpha-discard quad per run with UVs measured in meters, plus posts and rails; separate thin box colliders block traversal. The shader draws holes but the collision intentionally remains a continuous fence. Gate leaves lie outside the driving corridor.
+
+The work grids, task exclusions, equipment spawn points and save layout signature are unchanged. This pass changes enclosure geometry, not field dimensions or job quotas. Outside walkways are decorative surfaces rather than additional scored dirt.
