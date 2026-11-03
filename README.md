@@ -391,3 +391,5 @@ Open **Tab → Clubhouse** and scroll through the stadium projects. The original
 The grill adds a striped concession building and picnic tables behind the stands. Scoreboard tiers replace the existing outfield board; the video screen displays club supporters and capacity with an owl graphic. Benefits stack and apply to future hosted games. Purchases use the shared club budget and persist through season rollover and reloads. The video board is a static club display, with baseball games still simulated.
 
 Expansion regression test: `godot --headless --path . --script tests/test_stadium_expansion.gd`.
+
+Watering: take the hose at its station with **F** (controller **LB**), then hold **left mouse** (**RT**) to spray. The stream now remains visible when aiming into the air or against obstacles; only reachable, unobstructed dirt gains moisture. Aim down and hold steady until **AIM** reaches **TARGET**. If the cursor is free, **Esc** recaptures it. The tutorial now explicitly tells you to release the chalk cart before picking up the hose and displays live spray blockers/moisture.

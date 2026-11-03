@@ -91,26 +91,31 @@ func run() -> void:
  check(t.step_complete() and g.chalk.covered_count > 0,"actual open-gate marker pass satisfies fourth check")
  t._process(0)
  check(t.step == 4 and not t.step_complete(),"watering step starts unfinished")
+ check(g.pushing_chalk and t.instruction().contains("release") and t.target() == g.chalk_marker.global_position,"watering handoff directs player to release chalk cart first")
+ t._process(0)
+ check(g.hud.tutorial_reason.text.contains("on foot"),"guide explains why hose pickup is blocked while pushing")
  g.chalk_marker.speed = 0
  g.chalk_marker.velocity = Vector3.ZERO
  key(g,KEY_E)
  g.chalk_marker.global_position = g.layout.chalk_marker_spawn
  g.mower.global_position = g.layout.mower_spawn
  g.player.global_position = g.watering.station_position+Vector3(-1.5,0.05,1.5)
+ check(t.instruction().contains("water station"),"on-foot watering guide directs player to hose station")
  key(g,KEY_F)
- var camera := Camera3D.new()
- g.add_child(camera)
- camera.current = true
- camera.position = Vector3(8,4,-3)
- camera.look_at(Vector3(10,0,-10))
- g.watering.camera = camera
+ var camera: Camera3D = g.camera
  g.watering.capture_query = func() -> bool: return true
- g.player.global_position = Vector3(8,0.05,-7)
- await frames(25)
+ g.player.global_position = Vector3(10,0.05,-7)
+ g.yaw = 0
+ g.pitch = -0.45
+ check(t.instruction().contains("Look down"),"equipped guide explains ground reticle and soaking")
+ await frames(60)
  Input.action_press("spray_water")
  await frames(100)
  Input.action_release("spray_water")
- check(t.step_complete() and g.moisture.wet_count > 0,"real spray reaching moisture target satisfies fifth check")
+ check(t.step_complete() and g.moisture.wet_count > 0,"real player-camera spray reaching moisture target satisfies fifth check")
+ check(g.watering.camera == g.camera,"watering regression uses normal player spring-arm camera")
+ t._process(0)
+ check(g.hud.tutorial_reason.text.contains("AIM"),"guide exposes live watering feedback and moisture")
  t._process(0)
  check(t.step == 5 and not t.step_complete(),"mound step starts unfinished")
  key(g,KEY_F)
@@ -118,6 +123,9 @@ func run() -> void:
  key(g,KEY_G)
  var point: Vector3 = g.mound.patch_world(0)
  g.player.global_position = point+Vector3(-0.75,0.1,0.65)
+ camera = Camera3D.new()
+ g.add_child(camera)
+ camera.current = true
  camera.position = point+Vector3(2.5,3.5,4.4)
  camera.look_at(point)
  g.tamper.camera = camera

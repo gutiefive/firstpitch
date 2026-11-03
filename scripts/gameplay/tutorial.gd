@@ -40,7 +40,12 @@ func target() -> Vector3:
   1: return Vector3(0,0,-60) if game.driving else game.mower.global_position
   2: return Vector3(10,0,-10) if game.mower.active_tool == RidingMower.WorkTool.DRAG else game.layout.tool_bay_position
   3: return game.layout.point3(game.chalk.section_center(0,30)) if game.pushing_chalk else game.chalk_marker.global_position
-  4: return Vector3(10,0,-10) if game.watering.equipped else game.watering.station_position
+  4:
+   if game.pushing_chalk:
+    return game.chalk_marker.global_position
+   if game.driving:
+    return game.mower.global_position
+   return Vector3(10,0,-10) if game.watering.equipped else game.watering.station_position
   5:
    if game.tamper.equipped:
     for i in range(game.mound.hits.size()):
@@ -55,7 +60,14 @@ func instruction() -> String:
   1: return "%s enter tractor. Drive onto the outfield and mow any amount." % b.call("interact")
   2: return "Stop and exit. At the bay, %s swap to drag. Enter, drive onto dirt, stop, %s lower; drive forward a strip." % [b.call("swap_tool"),b.call("lift_drag")]
   3: return "%s use chalk marker. %s open gate, then push along a dashed gold guide." % [b.call("interact"),b.call("lift_drag")]
-  4: return "%s take hose at station. Aim at dirt and hold %s until a patch reaches target moisture." % [b.call("water_tool"),b.call("spray_water")]
+  4:
+   if game.pushing_chalk:
+    return "Stop the chalk cart, then %s release it before taking the hose." % b.call("interact")
+   if game.driving:
+    return "Stop the tractor, then %s exit before taking the hose." % b.call("interact")
+   if not game.watering.equipped:
+    return "Walk to the water station's gold marker, then %s take the hose." % b.call("water_tool")
+   return "Walk onto the dirt near the gold marker. Look down at the ground reticle and hold %s steady until AIM reaches TARGET moisture." % b.call("spray_water")
   5: return "%s take tamper at rack. Aim at one worn mound patch; stop and press %s three times, holding aim through each impact." % [b.call("mound_tool"),b.call("tamp_mound")]
   6: return "%s open the board: shifts set goals, Clubhouse starts the Owls story, Contracts offer side work, and Crew career holds pay/upgrades. Close the board to finish; tutorial work will be cleared." % b.call("shift_board")
  return ""
@@ -83,6 +95,15 @@ func _process(_delta: float) -> void:
  game.hud.tutorial_instruction.text = instruction()
  # The live prompt owns all contextual blockers; the guide reuses it verbatim.
  game.hud.tutorial_reason.text = game.prompt.text
+ if step == 4:
+  if game.pushing_chalk or game.driving:
+   game.hud.tutorial_reason.text = "Hose pickup is unavailable until you are on foot. Stop first; then release the cart or exit the tractor."
+  elif game.watering.equipped:
+   game.hud.tutorial_reason.text = game.watering.feedback
+   if game.watering.target_valid and game.moisture.is_workable(game.watering.target):
+    game.hud.tutorial_reason.text += " · AIM %.0f%% / TARGET %.0f%%" % [game.moisture.moisture_at(game.watering.target)*100,game.moisture.target_moisture*100]
+   elif game.watering.feedback == "NO WORKABLE DIRT":
+    game.hud.tutorial_reason.text += " · Aim at brown basepath dirt, not grass or the mound."
  game.hud.tutorial_skip.text = "Skip guide (%s)" % game.binding_text("tutorial_skip")
  if step_complete():
   if step == 6:

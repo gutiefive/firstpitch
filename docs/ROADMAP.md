@@ -22,3 +22,5 @@
 - Home-season loop: six named fixtures, rotating optional score/time targets, durable season review and rollover with club investments retained. Baseball outcomes and target cash bonuses remain outside this feature.
 
 - Stadium amenities: second grill concession, electronic scoreboard and later video board, with physical additions, purchase prerequisites and stacked ticket/food/fan benefits.
+
+- Watering usability fix: visible free-aim spray, obstacle-clipped stream, live tutorial moisture/blocker feedback, and explicit chalk-cart-to-hose handoff.

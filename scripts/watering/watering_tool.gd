@@ -20,6 +20,7 @@ var equipped := false
 var spraying := false
 var target_valid := false
 var target := Vector3.ZERO
+var spray_end := Vector3.ZERO
 var feedback := "READY"
 var nozzle: Node3D
 var droplets: MultiMeshInstance3D
@@ -137,7 +138,7 @@ func _physics_process(delta: float) -> void:
  var end := start+camera.project_ray_normal(center)*150
  var query := PhysicsRayQueryParameters3D.create(start,end,1,[player.get_rid()])
  var hit := get_world_3d().direct_space_state.intersect_ray(query)
- feedback = "AIM AT GROUND"
+ feedback = "SPRAY BLOCKED · AIM AT GROUND" if not hit.is_empty() and (hit.normal as Vector3).y <= 0.8 else "AIM AT GROUND"
  if not hit.is_empty() and (hit.normal as Vector3).y > 0.8 and (hit.position as Vector3).y < 0.25:
   target = hit.position
   if player.global_position.distance_to(station_position) > hose_reach:
@@ -149,18 +150,32 @@ func _physics_process(delta: float) -> void:
   else:
    target_valid = true
    feedback = (("HOLD %s TO SOAK" % binding_query.call("spray_water")) if binding_query.is_valid() else "HOLD TO SOAK") if moisture.is_workable(target) else "NO WORKABLE DIRT"
-   if cursor_is_captured() and Input.is_action_pressed("spray_water"):
-    spraying = apply_spray(target,delta)
-    if spraying and moisture.is_workable(target):
-     feedback = "SOAKING DIRT"
    if moisture.is_workable(target) and moisture.moisture_at(target) >= moisture.target_moisture:
     feedback = "AIM POINT SOAKED"
+ # The nozzle emits water even when aim is in the air, too far away or
+ # against a wall. Only the validated ground target can receive moisture.
+ var aim: Vector3 = hit.position if not hit.is_empty() else end
+ if nozzle.global_position.distance_squared_to(aim) > 0.001:
+  nozzle.look_at(aim)
  if not cursor_is_captured():
   feedback = "%s TO RECAPTURE CURSOR" % binding_query.call("cursor_menu") if binding_query.is_valid() else "RECAPTURE CURSOR TO WATER"
+ elif player.global_position.distance_to(station_position) > hose_reach:
+  feedback = "HOSE OUT OF REACH"
+ elif not player.is_on_floor():
+  feedback = "STAND ON THE GROUND TO WATER"
+ elif Input.is_action_pressed("spray_water"):
+  spraying = true
+  var offset := aim-nozzle.global_position
+  spray_end = nozzle.global_position+offset.limit_length(spray_reach)
+  var spray_query := PhysicsRayQueryParameters3D.create(nozzle.global_position,spray_end,1,[player.get_rid()])
+  var obstruction := get_world_3d().direct_space_state.intersect_ray(spray_query)
+  if not obstruction.is_empty():
+   spray_end = obstruction.position
+  if target_valid and apply_spray(target,delta) and moisture.is_workable(target):
+   feedback = "AIM POINT SOAKED" if moisture.moisture_at(target) >= moisture.target_moisture else "SOAKING DIRT"
  if target_valid:
   var point := Vector2(target.x,target.z)
   target_ring.global_position = Vector3(target.x,height_at(point)+0.04,target.z)
-  nozzle.look_at(target+Vector3.UP*0.05)
  target_ring.visible = target_valid
  droplets.visible = spraying
  if spraying:
@@ -174,7 +189,7 @@ func _physics_process(delta: float) -> void:
 
 func update_droplets() -> void:
  var start := nozzle.global_position-nozzle.global_basis.z*0.28
- var finish := Vector3(target.x,height_at(Vector2(target.x,target.z))+0.04,target.z)
+ var finish := spray_end
  var time := Time.get_ticks_msec()*0.001
  for index in range(droplets.multimesh.instance_count):
   var t := fposmod(float(index)/droplets.multimesh.instance_count+time*1.4,1)
