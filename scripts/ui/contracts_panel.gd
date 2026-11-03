@@ -55,7 +55,7 @@ func _ready() -> void:
    if profile.goals[i] > 0:
     goals.append("%s %.0f%%" % [ShiftSession.JOB_NAMES[i],profile.goals[i]])
   text(details," · ".join(goals))
-  text(details,"%d min · Up to %d cr · %d cr completion bonus" % [int(profile.duration)/60,floori(100*float(profile.pay_rate))+int(profile.bonus),profile.bonus],13)
+  text(details,("GAME DAY · " if profile.get("start","fresh") == "game_day" else "FRESH · ")+"%d min · Up to %d cr · %d cr completion bonus" % [int(profile.duration)/60,floori(100*float(profile.pay_rate))+int(profile.bonus),profile.bonus],13)
   best_labels[id] = text(details,"",13)
   var button := Button.new()
   button.custom_minimum_size = Vector2(180,42)
@@ -63,7 +63,7 @@ func _ready() -> void:
   button.pressed.connect(func(): director.start_shift(id))
   row.add_child(button)
   buttons[id] = button
- text(content,"Starting fresh resets all field work and parks equipment. Each attempt pays once.",13).modulate = Color("e1bb67")
+ text(content,"Fresh jobs reset the field. Game-day jobs wear it. Equipment parks; each attempt pays once.",13).modulate = Color("e1bb67")
  message = text(content,"",13)
  back_button = Button.new()
  back_button.text = "Back to shift board"
@@ -81,6 +81,6 @@ func refresh() -> void:
   var minimum := int(ShiftSession.PROFILES[id].get("minimum_earnings",0))
   var locked := director.career.earned < minimum
   buttons[id].disabled = active or locked
-  buttons[id].text = "Field Hand required" if locked else ("Shift active" if active else "Start fresh contract")
-  best_labels[id].text = "Best %.1f / 100%s" % [director.career.best.get(id,0.0)," · Unlocks at 500 cr lifetime earnings" if locked else " · Available"]
+  buttons[id].text = ("Crew Lead required" if minimum >= 1500 else "Field Hand required") if locked else ("Shift active" if active else ("Start game day" if ShiftSession.PROFILES[id].get("start","fresh") == "game_day" else "Start fresh contract"))
+  best_labels[id].text = "Best %.1f / 100%s" % [director.career.best.get(id,0.0)," · Unlocks at %d cr lifetime earnings" % minimum if locked else " · Available"]
  message.text = "Finish or end the current shift before taking another contract." if active else "Partial work pays too. Full training and full-park shifts remain on the main board."

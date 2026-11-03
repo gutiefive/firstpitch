@@ -4,7 +4,7 @@ A playable Godot 3D groundskeeping prototype set at **Cedar Grove Ballpark**. Mo
 
 Built with GDScript, procedural meshes and original generated sound effects. No plugins, downloaded art, or external runtime dependencies are required.
 
-**Current build: M1–M5 prototypes implemented, plus the first M6 career and contracts loop.** The latest verified build passed **445 headless assertions** and scripted graphical checks. Windows and Forward+ hardware testing remain outstanding.
+**Current build: M1–M5 prototypes implemented, plus the first M6 career and contracts loop.** The latest verified build passed **495 headless assertions** and scripted graphical checks. Windows and Forward+ hardware testing remain outstanding.
 
 ![Cedar Grove's connected dugouts and playing enclosure](docs/screenshots/dugout-layout.png)
 
@@ -19,7 +19,7 @@ Built with GDScript, procedural meshes and original generated sound effects. No 
 | **M3 — Grass mowing** | Persistent spatial cutting, directional stripes, disappearing grass tufts and overlap-safe coverage. |
 | **M4 — Field tools** | Tow-behind infield drag, pushable chalk marker, on-foot hose and timed hand tamper; five independent field jobs. |
 | **M5 — Shifts, scores and saving** | Free practice, training/full-park shifts, paused board, live goals, frozen results and a manual field save slot. |
-| **M6 — First career slice** | Credits, four crew ranks, personal bests, recent results, two permanent upgrades and three focused contracts with a rank unlock. |
+| **M6 — First career slice** | Credits, four crew ranks, personal bests, recent results, two permanent upgrades and four focused contracts with two rank unlocks. |
 | **Field and sound polish** | Field-facing dugouts connected to fencing/backstop, proper home plate and reference markings, positional tool sounds, ambience and saved volume settings. |
 
 These are playable prototype systems, not a finished release. See the [roadmap](docs/ROADMAP.md), [verification record](docs/VERIFICATION.md) and [current limitations](#current-limitations).
@@ -42,12 +42,12 @@ godot --path . --rendering-method gl_compatibility
 You spawn beside the workshop in **free practice**, with no countdown. The tractor, chalk marker, hose station and tamper rack are nearby. Use the open **GROUNDS CREW / FIELD ACCESS** entrance beside the workshop to reach the field.
 
 1. Try the tools in practice; work stays on the field during the session.
-2. Press **Tab** and choose a fresh training/full-prep shift, or open **Contracts** for a shorter job.
+2. Press **Tab** and choose training or game-day full prep, or open **Contracts** for a shorter job.
 3. Complete its listed goals before the deadline, or use **End shift now** for a partial result.
 4. Open **Crew career** to spend earned credits on equipment.
 5. Use **Save field + shift** before quitting if you want to keep the current field and clock.
 
-**Starting any fresh shift or contract resets all field work and parks equipment.** It keeps your career and upgrades, and does not overwrite the manual field slot unless you save again.
+**Training, Morning mowing and Mound callout reset work. Full prep, Between-games infield and Doubleheader turnaround apply seeded game-day wear to the current park.** All starts park equipment. It keeps your career and upgrades, and does not overwrite the manual field slot unless you save again.
 
 ## Controls
 
@@ -130,8 +130,13 @@ Press **Tab** for the paused shift board. Training/full prep start from its main
 | Morning mowing | 10 min | Mow 10% | **100 cr**, including 40 completion bonus | Always |
 | Mound callout | 5 min | Repair every mound patch | **40 cr**, including 15 completion bonus | Always |
 | Between-games infield | 12 min | Drag 25% and water 25% | **150 cr**, including 60 completion bonus | Field Hand / 500 lifetime credits |
+| Doubleheader turnaround | 8 min | Drag/water 75%; chalk/mound 100% | **300 cr**, including 100 completion bonus | Crew Lead / 1,500 lifetime credits |
 
 Scores run from **0–100**, divided equally among listed jobs. Training and full prep award up to 20 points per job; single-job contracts use all 100 points for that job, and the infield contract divides them 50/50. Unlisted work earns no contract points. Full-completion goals still require exact task counts.
+
+Game-day goals measure repairs against the damaged starting field: `(current − starting) / (total − starting)`. Nothing needing repair counts as complete. A first game day on a blank park creates a prepared baseline before applying wear; later game days wear your actual field. Grass regrows, dirt wears most in traffic areas, moisture dries, chalk scuffs and mound patches lose preparation.
+
+Final score is coverage × finish quality, clamped to a **0.7–1.0** multiplier. Off-guide chalk, puddles and wet-drag ruts reduce quality; matching neighbouring mowing directions offer a small bonus. Quality affects pay but never blocks coverage completion. See [game-day wear](docs/screenshots/game-day-wear.png), [puddles and ruts](docs/screenshots/puddles-ruts.png) and [finish-quality results](docs/screenshots/finish-quality.png). Results show per-job quality and a tip for the biggest loss. At **0.95 moisture**, puddles block dragging for **12 seconds**; the HUD warns **OVERWATERING**. Dragging above **0.75 moisture** leaves ruts and warns **DRAGGING WET DIRT**. Let the dirt dry, then drag again to repair ruts. Puddle history still affects that attempt's quality.
 
 Finishing the requested goals ends the attempt automatically. Running out of time or choosing **End shift now** records partial work. Partial pay is proportional to the work portion of the payout, rounded down; the bonus is only for completion. For example, a half-finished mound callout earns **12 cr**, while completing it earns **40 cr**.
 
@@ -167,7 +172,7 @@ If a career write fails, no credits or purchases change. Use **Reload career / r
 
 ## Save and resume
 
-**Field work uses one manual slot.** Open Tab and choose **Save field + shift** before quitting. It stores all five jobs, mowing/dragging patterns, on/off-guide chalk, partial moisture, mound impacts, the active countdown, attempt identity and frozen results. Save again after doing more work; there is no automatic field save or startup load.
+**Field work uses one manual slot.** Open Tab and choose **Save field + shift** before quitting. It stores all five jobs, mowing/dragging patterns, on/off-guide chalk, partial moisture, mound impacts, the active countdown, attempt identity, wear seed, repair baselines, puddle timers, ruts, quality state and frozen results. Save again after doing more work; there is no automatic field save or startup load.
 
 On the next launch, open Tab and choose **Load saved field + shift**. Loading replaces current work, returns the player and equipment to the workshop, and keeps the world paused. Resume when ready. Equipment positions, motion, held tools and camera angle are not restored. Fresh shifts leave the disk slot intact until you explicitly save over it.
 
@@ -179,7 +184,7 @@ On the next launch, open Tab and choose **Load saved field + shift**. Loading re
 
 Use Godot's **Project → Open User Data Folder** to find these files. On Windows they are under the game's folder in `%APPDATA%/Godot/app_userdata/`. Saves are local, with no cloud/device sync or GitHub upload.
 
-Missing, damaged or incompatible field files report an error and leave current work intact. Older field snapshots without attempt IDs remain loadable. The recorded Cedar Grove v1 layout also migrates to the corrected v2 boundaries while preserving existing work; newly valid boundary cells start unworked and dry. Future layout/format changes may require additional migration support.
+Missing, damaged or incompatible field files report an error and leave current work intact. Older field snapshots without attempt IDs remain loadable. Field slots now write version 3. Recorded Cedar Grove v1 and current-layout v2 slots migrate as fresh attempts with neutral quality, preserving old results and payouts. The v1 geometry migration preserves work and initializes added boundary cells unworked/dry. Future layout/format changes may require additional migration support.
 
 ## Sound and volume
 
@@ -201,7 +206,7 @@ More views: [full field](docs/screenshots/field-layout.png), [home area](docs/sc
 
 ## Development and verification
 
-The last feature pass verified **445 headless assertions**, editor import, main-scene startup and scripted graphical flows. These include actual tool work, native board/shop controls, saved-attempt replay protection, upgrades and contract completion. Graphical checks used Linux Xorg/Mesa **OpenGL Compatibility**; synthetic fixtures and fast-forwarded branches are identified in [VERIFICATION.md](docs/VERIFICATION.md).
+The last feature pass verified **495 headless assertions**, editor import, main-scene startup and scripted graphical flows. These include actual tool work, native board/shop controls, saved-attempt replay protection, upgrades and contract completion. Graphical checks used Linux Xorg/Mesa **OpenGL Compatibility**; synthetic fixtures and fast-forwarded branches are identified in [VERIFICATION.md](docs/VERIFICATION.md).
 
 Run from the project directory:
 
@@ -226,6 +231,8 @@ godot --headless --path . --script tests/test_career.gd
 godot --headless --path . --script tests/test_career_gameplay.gd
 godot --headless --path . --script tests/test_contracts.gd
 godot --headless --path . --script tests/test_field_layout_resource.gd
+godot --headless --path . --script tests/test_field_wear.gd
+godot --headless --path . --script tests/test_quality.gd
 godot --headless --path . --quit-after 180
 ```
 
@@ -249,6 +256,7 @@ godot --path . --rendering-method gl_compatibility --script tests/test_contracts
 | `test_sound_visual.gd` | Volume/mute controls and recorded mixer preview. |
 | `test_field_layout_visual.gd` | Field, dugouts, gate, plate and reference markings. |
 | `test_career_visual.gd` | Real earnings, native shop purchases and upgraded deck. |
+| `test_wear_visual.gd` | Game-day start, worn field, puddles/ruts, quality results and Crew Lead card. |
 | `test_contracts_visual.gd` | Real mound-contract completion, rank lock/unlock and focused goals. |
 
 Captures use `/tmp/firstpitch-*.png` on Linux. These scripts run controlled automated scenarios; normal play uses the main scene. Intermittent audio playback-resource warnings have appeared during test-process teardown; see the verification record.
@@ -272,10 +280,10 @@ Captures use `/tmp/firstpitch-*.png` on Linux. These scripts run controlled auto
 ## Current limitations
 
 - One procedural prototype park. No authored character rigs, crowds, playable baseball, additional parks or park-unlock progression yet.
-- Initial coverage-based scoring and economy. Human deadline/pay balancing, finish-quality penalties and deeper career progression remain future work.
+- Coverage and finish-quality scoring are implemented. Human deadline/pay balancing and deeper career progression remain future work.
 - Arcade vehicle handling and mostly flat ground; no suspension, articulated trailer physics, deformable terrain or physical hose simulation.
-- Unlimited supplies; no drying, overwatering penalties, clay inventory, chalk erasing or repainting of the static reference markings.
+- Unlimited supplies; drying is limited to game-day moisture loss and puddle timers. No clay inventory, chalk erasing or repainting of static reference markings.
 - One manual field slot, a 2,000-attempt local career ledger, no equipment resale and no cloud sync. Loading parks equipment rather than restoring its exact position.
 - Synthetic prototype sound; no music, crowds, surface-specific footsteps or acoustic occlusion. Desktop listening and mix tuning remain outstanding.
 - Windows exports, native Windows behavior, Forward+ GPU appearance/performance and controller support remain unverified.
-- Park dimensions and exclusions now share one layout resource; there is no visual layout-authoring UI. Only the recorded Cedar Grove v1-to-v2 field migration is supported; future changes need an explicit compatibility policy.
+- Park dimensions and exclusions now share one layout resource; there is no visual layout-authoring UI. Field v1/v2 migrations support the recorded Cedar Grove layouts; future geometry changes need an explicit migration.

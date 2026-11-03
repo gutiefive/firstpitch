@@ -271,6 +271,8 @@ func _process(delta: float) -> void:
   refresh_mound_detail()
  elif watering.equipped:
   mode_label.text = "WATERING  /  " + watering.feedback
+  if watering.target_valid and moisture.puddle_at(watering.target):
+   mode_label.text = "OVERWATERING — LET PUDDLE DRY"
   hud.reticle.modulate = Color("c3b996")
   if watering.target_valid and moisture.is_workable(watering.target):
    hud.reticle.modulate = Color("83c4cf") if moisture.moisture_at(watering.target) >= moisture.target_moisture else Color("e1bb67")
@@ -282,7 +284,11 @@ func _process(delta: float) -> void:
   mode_label.text = "ON FOOT  /  " + ("TAMPER STOWED" if selected_task == 4 else ("HOSE STOWED" if selected_task == 3 else ("CHALK MARKER PARKED" if selected_task == 2 else ("DRAG EQUIPPED" if dragging else "MOWER EQUIPPED"))))
  elif dragging:
   mode_label.text = "DRAGGING  /  " + ("LOWERED" if mower.drag.lowered else "RAISED")
-  if mower.drag.lowered and mower.speed < -0.15:
+  if mower.drag.lowered and mower.speed > 0.15 and infield.wet_dragging:
+   mode_label.text = "DRAGGING WET DIRT — RUTS"
+  elif mower.drag.lowered and mower.speed > 0.15 and infield.blocked_puddles:
+   mode_label.text = "PUDDLES — WAIT BEFORE DRAGGING"
+  elif mower.drag.lowered and mower.speed < -0.15:
    mode_label.text = "DRAGGING  /  REVERSE — NO PREPARATION"
  else:
   mode_label.text = "MOWING  /  DECK ENGAGED"

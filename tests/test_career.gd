@@ -40,6 +40,16 @@ func run() -> void:
  var bad := result("training",[0,0,0,0,0])
  bad.score = 99
  check(career.claim(id(),bad).status == "error","inconsistent score cannot create credits")
+ var turnaround := ShiftSession.new()
+ turnaround.start("doubleheader")
+ turnaround.set_progress([0,75,100,75,100],[false,false,true,false,true])
+ turnaround.set_quality([1,0.75,0.7,0.75,1])
+ turnaround.finish("completed")
+ check(CareerProfile.valid_result(turnaround.get_result()) and CareerProfile.payout(turnaround.get_result()) == 260,"doubleheader final quality score drives its payout")
+ var forged := turnaround.get_result()
+ forged.quality = 1.0
+ check(not CareerProfile.valid_result(forged),"forged quality multiplier cannot increase payout")
+ turnaround.free()
  var full := result("full",[100,100,100,100,100],"completed")
  check(career.claim(id(),full).pay == 450 and career.balance == 460,"complete full prep earns score pay and completion bonus")
  check(career.claim(id(),result("training",[25,50,50,50,100],"completed")).pay == 150,"training completion pays 150 credits")

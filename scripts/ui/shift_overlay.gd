@@ -22,6 +22,9 @@ var status_clock: Label
 var status_rows: Array[Label] = []
 var heading: Label
 var description: Label
+var quality_label: Label
+var quality_tip: Label
+var start_warning: Label
 var score_label: Label
 var board_rows: Array[Label] = []
 var training_button: Button
@@ -122,6 +125,11 @@ func _ready() -> void:
  content.add_child(description)
  score_label = label("",22,GOLD)
  content.add_child(score_label)
+ quality_label = label("",13,Color("adc7b7"))
+ content.add_child(quality_label)
+ quality_tip = label("",13,GOLD)
+ quality_tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ content.add_child(quality_tip)
  career_reward = label("",13,GOLD)
  career_reward.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  content.add_child(career_reward)
@@ -131,13 +139,14 @@ func _ready() -> void:
   content.add_child(row)
  scoring_label = label("",13,Color("adc7b7"))
  content.add_child(scoring_label)
- var warning := label("Starting fresh resets field work and returns equipment to the workshop.",13,GOLD)
- content.add_child(warning)
+ start_warning = label("",13,GOLD)
+ start_warning.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ content.add_child(start_warning)
  var profiles := HBoxContainer.new()
  profiles.add_theme_constant_override("separation",12)
  content.add_child(profiles)
  training_button = button("Fresh training · 15 min")
- full_button = button("Fresh full prep · 30 min")
+ full_button = button("Game-day prep · 30 min")
  training_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
  full_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
  profiles.add_child(training_button)
@@ -257,6 +266,9 @@ func refresh() -> void:
  var result := session.get_result()
  var finished := session.phase == ShiftSession.Phase.FINISHED and not result.is_empty()
  status_title.text = session.title().to_upper() if active else "FREE PRACTICE"
+ start_warning.text = "Training starts fresh. Game-day prep wears the current park. Both park equipment."
+ quality_label.visible = active or finished
+ quality_tip.visible = active or finished
  var goal_count := "%d of %d %s" % [int(result.jobs_completed) if finished else session.jobs_completed(),session.jobs_required(),"goal" if session.jobs_required() == 1 else "goals"]
  scoring_label.text = "Each listed job is worth %.0f points, proportional to its goal." % (100.0/maxi(session.jobs_required(),1))
  status_clock.text = "%s  /  %s · TAB pauses" % [ShiftSession.clock_text(session.remaining_seconds),goal_count] if active else "TAB  Shift board / last result"
@@ -268,7 +280,7 @@ func refresh() -> void:
   status_rows[i].visible = active and session.goals()[i] > 0
   status_rows[i].text = "%s %s  %.1f / %.0f%%" % ["✓" if session.goal_met(i) else "·",ShiftSession.JOB_NAMES[i],session.values[i],session.goals()[i]]
  heading.text = "SHIFT BOARD"
- description.text = "Free practice. Choose a fresh shift when you are ready."
+ description.text = "Free practice. Choose training or a game-day preparation shift."
  score_label.visible = active or finished
  score_label.text = ""
  var values: Array = Array(session.values)
@@ -278,7 +290,7 @@ func refresh() -> void:
   met.append(session.goal_met(i))
  if active:
   heading.text = session.title().to_upper()
-  description.text = "PAUSED — World and shift clock stopped."
+  description.text = "PAUSED — World and shift clock stopped."+ (" Goals track repairs since game day." if session.start_mode == "game_day" else "")
   score_label.text = "%s left  /  %.1f points  /  %s" % [ShiftSession.clock_text(session.remaining_seconds),session.score(),goal_count]
  elif finished:
   values = result["values"]
@@ -290,9 +302,14 @@ func refresh() -> void:
    heading.text = "TIME’S UP" if result["reason"] == "time_up" else "SHIFT ENDED"
   description.text = "%s · Last shift result · Active time %s" % [result["title"],ShiftSession.clock_text(result["elapsed_seconds"])]
   score_label.text = "%.1f / 100 points  /  %s" % [result["score"],goal_count]
+ var qualities: Array = result.get("job_quality",[1.0,1.0,1.0,1.0,1.0]) if finished else Array(session.job_quality)
+ var multiplier: float = result.get("quality",1.0) if finished else session.quality_multiplier()
+ var coverage: float = result.get("coverage_score",result.get("score",0)) if finished else session.coverage_score()
+ quality_label.text = "Coverage %.1f / 100 · Finish quality %.1f%%" % [coverage,multiplier*100]
+ quality_tip.text = result.get("quality_tip","Legacy result: finish quality is neutral.") if finished else session.quality_tip()
  for i in range(5):
   board_rows[i].visible = targets[i] > 0
-  board_rows[i].text = "%s  %s     %.1f%% / %.0f%% goal" % ["✓" if met[i] else "·",ShiftSession.JOB_NAMES[i],values[i],targets[i]]
+  board_rows[i].text = "%s  %s     %.1f%% / %.0f%% goal" % ["✓" if met[i] else "·",ShiftSession.JOB_NAMES[i],values[i],targets[i]]+ (" · Quality %.0f%%" % (float(qualities[i])*100) if i != 4 else " · Quality —")
   board_rows[i].modulate = Color("a5d2b9") if met[i] else Color.WHITE
  training_button.disabled = active
  full_button.disabled = active

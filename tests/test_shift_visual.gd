@@ -116,7 +116,7 @@ func run() -> void:
  await capture("/tmp/firstpitch-shift-results.png")
  button_click(game.shift.overlay.full_button)
  await idle_frames(5)
- if paused or game.mound.work_done != 0 or game.grass.cut_count != 0 or game.shift.session.profile_id != "full":
+ if paused or game.mound.work_done != game.shift.session.starting_counts[4] or game.grass.cut_count != 0 or game.shift.session.profile_id != "full":
   push_error("Native fresh shift did not reset the world")
   quit(1)
   return

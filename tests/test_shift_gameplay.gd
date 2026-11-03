@@ -105,7 +105,7 @@ func run() -> void:
  game.shift.open_board()
  game.shift.overlay.full_button.pressed.emit()
  check(game.shift.session.profile_id == "full" and game.shift.session.remaining_seconds == 1800,"can start a fresh full shift after results")
- check(game.infield.prepared_count == 0 and not game.tamper.equipped,"restart resets practiced dirt and held tools again")
+ check(game.shift.session.start_mode == "game_day" and game.shift.session.starting_counts[1] == game.infield.prepared_count and not game.tamper.equipped,"game day records worn practice baseline and parks held tools")
  game.shift.session.advance(1900)
  check(paused and game.shift.session.get_result()["reason"] == "time_up","deadline automatically opens time-up results")
  check(game.shift.session.get_result()["score"] == 0 and game.shift.session.remaining_seconds == 0,"empty timeout yields zero score and a stopped clock")

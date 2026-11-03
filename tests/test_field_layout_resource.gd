@@ -60,7 +60,7 @@ func run() -> void:
  file.close()
  g.shift.open_board()
  var migrated := store.read(g)
- check(not migrated.is_empty() and migrated.version == 2 and old.version == 1,"v1 disk file migrates without modifying the source snapshot")
+ check(not migrated.is_empty() and migrated.version == 3 and old.version == 1,"v1 disk file migrates without modifying the source snapshot")
  check(store.restore(g,g.shift,migrated),"pre-refactor save restores into the corrected field")
  check([g.grass.cut_count,g.infield.prepared_count,g.moisture.wet_count,g.chalk.covered_count,g.mound.work_done] == [284,84,256,13,1],"migration preserves every recorded work count")
  check(g.shift.session.attempt_id == old.session.attempt_id and is_equal_approx(g.shift.session.elapsed_seconds,old.session.elapsed) and paused,"migration preserves attempt identity and paused clock")
@@ -94,7 +94,7 @@ func run() -> void:
  ancient.session.erase("attempt_id")
  var legacy_id := "legacy-"+store.digest(var_to_bytes(ancient)).hex_encode()
  check(store.migrate(ancient,g).session.attempt_id == legacy_id,"pre-career v1 saves retain their original fallback payout identity")
- check(store.write(g,g.shift.session) and store.read(g).version == 2,"migrated field can be written back as a v2 slot")
+ check(store.write(g,g.shift.session) and store.read(g).version == 3,"migrated field can be written back as a v3 slot")
  g.shift.close_board()
  g.queue_free()
  await create_timer(0.15).timeout

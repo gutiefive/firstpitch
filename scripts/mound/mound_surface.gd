@@ -85,3 +85,24 @@ func reset_state() -> void:
   clumps[index].scale.y = 1
   clumps[index].visible = true
  completion_changed.emit(0)
+
+func snapshot_hits() -> PackedInt32Array:
+ return hits.duplicate()
+
+func replace_hits(values: PackedInt32Array) -> void:
+ hits = values.duplicate()
+ work_done = 0
+ repaired_count = 0
+ for index in range(hits.size()):
+  work_done += hits[index]
+  repaired_count += 1 if hits[index] == hits_required else 0
+  var fraction := float(hits[index])/hits_required
+  materials[index].set_shader_parameter("compaction",fraction)
+  clumps[index].scale.y = maxf(0.01,1-fraction)
+  clumps[index].visible = fraction < 1
+ completion_changed.emit(percentage())
+
+func prepare_all() -> void:
+ var values := hits.duplicate()
+ values.fill(hits_required)
+ replace_hits(values)

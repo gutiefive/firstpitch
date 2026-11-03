@@ -14,6 +14,10 @@ var total := 0
 var cut_count := 0
 var dirty := false
 var elapsed := 0.0
+var pristine: Image
+var stripe_samples := 0
+var stripe_matches := 0
+var quality_rules := ShiftSession.quality_rules()
 
 var field_origin: Vector2:
  get:
@@ -44,6 +48,8 @@ func _ready() -> void:
     valid[y*resolution.x+x] = 1
     total += 1
     image.set_pixel(x,y,Color(0,0,0,1))
+ pristine = image.duplicate()
+ set_process(false)
  texture = ImageTexture.create_from_image(image)
  var mesh := PlaneMesh.new()
  mesh.size = field_size
@@ -77,21 +83,28 @@ func paint(center: Vector3,direction: Vector3) -> void:
     continue
    if cell_world(x,y).distance_to(Vector2(local.x,local.z)) > radius:
     continue
+   var heading := absf(direction.z)
+   for neighbor in [Vector2i(x-1,y),Vector2i(x+1,y),Vector2i(x,y-1),Vector2i(x,y+1)]:
+    if neighbor.x >= 0 and neighbor.y >= 0 and neighbor.x < resolution.x and neighbor.y < resolution.y and cut[neighbor.y*resolution.x+neighbor.x] == 1:
+     stripe_samples += 1
+     stripe_matches += 1 if absf(image.get_pixelv(neighbor).g-heading) <= float(quality_rules.stripe_tolerance) else 0
    cut[index] = 1
    cut_count += 1
    image.set_pixel(x,y,Color(1,absf(direction.z),0,1))
    dirty = true
+   set_process(true)
 
 func percentage() -> float:
  return 100.0*cut_count/maxi(total,1)
 
 func _process(delta: float) -> void:
  elapsed += delta
- if dirty and elapsed >= 1.0/update_frequency:
+ if dirty and elapsed >= 1.0/minf(10,update_frequency):
   texture.update(image)
   completion_changed.emit(percentage())
   elapsed = 0
   dirty = false
+  set_process(false)
 
 func build_tufts() -> void:
  # One draw batch, no per-blade nodes; the same GPU mask hides freshly cut tufts.
@@ -135,15 +148,17 @@ func build_tufts() -> void:
  tufts.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  add_child(tufts)
 
+func reset_quality() -> void:
+ stripe_samples = 0
+ stripe_matches = 0
+
 func reset_state() -> void:
  cut.fill(0)
  cut_count = 0
- image.fill(Color(0,0,0,0))
- for y in range(resolution.y):
-  for x in range(resolution.x):
-   if valid[y*resolution.x+x] == 1:
-    image.set_pixel(x,y,Color(0,0,0,1))
+ image.copy_from(pristine)
  texture.update(image)
  dirty = false
  elapsed = 0
+ reset_quality()
+ set_process(false)
  completion_changed.emit(0)

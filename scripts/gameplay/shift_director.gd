@@ -7,6 +7,7 @@ var career := CareerProfile.new()
 var career_message := ""
 var standard_deck_width := 2.4
 var standard_water_rate := 0.8
+var wear := FieldWear.new()
 var save_store := FieldSave.new()
 var mouse_before_board := Input.MOUSE_MODE_CAPTURED
 
@@ -18,6 +19,8 @@ func _ready() -> void:
  apply_upgrades()
  session = ShiftSession.new()
  add_child(session)
+ session.configure_work([0,0,0,0,0],totals())
+ wear.prepare(game)
  overlay = ShiftOverlay.new()
  overlay.session = session
  overlay.director = self
@@ -39,8 +42,39 @@ func build_noticeboard() -> void:
  sign.pixel_size = 0.005
  sign.modulate = Color("28585a")
 
+func counts() -> Array:
+ return [game.grass.cut_count,game.infield.prepared_count,game.chalk.covered_count,game.moisture.wet_count,game.mound.work_done]
+
+func totals() -> Array:
+ return [game.grass.total,game.infield.total,game.chalk.valid_count,game.moisture.total,game.mound.total_work]
+
+func configure_quality() -> void:
+ var rules := ShiftSession.quality_rules(session.profile_id)
+ game.grass.quality_rules = rules
+ game.infield.quality_rules = rules
+ game.moisture.quality_rules = rules
+
 func collect_progress() -> void:
- session.set_progress([game.grass.percentage(),game.infield.percentage(),game.chalk.percentage(),game.moisture.percentage(),game.mound.percentage()], [game.grass.total>0 and game.grass.cut_count==game.grass.total,game.infield.total>0 and game.infield.prepared_count==game.infield.total,game.chalk.valid_count>0 and game.chalk.covered_count==game.chalk.valid_count,game.moisture.total>0 and game.moisture.wet_count==game.moisture.total,game.mound.total_work>0 and game.mound.work_done==game.mound.total_work])
+ var current := counts()
+ var sizes := totals()
+ var complete := []
+ for i in range(5):
+  complete.append(sizes[i] > 0 and current[i] == sizes[i])
+ session.set_counts(current,complete)
+ if not session.quality_enabled:
+  session.set_quality([1.0,1.0,1.0,1.0,1.0])
+  return
+ var rules := ShiftSession.quality_rules(session.profile_id)
+ var qualities := [1.0,1.0,1.0,1.0,1.0]
+ var dragged := maxi(1,int(current[1])-session.starting_counts[1])
+ var watered := maxi(1,int(current[3])-session.starting_counts[3])
+ qualities[1] = maxf(float(rules.minimum),1-clampf(float(game.infield.rut_count)/dragged,0,1)*float(rules.rut_penalty))
+ qualities[2] = maxf(float(rules.minimum),1-game.chalk.offguide_metres*float(rules.chalk_per_metre))
+ qualities[3] = maxf(float(rules.minimum),1-clampf(float(game.moisture.overwatered_count)/watered,0,1)*float(rules.water_penalty))
+ var bonus := 0.0
+ if game.grass.stripe_samples >= int(rules.stripe_min_samples):
+  bonus = float(rules.stripe_bonus)*game.grass.stripe_matches/maxi(1,game.grass.stripe_samples)
+ session.set_quality(qualities,clampf(bonus,0,float(rules.stripe_bonus)))
 
 func _process(delta: float) -> void:
  collect_progress()
@@ -91,8 +125,24 @@ func start_shift(profile: String) -> bool:
  if career.earned < int(ShiftSession.PROFILES[profile].get("minimum_earnings",0)):
   return false
  career_message = ""
- reset_field()
  session.start(profile)
+ configure_quality()
+ var config: Dictionary = ShiftSession.PROFILES[profile]
+ var mode: String = config.get("start","fresh")
+ if mode == "game_day":
+  reset_equipment()
+  if wear.is_blank(game):
+   wear.bootstrap(game,profile)
+  var seed := session.attempt_id.sha256_buffer().decode_u32(0)
+  wear.apply(game,seed,float(config.wear),profile)
+  game.infield.reset_quality()
+  game.moisture.reset_quality()
+  game.chalk.reset_quality()
+  session.configure_work(counts(),totals(),mode,seed)
+ else:
+  reset_field()
+  session.configure_work([0,0,0,0,0],totals())
+ collect_progress()
  for i in range(session.goals().size()):
   if session.goals()[i] > 0:
    game.selected_task = i
@@ -102,7 +152,7 @@ func start_shift(profile: String) -> bool:
  close_board()
  return true
 
-func reset_field() -> void:
+func reset_equipment() -> void:
  game.watering.set_equipped(false)
  game.tamper.set_equipped(false)
  game.tamper.dust_time = 1
@@ -136,14 +186,17 @@ func reset_field() -> void:
  game.pivot.global_position = game.player.global_position+Vector3.UP*1.5
  for action in ["forward","back","left","right","sprint","jump","brake","spray_water","tamp_mound"]:
   Input.action_release(action)
+ if game.audio != null:
+  game.audio.reset_tools()
+ game.selected_task = 0
+
+func reset_field() -> void:
+ reset_equipment()
  game.grass.reset_state()
  game.infield.reset_state()
  game.moisture.reset_state()
  game.chalk.reset_state()
  game.mound.reset_state()
- if game.audio != null:
-  game.audio.reset_tools()
- game.selected_task = 0
  game.update_progress(0)
 
 func save_field() -> void:

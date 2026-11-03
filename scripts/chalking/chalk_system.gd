@@ -27,6 +27,7 @@ var active_mesh: MeshInstance3D
 var chalk_material: StandardMaterial3D
 var dirty := false
 var elapsed := 0.0
+var offguide_metres := 0.0
 const STROKES_PER_MESH := 128
 
 func line_direction(side: int) -> Vector2:
@@ -52,6 +53,7 @@ func _ready() -> void:
  chalk_material = ParkGeometry.material(Color("f5edd6")).duplicate() as StandardMaterial3D
  chalk_material.cull_mode = BaseMaterial3D.CULL_DISABLED
  build_guides()
+ set_process(false)
 
 func build_guides() -> void:
  var mesh := BoxMesh.new()
@@ -80,7 +82,25 @@ func paint_segment(from: Vector3,to: Vector3) -> void:
  var b := Vector2(to.x,to.z)
  if a.distance_to(b) < 0.001:
   return
- # Section coverage is measured against the actual continuous chalk stroke.
+ mark_coverage(a,b)
+ # Off-guide chalk is still drawn at its actual position; it earns no shortcut score.
+ var steps := maxi(1,ceili(a.distance_to(b)/0.12))
+ for i in range(steps):
+  var start := a.lerp(b,float(i)/steps)
+  var finish := a.lerp(b,float(i+1)/steps)
+  if is_protected((start+finish)*0.5):
+   continue
+  if distance_to_guide(Vector3((start.x+finish.x)*0.5,0,(start.y+finish.y)*0.5)) > chalk_width*0.5:
+   offguide_metres += start.distance_to(finish)
+  var across := Vector2(-(finish-start).y,(finish-start).x).normalized()*chalk_width*0.5
+  var corners := PackedVector3Array()
+  for point in [start-across,start+across,finish+across,finish-across]:
+   corners.append(Vector3(point.x,layout.ground_height(point)+0.025,point.y))
+  pending.append(corners)
+  stroke_archive.append(corners)
+  set_process(true)
+
+func mark_coverage(a: Vector2,b: Vector2) -> void:
  for side in range(2):
   var direction := line_direction(side)
   var lo := mini(floori(((a-layout.plate_position).dot(direction)-line_start)/segment_step),floori(((b-layout.plate_position).dot(direction)-line_start)/segment_step))-1
@@ -95,19 +115,6 @@ func paint_segment(from: Vector3,to: Vector3) -> void:
     covered_count += 1
     line_counts[side] += 1
     dirty = true
- # Off-guide chalk is still drawn at its actual position; it earns no shortcut score.
- var steps := maxi(1,ceili(a.distance_to(b)/0.12))
- for i in range(steps):
-  var start := a.lerp(b,float(i)/steps)
-  var finish := a.lerp(b,float(i+1)/steps)
-  if is_protected((start+finish)*0.5):
-   continue
-  var across := Vector2(-(finish-start).y,(finish-start).x).normalized()*chalk_width*0.5
-  var corners := PackedVector3Array()
-  for point in [start-across,start+across,finish+across,finish-across]:
-   corners.append(Vector3(point.x,layout.ground_height(point)+0.025,point.y))
-  pending.append(corners)
-  stroke_archive.append(corners)
 
 func percentage() -> float:
  return 100.0*covered_count/maxi(valid_count,1)
@@ -153,15 +160,17 @@ func flush_visuals() -> void:
 
 func _process(delta: float) -> void:
  elapsed += delta
- if elapsed < 1.0/update_frequency:
+ if elapsed < 1.0/minf(10,update_frequency):
   return
  flush_visuals()
  if dirty:
   completion_changed.emit(percentage())
   dirty = false
  elapsed = 0
+ set_process(false)
 
 func reset_state() -> void:
+ offguide_metres = 0
  covered.fill(0)
  covered_count = 0
  line_counts = [0,0]
@@ -175,4 +184,74 @@ func reset_state() -> void:
    child.queue_free()
  dirty = false
  elapsed = 0
+ set_process(false)
  completion_changed.emit(0)
+
+func snapshot_coverage() -> PackedByteArray:
+ return covered.duplicate()
+
+func valid_sections() -> PackedByteArray:
+ return valid.duplicate()
+
+func snapshot_strokes() -> Array:
+ return stroke_archive.duplicate(true)
+
+func reset_quality() -> void:
+ offguide_metres = 0
+
+func replace_strokes(strokes: Array,coverage: PackedByteArray = PackedByteArray(),offguide: float = 0) -> void:
+ reset_state()
+ for stroke in strokes:
+  stroke_archive.append(stroke.duplicate())
+  pending.append(stroke.duplicate())
+  if coverage.is_empty():
+   var a: Vector3 = (stroke[0]+stroke[1])*0.5
+   var b: Vector3 = (stroke[2]+stroke[3])*0.5
+   mark_coverage(Vector2(a.x,a.z),Vector2(b.x,b.z))
+ if not coverage.is_empty():
+  covered = coverage.duplicate()
+ recount()
+ offguide_metres = offguide
+ flush_visuals()
+ dirty = false
+ set_process(false)
+ completion_changed.emit(percentage())
+
+func recount() -> void:
+ covered_count = 0
+ line_counts = [0,0]
+ for i in range(covered.size()):
+  covered_count += covered[i]
+  line_counts[i/sections_per_line] += covered[i]
+
+func scuff_sections(clear: PackedByteArray) -> void:
+ var keep := []
+ for stroke in stroke_archive:
+  var start: Vector3 = (stroke[0]+stroke[1])*0.5
+  var finish: Vector3 = (stroke[2]+stroke[3])*0.5
+  var a := Vector2(start.x,start.z)
+  var b := Vector2(finish.x,finish.z)
+  var remove := false
+  for side in range(2):
+   var direction := line_direction(side)
+   var lo := floori((minf((a-layout.plate_position).dot(direction),(b-layout.plate_position).dot(direction))-line_start)/segment_step)-1
+   var hi := ceili((maxf((a-layout.plate_position).dot(direction),(b-layout.plate_position).dot(direction))-line_start)/segment_step)+1
+   for index in range(maxi(0,lo),mini(sections_per_line,hi+1)):
+    if clear[side*sections_per_line+index] == 1 and section_center(side,index).distance_to(Geometry2D.get_closest_point_to_segment(section_center(side,index),a,b)) <= chalk_width*0.5:
+     remove = true
+     break
+   if remove:
+    break
+  if not remove:
+   keep.append(stroke)
+ replace_strokes(keep)
+
+func prepare_all() -> void:
+ reset_state()
+ for side in range(2):
+  var direction := line_direction(side)
+  paint_segment(layout.point3(layout.plate_position+direction*line_start),layout.point3(layout.plate_position+direction*line_end))
+ flush_visuals()
+ dirty = false
+ set_process(false)
+ completion_changed.emit(percentage())
