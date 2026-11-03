@@ -44,6 +44,11 @@ func run() -> void:
  g.player.global_position = Vector3(28,0.05,-17)
  crew.rotation.y = 0.5
  await capture(camera,Vector3(25,1.7,-21),Vector3(28,0.95,-17),"crew")
+ g.player.set_physics_process(false)
+ (crew as CrewVisual).animate_walk(4.5,0.18)
+ await capture(camera,Vector3(25,1.7,-21),Vector3(28,0.95,-17),"walking")
+ (crew as CrewVisual).animate_walk(0,1)
+ g.player.set_physics_process(true)
  g.club.join()
  var c: CareerProfile = g.shift.career
  for i in range(15):
@@ -52,6 +57,7 @@ func run() -> void:
  for id in ["bleachers","snack_shack","grandstand","grill_stand","scoreboard","video_board"]:
   g.club.build(id)
  await capture(camera,Vector3(-43,16,37),Vector3(-3,1,12),"stadium")
+ await capture(camera,Vector3(-7,2.2,7.5),Vector3(-7,1.4,11),"seating")
  await capture(camera,Vector3(-32,2.1,11),Vector3(-32,1.5,20),"concession")
  DirAccess.remove_absolute(g.career_save_path)
  g.queue_free()

@@ -42,10 +42,22 @@ godot --path . --rendering-method gl_compatibility \
   --script tools/capture_art_review.gd -- review
 ```
 
-The helper uses dedicated fixture paths, advances a synthetic club career to show all stadium projects and writes five screenshots to `/tmp/firstpitch-art`. It is an art-review tool, not a balance playthrough.
+The helper uses dedicated fixture paths, advances a synthetic club career to show all stadium projects and writes seven screenshots to `/tmp/firstpitch-art`. It is an art-review tool, not a balance playthrough.
 
 ## Verification scope
 
 219 assertions passed across gameplay, watering, tutorial, equipment upgrades, club gameplay, stadium expansion, shared layout and field-save suites. Editor import and rendered captures were checked for script/shader errors. Existing collider bounds, layout resources, task masks, upgrade costs and save formats are retained.
 
 Rendered review used Godot 4.6.3, Linux Xorg and Mesa Compatibility. A Forward+ launch was attempted but the host lacks `VK_KHR_surface` and falls back to Compatibility; native Forward+ AO/soft-shadow appearance and Windows performance still need hardware verification. This remains procedural stylized art, with room for further character animation and bespoke models.
+
+## Close-up refinement
+
+The follow-up pass adds curved molded seat backs and softened seat pans, tubular stand rails and step nosings. Both concession stands now have framed serving displays with shelves, cups, a till, menus and a warm strip fixture; sign placement clears the trim. The groundskeeper has articulated knees, longer grounded legs, boot soles/laces, shirt buttons and a belt buckle. Tractor headlights have lens ribs and the hood has side ventilation. Batched crowd details add smaller heads, rounded hair and legs, subtle facial features and clothing variation within each seating bank.
+
+The capture helper now also records a walking pose and a close seating view, for seven views per run. This refinement passed 154 targeted assertions across gameplay, tutorial, watering, equipment upgrades, club gameplay and stadium expansion; rendered views and editor import were checked in Compatibility. Native Forward+ verification remains outstanding as described above.
+
+![Curved seats and varied batched supporters](screenshots/refined-seating.png)
+
+![Framed concession serving window and counter details](screenshots/refined-concession.png)
+
+![Articulated walking pose and tractor detail](screenshots/refined-walking.png)

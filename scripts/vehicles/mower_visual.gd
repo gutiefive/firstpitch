@@ -18,12 +18,19 @@ func _ready() -> void:
  for i in range(7):
   G.soft_box(self,Vector3(-0.33+i*0.11,0.85,-1.17),Vector3(0.035,0.34,0.025),Color("75867b"))
  for x in [-0.44,0.44]:
-  G.soft_box(self,Vector3(x,1.01,-1.145),Vector3(0.16,0.1,0.06),Color("d2ccb5"))
+  var lamp := G.soft_box(self,Vector3(x,1.01,-1.16),Vector3(0.16,0.1,0.06),Color("d2ccb5"))
+  var glass := G.material(Color("c3c8bd")).duplicate() as StandardMaterial3D
+  glass.roughness = 0.22
+  lamp.material_override = glass
+  for rib in range(3):
+   G.soft_box(lamp,Vector3(-0.045+rib*0.045,0,-0.032),Vector3(0.009,0.08,0.006),Color("9caa9d"))
   G.soft_box(self,Vector3(x,0.74,0.58),Vector3(0.3,0.12,1.1),YELLOW)
   G.soft_box(self,Vector3(x*1.45,0.45,0),Vector3(0.28,0.1,0.65),DARK)
  for side in [-1,1]:
   G.soft_box(self,Vector3(side*0.54,0.9,0.6),Vector3(0.3,0.15,0.94),YELLOW)
   G.soft_box(self,Vector3(side*0.548,0.83,-0.55),Vector3(0.025,0.07,0.8),Color("f3dc91"))
+  for vent in range(5):
+   G.soft_box(self,Vector3(side*0.535,0.75,-0.82+vent*0.105),Vector3(0.018,0.17,0.025),DARK)
   var badge := G.label(self,"CG • 24",Vector3(side*0.565,0.9,-0.55),32)
   badge.pixel_size = 0.0018
   badge.rotation.y = side*PI/2

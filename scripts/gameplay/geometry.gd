@@ -282,3 +282,40 @@ static func tailored_body(parent: Node3D,pos: Vector3,color: Color) -> MeshInsta
  node.position = pos
  parent.add_child(node)
  return node
+
+static var seat_cache: Dictionary = {}
+static func seat_instances(parent: Node3D,positions: PackedVector3Array,size: Vector3,color: Color,title: String,back: bool = false) -> MultiMeshInstance3D:
+ var node := box_instances(parent,positions,size,color,title)
+ if not back:
+  node.multimesh.mesh = bevel_mesh(size)
+ else:
+  if not seat_cache.has(size):
+   var surface := SurfaceTool.new()
+   surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+   for side in [-1,1]:
+    for row in range(4):
+     for column in range(10):
+      var points := []
+      for pair in [Vector2(0,0),Vector2(1,0),Vector2(1,1),Vector2(0,1)]:
+       var u: float = (column+pair.x)/10-0.5
+       var v: float = (row+pair.y)/4-0.5
+       var taper := 1-0.13*smoothstep(0.2,0.5,v)
+       points.append(Vector3(u*size.x*taper,v*size.y,size.z*side*0.5+0.035*(1-4*u*u)+v*0.10))
+      mesh_face(surface,points,Vector3(0,-0.23,side).normalized())
+   # Caps close the molded shell around its perimeter.
+   for edge in range(4):
+    var points := []
+    for pair in [Vector2(0,-1),Vector2(1,-1),Vector2(1,1),Vector2(0,1)]:
+     var u: float = pair.x-0.5 if edge < 2 else (-0.5 if edge == 2 else 0.5)
+     var v: float = (-0.5 if edge == 0 else 0.5) if edge < 2 else pair.x-0.5
+     var taper := 1-0.13*smoothstep(0.2,0.5,v)
+     points.append(Vector3(u*size.x*taper,v*size.y,size.z*pair.y*0.5+0.035*(1-4*u*u)+v*0.10))
+    mesh_face(surface,points,Vector3(0,-1 if edge == 0 else 1,0) if edge < 2 else Vector3(-1 if edge == 2 else 1,0,0))
+   seat_cache[size] = surface.commit()
+  node.multimesh.mesh = seat_cache[size]
+ node.material_override = surface_material(color)
+ return node
+static func tube(parent: Node3D,from: Vector3,to: Vector3,radius: float,color: Color) -> MeshInstance3D:
+ var node := cylinder(parent,(from+to)*0.5,radius,from.distance_to(to),color)
+ node.quaternion = Quaternion(Vector3.UP,(to-from).normalized())
+ return node

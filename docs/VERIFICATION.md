@@ -290,3 +290,7 @@ Godot Compatibility graphical playback also passed all 9 hose checks; inspected 
 ### Four-pass visual revision
 
 219 assertions passed across gameplay (13), watering gameplay (22), tutorial (33), equipment upgrades (30), club gameplay (39), stadium expansion (17), shared layout resource (37) and field save (28). Captured five recurring views across baseline, four passes and final refinement; inspected character/equipment, park, field and concession renders. Editor import and captures passed without script/shader errors. Committed final screenshots and the baseline crew comparison are linked in `ART_REVIEW.md`. No new mechanics or save format changes. The attempted Forward+ review cannot count as Forward+ verification: Vulkan `VK_KHR_surface` is missing and Godot falls back to OpenGL Compatibility. Hardware performance, native AO and Windows remain unverified.
+
+### Close-up art refinement
+
+154 targeted assertions passed: gameplay 13, tutorial 33, watering gameplay 22, equipment upgrades 30, club gameplay 39, stadium expansion 17. Reviewed Compatibility renders of the molded seats/rails, concession display/sign clearance, crew walking pose, tractor, field and expanded park. The existing club tests retain exact seat counts, batch-size guard, saved building restoration, equipment operation and field-layout compatibility. New screenshots: `refined-seating.png`, `refined-concession.png`, `refined-walking.png`. Visual fixture histories and isolated XDG paths were used. Native Forward+ and hardware performance are not newly verified.

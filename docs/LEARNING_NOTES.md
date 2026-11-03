@@ -281,3 +281,7 @@ Watering previously coupled visible droplets to `apply_spray()` succeeding at a 
 ### Four-pass art workflow
 
 Review the same camera views between silhouette, material, lighting and detail passes. `tools/capture_art_review.gd` uses an isolated fixture career and explicitly restores its review camera after construction resets the game camera. `ParkGeometry` now caches chamfer meshes, canopy variants and surface materials; chamfers replace visual meshes while existing box colliders retain exact dimensions. Smooth character and tree geometry is visual only. Shared procedural shaders use the project's explicit linear-color convention; an intermediate unconverted material pass was visibly washed out in Compatibility and was corrected. Coverage/inspection shader branches and saved masks remain unchanged. Forward+ was attempted but the host fell back to Compatibility because Vulkan surface support is unavailable.
+
+### Close-up refinements
+
+Cached seat-shell meshes reuse MultiMesh transforms and preserve 120/240/480 capacity. Decorative rails and serving displays add no gameplay collision changes. Crowd clothing selection now varies within banks, avoiding the old modulo-four/interleaved-bank pattern that made an entire bank one color. Crowd facial/hair/leg details remain batched under one group rather than creating supporter scenes. Knee pivots live beneath existing leg roots; the public limb ordering and hand-tool pose branches remain intact. The art capture tool freezes only the fixture player's physics while recording a walking pose, then restores it.

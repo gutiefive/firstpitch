@@ -117,8 +117,8 @@ static func grandstand(parent: Node3D,side: int) -> Node3D:
    backs.append(Vector3(x,y+0.48,z+0.15))
   for x in [-8.7,8.7]:
    G.box(root,Vector3(x,y+0.6,z),Vector3(0.07,1.2,0.07),CREAM)
- G.box_instances(root,seats,Vector3(0.62,0.15,0.57),TEAL,"SeatCushions")
- G.box_instances(root,backs,Vector3(0.62,0.6,0.1),TEAL,"SeatBacks")
+ G.seat_instances(root,seats,Vector3(0.62,0.15,0.57),TEAL,"SeatCushions")
+ G.seat_instances(root,backs,Vector3(0.62,0.6,0.08),TEAL,"SeatBacks",true)
  for side_x in [-8.7,8.7]:
   G.beam(root,Vector3(side_x,1.25,0),Vector3(side_x,3.85,5),0.09,CREAM)
  G.box(root,Vector3(0,4.8,2.5),Vector3(19.5,0.18,7.2),Color("4b6e66"))
