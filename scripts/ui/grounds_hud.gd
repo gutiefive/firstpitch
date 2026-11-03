@@ -10,6 +10,12 @@ var objective_label: Label
 var summary_label: Label
 var detail_label: Label
 var reticle: Label
+var reminder: Label
+var tutorial_panel: PanelContainer
+var tutorial_title: Label
+var tutorial_instruction: Label
+var tutorial_reason: Label
+var tutorial_skip: Button
 
 func text_label(text: String,size: int,color: Color = CREAM) -> Label:
  var label := Label.new()
@@ -100,7 +106,7 @@ func _ready() -> void:
  reticle.add_theme_constant_override("shadow_outline_size",3)
  reticle.visible = false
  add_child(reticle)
- var reminder := text_label("TAB  Shift board / pause\nMOUSE  Orbit     SCROLL  Zoom     ESC  Cursor",12)
+ reminder = text_label("TAB  Shift board / pause\nMOUSE  Orbit     SCROLL  Zoom     ESC  Cursor",12)
  reminder.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
  reminder.offset_left = -420
  reminder.offset_right = -24
@@ -110,3 +116,25 @@ func _ready() -> void:
  reminder.add_theme_color_override("font_shadow_color",Color("203e36"))
  reminder.add_theme_constant_override("shadow_outline_size",4)
  add_child(reminder)
+
+ tutorial_panel = PanelContainer.new()
+ tutorial_panel.position = Vector2(24,370)
+ tutorial_panel.custom_minimum_size.x = 420
+ tutorial_panel.add_theme_stylebox_override("panel",panel_style(Color(0.055,0.14,0.14,0.96)))
+ add_child(tutorial_panel)
+ var guide := VBoxContainer.new()
+ tutorial_panel.add_child(guide)
+ tutorial_title = text_label("CREW GUIDE",14,GOLD)
+ guide.add_child(tutorial_title)
+ tutorial_instruction = text_label("",14)
+ tutorial_instruction.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ guide.add_child(tutorial_instruction)
+ tutorial_reason = text_label("",11,Color("aac2ad"))
+ tutorial_reason.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ guide.add_child(tutorial_reason)
+ tutorial_skip = Button.new()
+ tutorial_skip.text = "Skip guide"
+ tutorial_skip.tooltip_text = "Finishing or skipping the guide clears the practice field."
+ tutorial_skip.pressed.connect(func(): get_parent().tutorial.finish())
+ guide.add_child(tutorial_skip)
+ tutorial_panel.visible = false

@@ -13,6 +13,8 @@ var rack_position: Vector3:
 var player: Groundskeeper
 var camera: Camera3D
 var mound: MoundSurface
+var binding_query: Callable
+var sign: Label3D
 var capture_query: Callable
 var equipped := false
 var busy := false
@@ -58,7 +60,7 @@ func build_rack() -> void:
  for side in [-1,1]:
   ParkGeometry.box(self,rack_position+Vector3(side*0.65,0.9,-0.25),Vector3(0.08,1.8,0.08),Color("28585a"))
  ParkGeometry.box(self,rack_position+Vector3(0,1.65,-0.25),Vector3(2,0.5,0.12),Color("eee3c6"))
- var sign := ParkGeometry.label(self,"MOUND REPAIR\nG  TAKE / STOW TAMPER",rack_position+Vector3(0,1.65,-0.17),34)
+ sign = ParkGeometry.label(self,"MOUND REPAIR\nTAKE / STOW TAMPER",rack_position+Vector3(0,1.65,-0.17),34)
  sign.pixel_size = 0.004
  sign.modulate = Color("28585a")
  stored = TamperVisual.new()
@@ -115,7 +117,7 @@ func update_aim() -> void:
   elif Vector2(player.velocity.x,player.velocity.z).length() > 0.35:
    feedback = "STOP BEFORE TAMPING"
   else:
-   feedback = "CLICK LMB TO TAMP"
+   feedback = "PRESS %s TO TAMP" % binding_query.call("tamp_mound") if binding_query.is_valid() else "PRESS TO TAMP"
 
 func within_reach(index: int) -> bool:
  if index < 0 or index >= mound.hits.size():
@@ -144,7 +146,7 @@ func _physics_process(delta: float) -> void:
  update_aim()
  if not cursor_is_captured():
   cancel_swing()
-  feedback = "ESC TO RECAPTURE CURSOR"
+  feedback = "%s TO RECAPTURE CURSOR" % binding_query.call("cursor_menu") if binding_query.is_valid() else "RECAPTURE CURSOR TO TAMP"
  elif requested:
   requested = false
   if can_work(target_index):

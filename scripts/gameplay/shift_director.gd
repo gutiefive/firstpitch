@@ -9,6 +9,7 @@ var standard_deck_width := 2.4
 var standard_water_rate := 0.8
 var wear := FieldWear.new()
 var save_store := FieldSave.new()
+var notice_sign: Label3D
 var mouse_before_board := Input.MOUSE_MODE_CAPTURED
 
 func _ready() -> void:
@@ -38,9 +39,9 @@ func build_noticeboard() -> void:
  for x in [-1.2,1.2]:
   ParkGeometry.box(game,game.layout.noticeboard_position+Vector3(x,-0.65,0),Vector3(0.1,2,0.1),Color("28585a"))
  ParkGeometry.box(game,game.layout.noticeboard_position,Vector3(2.8,1.25,0.15),Color("eee3c6"))
- var sign := ParkGeometry.label(game,"CEDAR GROVE\nPREPARATION SHIFTS\nTAB  SHIFT BOARD",game.layout.noticeboard_position+Vector3(0,0,0.1),36)
- sign.pixel_size = 0.005
- sign.modulate = Color("28585a")
+ notice_sign = ParkGeometry.label(game,"CEDAR GROVE\nPREPARATION SHIFTS\nSHIFT BOARD",game.layout.noticeboard_position+Vector3(0,0,0.1),36)
+ notice_sign.pixel_size = 0.005
+ notice_sign.modulate = Color("28585a")
 
 func counts() -> Array:
  return [game.grass.cut_count,game.infield.prepared_count,game.chalk.covered_count,game.moisture.wet_count,game.mound.work_done]
@@ -87,6 +88,8 @@ func toggle_board() -> void:
   open_board()
 
 func open_board() -> void:
+ if game.autosave != null:
+  game.autosave.request()
  if not overlay.modal.visible:
   mouse_before_board = Input.mouse_mode
  collect_progress()
@@ -99,6 +102,7 @@ func open_board() -> void:
  overlay.modal.visible = true
  Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
  get_tree().paused = true
+ overlay.focus_current()
 
 func close_board() -> void:
  if not overlay.modal.visible:
@@ -120,6 +124,8 @@ func on_finished(result: Dictionary) -> void:
  open_board()
 
 func start_shift(profile: String) -> bool:
+ if game.autosave != null and not game.autosave.candidate.is_empty():
+  return false
  if session.phase == ShiftSession.Phase.ACTIVE or not ShiftSession.PROFILES.has(profile):
   return false
  if career.earned < int(ShiftSession.PROFILES[profile].get("minimum_earnings",0)):
@@ -143,6 +149,9 @@ func start_shift(profile: String) -> bool:
   reset_field()
   session.configure_work([0,0,0,0,0],totals())
  collect_progress()
+ if game.autosave != null:
+  game.autosave.interval = 0
+  game.autosave.request()
  for i in range(session.goals().size()):
   if session.goals()[i] > 0:
    game.selected_task = i
@@ -228,3 +237,17 @@ func retry_career() -> void:
   var receipt := career.claim(session.attempt_id,session.get_result())
   career_message = receipt.message
  overlay.refresh()
+
+func enter_practice() -> void:
+ reset_field()
+ session.phase = ShiftSession.Phase.PRACTICE
+ session.attempt_id = ""
+ session.elapsed_seconds = 0
+ session.remaining_seconds = session.duration_seconds
+ session._result.clear()
+ session.quality_enabled = true
+ session.configure_work([0,0,0,0,0],totals())
+ collect_progress()
+ session.changed.emit()
+ if game.autosave != null:
+  game.autosave.request()

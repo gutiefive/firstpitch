@@ -18,6 +18,8 @@ func run() -> void:
  DirAccess.remove_absolute(path)
  var g = load("res://scenes/main/main.tscn").instantiate()
  g.career_save_path = path
+ g.tutorial_enabled = false
+ g.autosave_enabled = false
  root.add_child(g)
  await frames(5)
  check(g.shift.career.balance == 0 and g.grass.deck_width == 2.4,"scene begins with standard equipment and a new career")
@@ -78,6 +80,8 @@ func run() -> void:
  await create_timer(0.15).timeout
  g = load("res://scenes/main/main.tscn").instantiate()
  g.career_save_path = path
+ g.tutorial_enabled = false
+ g.autosave_enabled = false
  root.add_child(g)
  await frames(5)
  check(g.shift.career.balance == balance and g.grass.deck_width == 3 and is_equal_approx(g.moisture.application_rate,1.0),"a recreated game restores career balance and purchased equipment")

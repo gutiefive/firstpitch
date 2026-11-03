@@ -11,6 +11,8 @@ func capture(camera: Camera3D,from: Vector3,to: Vector3,path: String) -> void:
 func run() -> void:
  var g = load("res://scenes/main/main.tscn").instantiate()
  g.career_save_path = "user://test-test_field_layout_visual-career.dat"
+ g.tutorial_enabled = false
+ g.autosave_enabled = false
  DirAccess.remove_absolute(g.career_save_path)
  root.add_child(g)
  Input.mouse_mode = Input.MOUSE_MODE_VISIBLE

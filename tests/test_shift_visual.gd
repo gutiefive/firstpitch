@@ -16,6 +16,12 @@ func key(keycode: Key) -> void:
   event.pressed = pressed
   Input.parse_input_event(event)
 func button_click(button: Button) -> void:
+ var parent := button.get_parent()
+ while parent != null:
+  if parent is ScrollContainer:
+   parent.ensure_control_visible(button)
+   await idle_frames(4)
+  parent = parent.get_parent()
  var point := button.get_global_rect().get_center()
  var motion := InputEventMouseMotion.new()
  motion.position = point
@@ -40,6 +46,8 @@ func capture(path: String) -> void:
 func run() -> void:
  var game = load("res://scenes/main/main.tscn").instantiate()
  game.career_save_path = "user://test-test_shift_visual-career.dat"
+ game.tutorial_enabled = false
+ game.autosave_enabled = false
  DirAccess.remove_absolute(game.career_save_path)
  root.add_child(game)
  await frames(45)
@@ -51,7 +59,7 @@ func run() -> void:
   quit(1)
   return
  await capture("/tmp/firstpitch-shift-board.png")
- button_click(game.shift.overlay.training_button)
+ await button_click(game.shift.overlay.training_button)
  await idle_frames(5)
  if paused or game.shift.session.phase != ShiftSession.Phase.ACTIVE:
   push_error("Native training button did not start shift")
@@ -74,7 +82,7 @@ func run() -> void:
   quit(1)
   return
  await capture("/tmp/firstpitch-shift-paused.png")
- button_click(game.shift.overlay.close_button)
+ await button_click(game.shift.overlay.close_button)
  await idle_frames(5)
  if paused:
   push_error("Native resume button did not resume")
@@ -106,7 +114,7 @@ func run() -> void:
   return
  key(KEY_TAB)
  await idle_frames(5)
- button_click(game.shift.overlay.end_button)
+ await button_click(game.shift.overlay.end_button)
  await idle_frames(5)
  var result: Dictionary = game.shift.session.get_result()
  if not paused or result.is_empty() or result["jobs_completed"] != 1 or result["score"] <= 20:
@@ -114,7 +122,7 @@ func run() -> void:
   quit(1)
   return
  await capture("/tmp/firstpitch-shift-results.png")
- button_click(game.shift.overlay.full_button)
+ await button_click(game.shift.overlay.full_button)
  await idle_frames(5)
  if paused or game.mound.work_done != game.shift.session.starting_counts[4] or game.grass.cut_count != 0 or game.shift.session.profile_id != "full":
   push_error("Native fresh shift did not reset the world")
@@ -128,7 +136,7 @@ func run() -> void:
   push_error("Graphical timeout result did not appear")
   quit(1)
   return
- button_click(game.shift.overlay.close_button)
+ await button_click(game.shift.overlay.close_button)
  await idle_frames(5)
  if paused:
   push_error("Native practice return did not unpause")

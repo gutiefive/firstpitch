@@ -5,6 +5,15 @@ signal start_requested(profile: String)
 signal save_requested
 signal load_requested
 signal end_requested
+var controls_screen: ScrollContainer
+var controls_panel: ControlsPanel
+var controls_button: Button
+var replay_button: Button
+var autosave_footer: Label
+var resume_card: VBoxContainer
+var resume_summary: Label
+var resume_button: Button
+var fresh_button: Button
 var contracts_screen: ScrollContainer
 var contracts_panel: ContractsPanel
 var contracts_button: Button
@@ -34,6 +43,7 @@ var close_button: Button
 var save_button: Button
 var load_button: Button
 var save_message: Label
+var board_content: VBoxContainer
 var board_scroll: ScrollContainer
 var sound_screen: CenterContainer
 var sound_panel: SoundPanel
@@ -117,10 +127,23 @@ func _ready() -> void:
  card.add_theme_stylebox_override("panel",style(Color("173c39")))
  center.add_child(card)
  var content := VBoxContainer.new()
+ board_content = content
  content.add_theme_constant_override("separation",6)
  card.add_child(content)
  heading = label("SHIFT BOARD",28,GOLD)
  content.add_child(heading)
+ resume_card = VBoxContainer.new()
+ content.add_child(resume_card)
+ resume_summary = label("",15,GOLD)
+ resume_summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ resume_card.add_child(resume_summary)
+ resume_button = button("Resume last session")
+ fresh_button = button("Start fresh · return to practice")
+ resume_card.add_child(resume_button)
+ resume_card.add_child(fresh_button)
+ resume_button.pressed.connect(func(): director.game.autosave.resume())
+ fresh_button.pressed.connect(func(): director.game.autosave.start_fresh())
+ resume_card.visible = false
  description = label("",14)
  content.add_child(description)
  score_label = label("",22,GOLD)
@@ -154,22 +177,24 @@ func _ready() -> void:
  training_button.pressed.connect(func(): start_requested.emit("training"))
  full_button.pressed.connect(func(): start_requested.emit("full"))
  content.add_child(label("Training goals: mow 25%, drag/chalk/water 50%, mound 100%.",13,Color("adc7b7")))
- content.add_child(label("Full prep goals: 100% of every job. TAB pauses the world and clock.",13,Color("adc7b7")))
+ content.add_child(label("Full prep goals: 100% of every job. The board pauses the world and clock.",13,Color("adc7b7")))
  end_button = button("End shift now")
  content.add_child(end_button)
  end_button.pressed.connect(func(): end_requested.emit())
  var saves := HBoxContainer.new()
  content.add_child(saves)
- save_button = button("Save field + shift")
- load_button = button("Load saved field + shift")
+ save_button = button("Save to manual slot")
+ load_button = button("Load manual slot")
  for item in [save_button,load_button]:
   item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   saves.add_child(item)
  save_button.pressed.connect(func(): save_requested.emit())
  load_button.pressed.connect(func(): load_requested.emit())
  content.add_child(label("One slot. Loading replaces current work and parks equipment.",12,GOLD))
- save_message = label("Save manually before closing the game.",12,Color("adc7b7"))
+ save_message = label("Manual slot is separate from autosave.",12,Color("adc7b7"))
  content.add_child(save_message)
+ autosave_footer = label("Autosave ready",12,Color("adc7b7"))
+ content.add_child(autosave_footer)
  var menus := HBoxContainer.new()
  content.add_child(menus)
  contracts_button = button("Contracts")
@@ -178,12 +203,22 @@ func _ready() -> void:
  for item in [contracts_button,career_button,sound_button]:
   item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   menus.add_child(item)
+ var help := HBoxContainer.new()
+ content.add_child(help)
+ controls_button = button("Controls")
+ replay_button = button("Replay tutorial")
+ replay_button.tooltip_text = "Starts a fresh practice field. Career and manual slot are kept."
+ for item in [controls_button,replay_button]:
+  item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  help.add_child(item)
+ replay_button.pressed.connect(func(): director.game.tutorial.replay())
  close_button = button("Return to practice")
  content.add_child(close_button)
  close_button.pressed.connect(func(): close_requested.emit())
  modal.visible = false
  attach_career()
  attach_contracts()
+ attach_controls()
  session.changed.connect(refresh)
  refresh()
 
@@ -203,7 +238,7 @@ func attach_career() -> void:
   board_scroll.visible = false
   career_screen.visible = true
   career_panel.refresh()
-  career_panel.back_button.grab_focus())
+  focus_current())
  director.career.changed.connect(refresh)
  career_screen.visible = false
 
@@ -223,7 +258,7 @@ func attach_contracts() -> void:
   board_scroll.visible = false
   contracts_screen.visible = true
   contracts_panel.refresh()
-  contracts_panel.back_button.grab_focus())
+  focus_current())
  contracts_screen.visible = false
 
 func attach_audio(audio: GroundsAudio) -> void:
@@ -237,10 +272,12 @@ func attach_audio(audio: GroundsAudio) -> void:
  sound_button.pressed.connect(func():
   board_scroll.visible = false
   sound_screen.visible = true
-  sound_panel.sliders.master.grab_focus())
+  focus_current())
  sound_screen.visible = false
 
 func show_board() -> void:
+ if controls_screen != null:
+  controls_screen.visible = false
  if sound_screen != null:
   sound_screen.visible = false
  if career_screen != null:
@@ -248,16 +285,28 @@ func show_board() -> void:
  if contracts_screen != null:
   contracts_screen.visible = false
  board_scroll.visible = true
+ focus_current()
 
 func _input(event: InputEvent) -> void:
- if modal.visible and event is InputEventKey and event.pressed and not event.echo and event.keycode in [KEY_TAB,KEY_ESCAPE]:
-  if event.keycode == KEY_ESCAPE and ((sound_screen != null and sound_screen.visible) or (career_screen != null and career_screen.visible) or (contracts_screen != null and contracts_screen.visible)):
+ if not modal.visible or (event is InputEventKey and event.echo):
+  return
+ if event.is_action_pressed("shift_board"):
+  if resume_card.visible:
+   return
+  close_requested.emit()
+  get_viewport().set_input_as_handled()
+ elif event.is_action_pressed("cursor_menu") or event.is_action_pressed("ui_cancel"):
+  if not board_scroll.visible:
    show_board()
-  else:
+  elif not resume_card.visible:
    close_requested.emit()
   get_viewport().set_input_as_handled()
 
 func refresh() -> void:
+ var offered := resume_card.visible
+ for child in board_content.get_children():
+  child.visible = true
+ resume_card.visible = offered
  if career_button != null:
   career_button.text = "Crew career · %d cr" % director.career.balance
  career_reward.text = director.career_message
@@ -271,7 +320,7 @@ func refresh() -> void:
  quality_tip.visible = active or finished
  var goal_count := "%d of %d %s" % [int(result.jobs_completed) if finished else session.jobs_completed(),session.jobs_required(),"goal" if session.jobs_required() == 1 else "goals"]
  scoring_label.text = "Each listed job is worth %.0f points, proportional to its goal." % (100.0/maxi(session.jobs_required(),1))
- status_clock.text = "%s  /  %s · TAB pauses" % [ShiftSession.clock_text(session.remaining_seconds),goal_count] if active else "TAB  Shift board / last result"
+ status_clock.text = "%s  /  %s · %s pauses" % [ShiftSession.clock_text(session.remaining_seconds),goal_count,director.game.binding_text("shift_board")] if active else "%s  Shift board / last result" % director.game.binding_text("shift_board")
  if active and session.remaining_seconds <= 60:
   status_clock.modulate = Color("efbb8e")
  else:
@@ -311,8 +360,72 @@ func refresh() -> void:
   board_rows[i].visible = targets[i] > 0
   board_rows[i].text = "%s  %s     %.1f%% / %.0f%% goal" % ["✓" if met[i] else "·",ShiftSession.JOB_NAMES[i],values[i],targets[i]]+ (" · Quality %.0f%%" % (float(qualities[i])*100) if i != 4 else " · Quality —")
   board_rows[i].modulate = Color("a5d2b9") if met[i] else Color.WHITE
- training_button.disabled = active
- full_button.disabled = active
+ replay_button.disabled = active or offered
+ close_button.disabled = offered
+ load_button.disabled = offered
+ save_button.disabled = offered
+ contracts_button.disabled = offered
+ training_button.disabled = active or offered
+ full_button.disabled = active or offered
  end_button.visible = active
  close_button.text = "Resume shift" if active else "Continue practicing"
  status_panel.reset_size()
+ if offered:
+  for child in board_content.get_children():
+   child.visible = child in [heading,resume_card,description,autosave_footer]
+  heading.text = "RESUME LAST SESSION"
+  description.text = "Restore field work and park equipment at the workshop. The world stays paused."
+
+func attach_controls() -> void:
+ controls_screen = ScrollContainer.new()
+ controls_screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+ modal.add_child(controls_screen)
+ var center := CenterContainer.new()
+ center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+ center.size_flags_vertical = Control.SIZE_EXPAND_FILL
+ controls_screen.add_child(center)
+ controls_panel = ControlsPanel.new()
+ controls_panel.game = director.game
+ center.add_child(controls_panel)
+ controls_panel.back_requested.connect(show_board)
+ controls_screen.visible = false
+ controls_button.pressed.connect(func():
+  board_scroll.visible = false
+  controls_screen.visible = true
+  controls_panel.refresh()
+  focus_current())
+func focus_current() -> void:
+ if not is_inside_tree() or not modal.visible:
+  return
+ var screen: Control = board_scroll
+ for candidate in [controls_screen,career_screen,contracts_screen,sound_screen]:
+  if candidate != null and candidate.visible:
+   screen = candidate
+ CrewInput.focus_screen(screen)
+ if resume_card.visible and screen == board_scroll:
+  resume_button.grab_focus()
+func show_resume(data: Dictionary) -> void:
+ resume_card.visible = true
+ var s: Dictionary = data.session
+ var check := ShiftSession.new()
+ check.profile_id = s.profile
+ check.configure_work(Array(s.starting_counts),Array(s.work_totals),s.start_mode,s.wear_seed)
+ var counts := [0,0,0,0,0]
+ for i in range(data.grass.size()/4):
+  counts[0] += int(data.grass[i*4] == 255)
+ for i in range(data.dirt.size()/4):
+  counts[1] += int(data.dirt[i*4] == 255)
+  counts[3] += int(data.moisture[i] >= director.game.moisture.target_moisture)
+ for value in data.chalk:
+  counts[2] += value
+ for value in data.hits:
+  counts[4] += value
+ var complete := []
+ for i in range(5):
+  complete.append(counts[i] == check.work_totals[i])
+ check.set_counts(counts,complete)
+ var coverage: float = s.result.get("coverage_score",s.result.get("score",check.coverage_score())) if s.phase == ShiftSession.Phase.FINISHED else check.coverage_score()
+ resume_summary.text = "%s · %s left · %.1f%% goal coverage" % [check.title(),ShiftSession.clock_text(ShiftSession.PROFILES[s.profile].duration-s.elapsed),coverage]
+ check.free()
+ refresh()
+ focus_current()

@@ -4,7 +4,7 @@ A playable Godot 3D groundskeeping prototype set at **Cedar Grove Ballpark**. Mo
 
 Built with GDScript, procedural meshes and original generated sound effects. No plugins, downloaded art, or external runtime dependencies are required.
 
-**Current build: M1–M5 prototypes implemented, plus the first M6 career and contracts loop.** The latest verified build passed **495 headless assertions** and scripted graphical checks. Windows and Forward+ hardware testing remain outstanding.
+**Current build: M1–M5 prototypes implemented, plus the first M6 career and contracts loop.** The latest verified build passed **582 headless assertions** and scripted graphical checks. Windows and Forward+ hardware testing remain outstanding.
 
 ![Cedar Grove's connected dugouts and playing enclosure](docs/screenshots/dugout-layout.png)
 
@@ -18,8 +18,9 @@ Built with GDScript, procedural meshes and original generated sound effects. No 
 | **M2 — Riding mower** | Enter/exit, acceleration, braking, reverse, steering, animated wheels, seated operator and speed-responsive engine audio. |
 | **M3 — Grass mowing** | Persistent spatial cutting, directional stripes, disappearing grass tufts and overlap-safe coverage. |
 | **M4 — Field tools** | Tow-behind infield drag, pushable chalk marker, on-foot hose and timed hand tamper; five independent field jobs. |
-| **M5 — Shifts, scores and saving** | Free practice, training/full-park shifts, paused board, live goals, frozen results and a manual field save slot. |
+| **M5 — Shifts, scores and saving** | Free practice, training/full-park shifts, paused board, repair goals, finish quality, frozen results, manual save and autosave/paused resume. |
 | **M6 — First career slice** | Credits, four crew ranks, personal bests, recent results, two permanent upgrades and four focused contracts with two rank unlocks. |
+| **Guide and controller** | Seven-step first-run tutorial, checkpoint/skip/replay, InputMap Controls, pad tools/camera/menu navigation and saved sensitivity. |
 | **Field and sound polish** | Field-facing dugouts connected to fencing/backstop, proper home plate and reference markings, positional tool sounds, ambience and saved volume settings. |
 
 These are playable prototype systems, not a finished release. See the [roadmap](docs/ROADMAP.md), [verification record](docs/VERIFICATION.md) and [current limitations](#current-limitations).
@@ -41,11 +42,11 @@ godot --path . --rendering-method gl_compatibility
 
 You spawn beside the workshop in **free practice**, with no countdown. The tractor, chalk marker, hose station and tamper rack are nearby. Use the open **GROUNDS CREW / FIELD ACCESS** entrance beside the workshop to reach the field.
 
-1. Try the tools in practice; work stays on the field during the session.
+1. Follow the first-run **Crew guide** through all five tools, or skip with **F8 / D-pad Up**. Finishing or skipping clears tutorial work; **Replay tutorial** on the board starts fresh practice.
 2. Press **Tab** and choose training or game-day full prep, or open **Contracts** for a shorter job.
 3. Complete its listed goals before the deadline, or use **End shift now** for a partial result.
 4. Open **Crew career** to spend earned credits on equipment.
-5. Use **Save field + shift** before quitting if you want to keep the current field and clock.
+5. Quit normally to autosave your field and clock. Use **Save to manual slot** for a separate snapshot you control.
 
 **Training, Morning mowing and Mound callout reset work. Full prep, Between-games infield and Doubleheader turnaround apply seeded game-day wear to the current park.** All starts park equipment. It keeps your career and upgrades, and does not overwrite the manual field slot unless you save again.
 
@@ -69,6 +70,25 @@ You spawn beside the workshop in **free practice**, with no countdown. The tract
 | Release/recapture cursor during play; return from a board submenu | Escape |
 
 **Escape during play does not pause the clock.** Tab does. Inside Contracts, Crew career or Sound settings, Escape returns to the paused main board; Tab resumes play.
+
+The board's **Controls** screen reads the current InputMap and switches key/pad names with your last input device. Controller camera sensitivity saves automatically (default **2.2 rad/s**, adjustable **0.5–5.0**; stick deadzone **0.2**).
+
+| Controller | Action |
+| --- | --- |
+| Left stick / click LS | Move / sprint |
+| Right stick | Camera |
+| A | Jump / brake; confirm menus |
+| X | Enter / exit tractor or chalk marker |
+| Y | Swap mower / drag at bay |
+| B | Raise/lower drag or chalk gate; back in menus |
+| LB / RB | Hose / tamper |
+| RT | Spray / one timed tamp |
+| Start | Shift board |
+| Back | Cursor toggle / menu back |
+| D-pad / A / B | Navigate / confirm / back |
+| D-pad Up during guide | Skip tutorial |
+
+A pad can aim and use hand tools while the mouse cursor is free. Switching back to the mouse restores the captured-cursor requirement. Tutorial progress and completion persist in local settings; the guide pauses during paid attempts. See [first-run guide](docs/screenshots/tutorial-first-run.png) and [controller Controls](docs/screenshots/controller-controls.png).
 
 ## Field tools
 
@@ -172,13 +192,17 @@ If a career write fails, no credits or purchases change. Use **Reload career / r
 
 ## Save and resume
 
-**Field work uses one manual slot.** Open Tab and choose **Save field + shift** before quitting. It stores all five jobs, mowing/dragging patterns, on/off-guide chalk, partial moisture, mound impacts, the active countdown, attempt identity, wear seed, repair baselines, puddle timers, ruts, quality state and frozen results. Save again after doing more work; there is no automatic field save or startup load.
+**Autosave and the manual slot are separate.** Autosave writes when an attempt starts/finishes, when the board opens, on a normal window close, and every **60 seconds during an active attempt when field work changed**. Writes are queued at no more than one per second; they never run from physics processing. The footer shows **Autosaved hh:mm:ss**. A crash can lose about a minute of recent work. Full-field save time measured roughly **110–140 ms** on the test machine, so a brief save hitch is possible.
 
-On the next launch, open Tab and choose **Load saved field + shift**. Loading replaces current work, returns the player and equipment to the workshop, and keeps the world paused. Resume when ready. Equipment positions, motion, held tools and camera angle are not restored. Fresh shifts leave the disk slot intact until you explicitly save over it.
+On launch, an active autosave or an unpaid finished attempt opens a paused **Resume last session** card with its title, remaining clock and goal progress. Choose Resume to restore work and park equipment at the workshop; the clock stays paused until you resume play. **Start fresh** discards that recovery choice and opens clean practice. Resuming a finished attempt claims its reward through the same once-only career ledger. A damaged autosave becomes `field-autosave.bad`, with a notice; startup continues.
+
+Use **Save to manual slot** and **Load manual slot** on the board for an independent snapshot. It includes all five jobs, patterns, chalk, moisture, mound hits, clock, attempt ID, wear seed/baselines, puddles/ruts, quality state and frozen results. Loading replaces current work and parks equipment; positions, motion, held tools and camera angle are not restored. Autosave and fresh starts leave the manual disk slot intact. See [resume card](docs/screenshots/resume-card.png).
 
 | Local file | Saved automatically? | Contains |
 | --- | --- | --- |
 | `user://field-save.dat` | No — manual Save button | Field work, active attempt/clock and last result. |
+| `user://field-autosave.dat` | Yes — shift, dirty interval, board and quit triggers | Separate resumable field/attempt snapshot. |
+| `user://settings.cfg` | Yes — tutorial/input changes | Guide checkpoint/completion and pad sensitivity. |
 | `user://career.dat` | Yes — rewards and purchases | Earnings, paid attempts, rank progress, personal bests and owned upgrades. |
 | `user://sound.cfg` | Yes — volume changes | Master/effects/ambience levels and mute. |
 
@@ -206,7 +230,7 @@ More views: [full field](docs/screenshots/field-layout.png), [home area](docs/sc
 
 ## Development and verification
 
-The last feature pass verified **495 headless assertions**, editor import, main-scene startup and scripted graphical flows. These include actual tool work, native board/shop controls, saved-attempt replay protection, upgrades and contract completion. Graphical checks used Linux Xorg/Mesa **OpenGL Compatibility**; synthetic fixtures and fast-forwarded branches are identified in [VERIFICATION.md](docs/VERIFICATION.md).
+The last feature pass verified **582 headless assertions**, editor import, main-scene startup and scripted graphical flows. These include actual tool work, native board/shop controls, saved-attempt replay protection, upgrades and contract completion. Graphical checks used Linux Xorg/Mesa **OpenGL Compatibility**; synthetic fixtures and fast-forwarded branches are identified in [VERIFICATION.md](docs/VERIFICATION.md).
 
 Run from the project directory:
 
@@ -233,6 +257,9 @@ godot --headless --path . --script tests/test_contracts.gd
 godot --headless --path . --script tests/test_field_layout_resource.gd
 godot --headless --path . --script tests/test_field_wear.gd
 godot --headless --path . --script tests/test_quality.gd
+godot --headless --path . --script tests/test_tutorial.gd
+godot --headless --path . --script tests/test_autosave.gd
+godot --headless --path . --script tests/test_controller_input.gd
 godot --headless --path . --quit-after 180
 ```
 
@@ -256,6 +283,7 @@ godot --path . --rendering-method gl_compatibility --script tests/test_contracts
 | `test_sound_visual.gd` | Volume/mute controls and recorded mixer preview. |
 | `test_field_layout_visual.gd` | Field, dugouts, gate, plate and reference markings. |
 | `test_career_visual.gd` | Real earnings, native shop purchases and upgraded deck. |
+| `test_onboarding_visual.gd` | First launch, native skip/replay, pad menus and persisted paused resume. |
 | `test_wear_visual.gd` | Game-day start, worn field, puddles/ruts, quality results and Crew Lead card. |
 | `test_contracts_visual.gd` | Real mound-contract completion, rank lock/unlock and focused goals. |
 
@@ -273,6 +301,7 @@ Captures use `/tmp/firstpitch-*.png` on Linux. These scripts run controlled auto
 | Chalking, watering and mound repair | `scripts/chalking/`, `scripts/watering/`, `scripts/mound/` |
 | Profiles, clock, goals and contracts | `scripts/gameplay/shift_session.gd`, `scripts/gameplay/shift_director.gd` |
 | Field saves, career and audio | `scripts/gameplay/field_save.gd`, `scripts/gameplay/career_profile.gd`, `scripts/gameplay/grounds_audio.gd`, `scripts/gameplay/sound_preferences.gd` |
+| Guide, autosave and input | `scripts/gameplay/tutorial.gd`, `crew_autosave.gd`, `crew_input.gd`, `crew_settings.gd` |
 | HUD and board screens | `scripts/ui/` |
 
 `FieldLayout` is the shared source for park dimensions, base positions, height queries, mask bounds and equipment placements. Duplicate `resources/layouts/cedar_grove.tres` and assign the copy to `game.gd` to configure another park; see the layout section in the learning notes. Reusable scenes under `scenes/environment/` retain resolution overrides, spray rate/reach and mound stroke requirements. A zero mask resolution uses the layout default. Prototype geometry builds at startup; inspect the editor's **Remote** scene tree while running. See [LEARNING_NOTES.md](docs/LEARNING_NOTES.md) for implementation explanations and tuning guidance.
@@ -283,7 +312,7 @@ Captures use `/tmp/firstpitch-*.png` on Linux. These scripts run controlled auto
 - Coverage and finish-quality scoring are implemented. Human deadline/pay balancing and deeper career progression remain future work.
 - Arcade vehicle handling and mostly flat ground; no suspension, articulated trailer physics, deformable terrain or physical hose simulation.
 - Unlimited supplies; drying is limited to game-day moisture loss and puddle timers. No clay inventory, chalk erasing or repainting of static reference markings.
-- One manual field slot, a 2,000-attempt local career ledger, no equipment resale and no cloud sync. Loading parks equipment rather than restoring its exact position.
+- One manual slot and one autosave, a 2,000-attempt local career ledger, no equipment resale and no cloud sync. Loading parks equipment rather than restoring its exact position.
 - Synthetic prototype sound; no music, crowds, surface-specific footsteps or acoustic occlusion. Desktop listening and mix tuning remain outstanding.
-- Windows exports, native Windows behavior, Forward+ GPU appearance/performance and controller support remain unverified.
+- Windows exports, native Windows behavior, Forward+ GPU appearance/performance and physical controller hardware remain unverified. Controller mappings and tool/menu operation pass injected-event tests.
 - Park dimensions and exclusions now share one layout resource; there is no visual layout-authoring UI. Field v1/v2 migrations support the recorded Cedar Grove layouts; future geometry changes need an explicit migration.

@@ -98,6 +98,7 @@ func paint_segment(from: Vector3,to: Vector3) -> void:
    corners.append(Vector3(point.x,layout.ground_height(point)+0.025,point.y))
   pending.append(corners)
   stroke_archive.append(corners)
+  dirty = true
   set_process(true)
 
 func mark_coverage(a: Vector2,b: Vector2) -> void:

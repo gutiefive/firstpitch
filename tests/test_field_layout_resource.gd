@@ -34,6 +34,8 @@ func run() -> void:
  check(is_equal_approx(layout.ground_height(layout.concourse.get_center()),layout.concourse_center_height+layout.concourse_thickness*0.5),"height query reaches the drawn concourse")
  var g = load("res://scenes/main/main.tscn").instantiate()
  g.career_save_path = "user://test-field-layout-resource-career.dat"
+ g.tutorial_enabled = false
+ g.autosave_enabled = false
  DirAccess.remove_absolute(g.career_save_path)
  root.add_child(g)
  check(g.layout == g.grass.layout and g.layout == g.infield.layout and g.layout == g.chalk.layout and g.layout == g.mound.layout and g.layout == g.get_child(0).layout,"game shares one resource before surface construction")
@@ -108,6 +110,8 @@ func run() -> void:
  g = load("res://scenes/main/main.tscn").instantiate()
  g.layout = alternate
  g.career_save_path = "user://test-field-layout-alternate-career.dat"
+ g.tutorial_enabled = false
+ g.autosave_enabled = false
  DirAccess.remove_absolute(g.career_save_path)
  root.add_child(g)
  check(g.grass.resolution == alternate.grass_resolution and g.infield.resolution == alternate.dirt_resolution and g.chalk.line_end == alternate.line_end,"alternate layout reaches masks before their ready methods")

@@ -13,6 +13,8 @@ var camera: Camera3D
 var moisture: DirtMoisture
 var surface_height: Callable
 # Optional input adapter for headless tests; desktop play uses the actual cursor mode.
+var binding_query: Callable
+var sign: Label3D
 var capture_query: Callable
 var equipped := false
 var spraying := false
@@ -74,7 +76,7 @@ func build_station() -> void:
  var coil := G.cylinder(self,station_position+Vector3(0,1,0),0.32,0.45,Color("315b4c"))
  coil.rotation.z = PI/2
  G.box(self,station_position+Vector3(0,1.7,0),Vector3(2.1,0.5,0.12),Color("eee3c6"))
- var sign := G.label(self,"WATER STATION\nF  TAKE / STOW HOSE",station_position+Vector3(0,1.7,0.08),34)
+ sign = G.label(self,"WATER STATION\nTAKE / STOW HOSE",station_position+Vector3(0,1.7,0.08),34)
  sign.pixel_size = 0.004
  sign.modulate = Color("28585a")
 
@@ -146,7 +148,7 @@ func _physics_process(delta: float) -> void:
    feedback = "SPRAY BLOCKED"
   else:
    target_valid = true
-   feedback = "HOLD LMB TO SOAK" if moisture.is_workable(target) else "NO WORKABLE DIRT"
+   feedback = (("HOLD %s TO SOAK" % binding_query.call("spray_water")) if binding_query.is_valid() else "HOLD TO SOAK") if moisture.is_workable(target) else "NO WORKABLE DIRT"
    if cursor_is_captured() and Input.is_action_pressed("spray_water"):
     spraying = apply_spray(target,delta)
     if spraying and moisture.is_workable(target):
@@ -154,7 +156,7 @@ func _physics_process(delta: float) -> void:
    if moisture.is_workable(target) and moisture.moisture_at(target) >= moisture.target_moisture:
     feedback = "AIM POINT SOAKED"
  if not cursor_is_captured():
-  feedback = "ESC TO RECAPTURE CURSOR"
+  feedback = "%s TO RECAPTURE CURSOR" % binding_query.call("cursor_menu") if binding_query.is_valid() else "RECAPTURE CURSOR TO WATER"
  if target_valid:
   var point := Vector2(target.x,target.z)
   target_ring.global_position = Vector3(target.x,height_at(point)+0.04,target.z)

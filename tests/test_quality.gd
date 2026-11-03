@@ -28,6 +28,8 @@ func run() -> void:
  s.free()
  var g = load("res://scenes/main/main.tscn").instantiate()
  g.career_save_path = "user://test-quality-career.dat"
+ g.tutorial_enabled = false
+ g.autosave_enabled = false
  DirAccess.remove_absolute(g.career_save_path)
  root.add_child(g)
  var point := Vector3(10,0,-10)

@@ -16,6 +16,12 @@ func key(code: Key) -> void:
   Input.parse_input_event(event)
  await idle(3)
 func click(button: Button) -> void:
+ var parent := button.get_parent()
+ while parent != null:
+  if parent is ScrollContainer:
+   parent.ensure_control_visible(button)
+   await idle(4)
+  parent = parent.get_parent()
  assert(Rect2(Vector2.ZERO,root.size).has_point(button.get_global_rect().get_center()))
  for pressed in [true,false]:
   var event := InputEventMouseButton.new()
@@ -31,6 +37,8 @@ func capture(path: String) -> void:
 func run() -> void:
  var g = load("res://scenes/main/main.tscn").instantiate()
  g.career_save_path = "user://test-contracts-visual-career.dat"
+ g.tutorial_enabled = false
+ g.autosave_enabled = false
  DirAccess.remove_absolute(g.career_save_path)
  root.add_child(g)
  await frames(30)

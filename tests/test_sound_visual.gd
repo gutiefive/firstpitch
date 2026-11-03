@@ -13,6 +13,12 @@ func key(code: Key) -> void:
   Input.parse_input_event(event)
  await idle(3)
 func click(control: Control) -> void:
+ var parent := control.get_parent()
+ while parent != null:
+  if parent is ScrollContainer:
+   parent.ensure_control_visible(control)
+   await idle(4)
+  parent = parent.get_parent()
  var point := control.get_global_rect().get_center()
  assert(Rect2(Vector2.ZERO,root.size).has_point(point))
  for pressed in [true,false]:
@@ -29,6 +35,8 @@ func capture(path: String) -> void:
 func run() -> void:
  var g = load("res://scenes/main/main.tscn").instantiate()
  g.career_save_path = "user://test-test_sound_visual-career.dat"
+ g.tutorial_enabled = false
+ g.autosave_enabled = false
  DirAccess.remove_absolute(g.career_save_path)
  root.add_child(g)
  for i in range(30):

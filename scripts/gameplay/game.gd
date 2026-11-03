@@ -19,6 +19,7 @@ var tool_bay: ToolBay
 var hud: GroundsHUD
 var chalk: ChalkSystem
 var chalk_marker: ChalkMarker
+var chalk_marker_sign: Label3D
 var pushing_chalk := false
 var selected_task := 0
 var moisture: DirtMoisture
@@ -28,12 +29,27 @@ var tamper: TampingTool
 @export var career_save_path := "user://career.dat"
 var audio: GroundsAudio
 var shift: ShiftDirector
+@export var settings_save_path := "user://settings.cfg"
+@export var autosave_save_path := "user://field-autosave.dat"
+@export var tutorial_enabled := true
+@export var autosave_enabled := true
+var settings := CrewSettings.new()
+var input_device: CrewInput
+var tutorial: CrewTutorial
+var autosave: CrewAutosave
+func binding_text(action: String) -> String:
+ return input_device.binding_text(action)
 
 func _ready() -> void:
  configure_input()
+ settings.path = settings_save_path
+ settings.load_settings()
+ input_device = CrewInput.new()
+ input_device.game = self
  var stadium = preload("res://scenes/stadium/stadium.tscn").instantiate()
  stadium.layout = layout
  add_child(stadium)
+ add_child(input_device)
  mound = preload("res://scenes/environment/mound_repairs.tscn").instantiate()
  mound.layout = layout
  add_child(mound)
@@ -67,8 +83,8 @@ func _ready() -> void:
  chalk_marker.position = layout.chalk_marker_spawn
  add_child(chalk_marker)
  chalk_marker.chalk = chalk
- var marker_sign := ParkGeometry.label(self,"CHALK MARKER\nE  USE  /  R  GATE",layout.chalk_marker_sign,34)
- marker_sign.pixel_size = 0.005
+ chalk_marker_sign = ParkGeometry.label(self,"CHALK MARKER\nUSE / GATE",layout.chalk_marker_sign,34)
+ chalk_marker_sign.pixel_size = 0.005
 
  pivot = Node3D.new()
  pivot.position = player.position+Vector3.UP*1.5
@@ -116,40 +132,39 @@ func _ready() -> void:
  audio.game = self
  add_child(audio)
  shift.overlay.attach_audio(audio)
+ watering.binding_query = binding_text
+ tamper.binding_query = binding_text
+ input_device.device_changed.connect(refresh_bindings)
+ refresh_bindings()
+ watering.capture_query = input_device.aim_allowed
+ tamper.capture_query = input_device.aim_allowed
+ tutorial = CrewTutorial.new()
+ tutorial.game = self
+ add_child(tutorial)
+ autosave = CrewAutosave.new()
+ autosave.game = self
+ autosave.store.path = autosave_save_path
+ add_child(autosave)
  Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func configure_input() -> void:
- var keys := {"forward":KEY_W,"back":KEY_S,"left":KEY_A,"right":KEY_D,"sprint":KEY_SHIFT,"jump":KEY_SPACE,"interact":KEY_E,"brake":KEY_SPACE,"swap_tool":KEY_Q,"lift_drag":KEY_R,"water_tool":KEY_F,"mound_tool":KEY_G,"shift_board":KEY_TAB}
- for action in keys:
-  if not InputMap.has_action(action):
-   InputMap.add_action(action)
-  var event := InputEventKey.new()
-  event.physical_keycode = keys[action]
-  InputMap.action_add_event(action,event)
- if not InputMap.has_action("spray_water"):
-  InputMap.add_action("spray_water")
- var spray_button := InputEventMouseButton.new()
- spray_button.button_index = MOUSE_BUTTON_LEFT
- if not InputMap.action_has_event("spray_water",spray_button):
-  InputMap.action_add_event("spray_water",spray_button)
- if not InputMap.has_action("tamp_mound"):
-  InputMap.add_action("tamp_mound")
- if not InputMap.action_has_event("tamp_mound",spray_button):
-  InputMap.action_add_event("tamp_mound",spray_button)
+ CrewInput.configure_input()
 
 func _input(event: InputEvent) -> void:
  # Captured tool clicks must not be swallowed by the noninteractive reticle HUD.
- if tamper != null and tamper.equipped and event.is_action_pressed("tamp_mound"):
+ if not get_tree().paused and tamper != null and tamper.equipped and event.is_action_pressed("tamp_mound"):
   tamper.request_tamp()
 
 
 func _unhandled_input(event: InputEvent) -> void:
+ if get_tree().paused:
+  return
  if event is InputEventKey and event.echo:
   return
  if event.is_action_pressed("shift_board"):
   shift.toggle_board()
   return
- if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
+ if event.is_action_pressed("cursor_menu"):
   Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED else Input.MOUSE_MODE_CAPTURED
  if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
   yaw -= event.relative.x*0.003
@@ -293,28 +308,31 @@ func _process(delta: float) -> void:
  else:
   mode_label.text = "MOWING  /  DECK ENGAGED"
  if tamper.equipped:
-  prompt.text = "WASD walk  •  Aim worn clay  •  Stop + click LMB to tamp  •  G stow tamper"
+  prompt.text = "{move} walk  •  Aim worn clay  •  Stop + press {tamp} to tamp  •  {mound} stow tamper"
  elif watering.equipped:
-  prompt.text = "WASD walk  •  Aim with mouse  •  Hold LMB to water  •  F stow hose  •  Esc cursor"
+  prompt.text = "{move} walk  •  Aim with {look}  •  Hold {spray} to water  •  {water} stow hose  •  {cursor} cursor"
  elif pushing_chalk:
-  prompt.text = "WASD push / steer  •  R chalk gate  •  Space brake  •  " + ("E leave marker" if chalk_marker.can_exit() else "Stop to leave marker")
+  prompt.text = "{move} push / steer  •  {lift} chalk gate  •  {brake} brake  •  " + ("{interact} leave marker" if chalk_marker.can_exit() else "Stop to leave marker")
  elif driving and dragging:
   if mower.drag.lowered:
-   prompt.text = "WASD drive  •  R raise drag  •  Space brake  •  " + ("E exit" if mower.can_exit() else "Stop to exit")
+   prompt.text = "{move} drive  •  {lift} raise drag  •  {brake} brake  •  " + ("{interact} exit" if mower.can_exit() else "Stop to exit")
   else:
-   prompt.text = "WASD drive  •  Stop + R lower drag  •  Space brake  •  E exit when stopped"
+   prompt.text = "{move} drive  •  Stop + {lift} lower drag  •  {brake} brake  •  {interact} exit when stopped"
  elif driving:
-  prompt.text = "WASD drive  •  Space brake  •  E exit" if mower.can_exit() else "WASD drive  •  Space brake  •  Stop to exit"
+  prompt.text = "{move} drive  •  {brake} brake  •  {interact} exit" if mower.can_exit() else "{move} drive  •  {brake} brake  •  Stop to exit"
  elif near_chalk_marker():
-  prompt.text = "E use chalk marker  •  Follow the dashed gold foul-line guides"
+  prompt.text = "{interact} use chalk marker  •  Follow the dashed gold foul-line guides"
  elif player.global_position.distance_to(mower.global_position) < 3.5:
-  prompt.text = "E enter tractor  •  Q swap mower / drag" if tool_bay.contains(mower.global_position) else "E enter tractor  •  Return to tool bay to swap equipment"
+  prompt.text = "{interact} enter tractor  •  {swap} swap mower / drag" if tool_bay.contains(mower.global_position) else "{interact} enter tractor  •  Return to tool bay to swap equipment"
  elif player.global_position.distance_to(tamper.rack_position) <= tamper.pickup_distance:
-  prompt.text = "G take tamper  •  Repair worn clay patches on the pitcher’s mound"
+  prompt.text = "{mound} take tamper  •  Repair worn clay patches on the pitcher’s mound"
  elif player.global_position.distance_to(watering.station_position) <= watering.pickup_distance:
-  prompt.text = "F take hose  •  Water the workable infield dirt"
+  prompt.text = "{water} take hose  •  Water the workable infield dirt"
  else:
-  prompt.text = "WASD walk  •  Shift sprint  •  Space jump  •  Find equipment beside the workshop"
+  prompt.text = "{move} walk  •  {sprint} sprint  •  {jump} jump  •  Find equipment beside the workshop"
+
+ prompt.text = prompt.text.format({"move":binding_text("move"),"sprint":binding_text("sprint"),"brake":binding_text("brake"),"jump":binding_text("jump"),"tamp":binding_text("tamp_mound"),"spray":binding_text("spray_water"),"cursor":binding_text("cursor_menu"),"interact":binding_text("interact"),"swap":binding_text("swap_tool"),"lift":binding_text("lift_drag"),"water":binding_text("water_tool"),"mound":binding_text("mound_tool"),"look":"right stick" if input_device.last_input_device == "pad" else "mouse"})
+ hud.reminder.text = "%s  Shift board / pause\n%s  Camera   %s  Cursor / back" % [binding_text("shift_board"),"Right stick" if input_device.last_input_device == "pad" else "Mouse / scroll",binding_text("cursor_menu")]
 
 func create_hud() -> void:
  hud = GroundsHUD.new()
@@ -353,3 +371,11 @@ func update_progress(_value: float) -> void:
   percent_label.text = "COMPLETE"
  if completed[0] and completed[1] and completed[2] and completed[3] and completed[4]:
   hud.objective_label.text = "PARK READY — All five tasks complete"
+
+func refresh_bindings() -> void:
+ chalk_marker_sign.text = "CHALK MARKER\n%s USE / %s GATE" % [binding_text("interact"),binding_text("lift_drag")]
+ tool_bay.sign.text = "TOOL BAY\n%s SWAP MOWER / DRAG" % binding_text("swap_tool")
+ watering.sign.text = "WATER STATION\n%s TAKE / STOW HOSE" % binding_text("water_tool")
+ tamper.sign.text = "MOUND REPAIR\n%s TAKE / STOW TAMPER" % binding_text("mound_tool")
+ shift.notice_sign.text = "CEDAR GROVE\nPREPARATION SHIFTS\n%s SHIFT BOARD" % binding_text("shift_board")
+ shift.overlay.refresh()

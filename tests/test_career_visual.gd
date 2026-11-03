@@ -16,6 +16,12 @@ func key(keycode: Key) -> void:
   event.pressed = pressed
   Input.parse_input_event(event)
 func button_click(button: Button) -> void:
+ var parent := button.get_parent()
+ while parent != null:
+  if parent is ScrollContainer:
+   parent.ensure_control_visible(button)
+   await idle_frames(4)
+  parent = parent.get_parent()
  var point := button.get_global_rect().get_center()
  var motion := InputEventMouseMotion.new()
  motion.position = point
@@ -40,6 +46,8 @@ func capture(path: String) -> void:
 func run() -> void:
  var game = load("res://scenes/main/main.tscn").instantiate()
  game.career_save_path = "user://test-career-visual.dat"
+ game.tutorial_enabled = false
+ game.autosave_enabled = false
  DirAccess.remove_absolute(game.career_save_path)
  root.add_child(game)
  await frames(45)
@@ -51,7 +59,7 @@ func run() -> void:
   quit(1)
   return
  await capture("/tmp/firstpitch-shift-board.png")
- button_click(game.shift.overlay.training_button)
+ await button_click(game.shift.overlay.training_button)
  await idle_frames(5)
  if paused or game.shift.session.phase != ShiftSession.Phase.ACTIVE:
   push_error("Native training button did not start shift")
@@ -74,7 +82,7 @@ func run() -> void:
   quit(1)
   return
  await capture("/tmp/firstpitch-shift-paused.png")
- button_click(game.shift.overlay.close_button)
+ await button_click(game.shift.overlay.close_button)
  await idle_frames(5)
  if paused:
   push_error("Native resume button did not resume")
@@ -106,7 +114,7 @@ func run() -> void:
   return
  key(KEY_TAB)
  await idle_frames(5)
- button_click(game.shift.overlay.end_button)
+ await button_click(game.shift.overlay.end_button)
  await idle_frames(5)
  var result: Dictionary = game.shift.session.get_result()
  if not paused or result.is_empty() or result["jobs_completed"] != 1 or result["score"] <= 20:
@@ -122,21 +130,21 @@ func run() -> void:
   seed.advance(10)
   game.shift.career.claim(seed.attempt_id,seed.get_result())
   seed.free()
- button_click(game.shift.overlay.career_button)
+ await button_click(game.shift.overlay.career_button)
  await idle_frames(5)
  assert(paused and game.shift.overlay.career_screen.visible)
  await capture("/tmp/firstpitch-career-shop.png")
- button_click(game.shift.overlay.career_panel.shop.wide_deck)
+ await button_click(game.shift.overlay.career_panel.shop.wide_deck)
  await idle_frames(5)
  assert(game.shift.career.owns("wide_deck") and game.grass.deck_width == 3)
- button_click(game.shift.overlay.career_panel.shop.hose_nozzle)
+ await button_click(game.shift.overlay.career_panel.shop.hose_nozzle)
  await idle_frames(5)
  assert(game.shift.career.owns("hose_nozzle") and is_equal_approx(game.moisture.application_rate,1.0))
  await capture("/tmp/firstpitch-career-owned.png")
  key(KEY_ESCAPE)
  await idle_frames(3)
  assert(paused and not game.shift.overlay.career_screen.visible)
- button_click(game.shift.overlay.full_button)
+ await button_click(game.shift.overlay.full_button)
  await idle_frames(4)
  assert(not paused and game.grass.deck_width == 3)
  game.set_process(false)

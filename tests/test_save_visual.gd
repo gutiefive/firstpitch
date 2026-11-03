@@ -5,6 +5,12 @@ func idle(count: int) -> void:
  for i in range(count):
   await process_frame
 func click(button: Button) -> void:
+ var parent := button.get_parent()
+ while parent != null:
+  if parent is ScrollContainer:
+   parent.ensure_control_visible(button)
+   await idle(4)
+  parent = parent.get_parent()
  var point := button.get_global_rect().get_center()
  assert(Rect2(Vector2.ZERO,root.size).has_point(point),"Save controls must fit viewport")
  for pressed in [true,false]:
@@ -21,6 +27,8 @@ func capture(path: String) -> void:
 func run() -> void:
  var g = load("res://scenes/main/main.tscn").instantiate()
  g.career_save_path = "user://test-test_save_visual-career.dat"
+ g.tutorial_enabled = false
+ g.autosave_enabled = false
  DirAccess.remove_absolute(g.career_save_path)
  root.add_child(g)
  for i in range(30):
@@ -46,6 +54,8 @@ func run() -> void:
  await idle(2)
  g = load("res://scenes/main/main.tscn").instantiate()
  g.career_save_path = "user://test-test_save_visual-career.dat"
+ g.tutorial_enabled = false
+ g.autosave_enabled = false
  DirAccess.remove_absolute(g.career_save_path)
  root.add_child(g)
  g.shift.save_store.path = "user://visual-save-test.dat"
