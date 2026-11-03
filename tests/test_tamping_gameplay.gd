@@ -60,6 +60,7 @@ func run() -> void:
   click(game)
  await frames(25)
  check(game.mound.hits[0] == 1,"impact commits one stroke despite click spam")
+ check(game.audio.tamp.playing,"real accepted hand-tool impact plays its thump")
  check(game.progress.value > 0 and game.hud.reticle.visible,"repair progress and reticle reach HUD")
  await frames(20)
  for i in range(2):
@@ -144,4 +145,6 @@ func run() -> void:
  game.update_progress(0)
  check(game.hud.objective_label.text.begins_with("PARK READY"),"park readiness now requires all five tasks")
  print("Tamping gameplay failures: ",failures)
+ game.queue_free()
+ await create_timer(0.1).timeout
  quit(1 if failures else 0)

@@ -53,6 +53,7 @@ func run() -> void:
  for i in range(150):
   await physics_frame
  check(game.infield.prepared_count > 200,"forward driving actually smooths dirt")
+ check(game.audio.loops.drag.playing,"actual lowered forward dragging plays friction sound")
  check(game.mower.speed <= game.mower.dragging_speed+0.01,"lowered drag limits working speed")
  check(game.grass.cut_count == 0,"dragging cannot mow grass")
  check(game.progress.value > 0,"HUD receives actual dirt progress")
@@ -100,4 +101,6 @@ func run() -> void:
  check(game.mower.active_tool == RidingMower.WorkTool.MOWER and game.mower.deck.visible,"mowing deck is restored")
  check(count == game.infield.prepared_count,"swapping equipment preserves dirt progress")
  print("Drag gameplay failures: ",failures)
+ game.queue_free()
+ await create_timer(0.1).timeout
  quit(1 if failures else 0)

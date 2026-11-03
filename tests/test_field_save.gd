@@ -103,6 +103,6 @@ func run() -> void:
  DirAccess.remove_absolute("user://test-field-save.dat")
  paused = false
  g.queue_free()
- await process_frame
+ await create_timer(0.1).timeout
  print("Field save: ",checks," checks; ",failures," failures")
  quit(1 if failures else 0)

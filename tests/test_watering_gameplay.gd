@@ -43,6 +43,7 @@ func run() -> void:
   await physics_frame
  check(game.watering.target_valid and game.watering.spraying,"held spray action aims through camera into reachable ground")
  check(game.moisture.wet_count > 0,"actual spray physics soaks dirt")
+ check(game.audio.loops.hose.playing,"actual reachable spraying plays water sound")
  check(game.progress.value > 0 and game.hud.reticle.visible,"watering progress and aim reticle appear")
  check(game.grass.cut_count == 0 and game.infield.prepared_count == 0 and game.chalk.covered_count == 0,"watering leaves other task counters unchanged")
  var target: Vector3 = game.watering.target
@@ -104,4 +105,6 @@ func run() -> void:
  game.update_progress(0)
  check(game.hud.objective_label.text.begins_with("PARK READY"),"park completion requires all five full task counts")
  print("Watering gameplay failures: ",failures)
+ game.queue_free()
+ await create_timer(0.1).timeout
  quit(1 if failures else 0)

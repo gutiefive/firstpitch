@@ -102,6 +102,16 @@ The file is `user://field-save.dat` (under the game’s folder in `%APPDATA%/God
 
 ![Loading a saved shift](docs/screenshots/save-loaded.png)
 
+## Sound and volume
+
+The park now has quiet wind and bird ambience, footsteps, a speed-responsive mower engine, drag friction, chalk-cart movement, hose spray, timed tamp impacts, and a short shift-result chime. Tool effects are positional; engine and working loops follow their equipment. Tamping sounds only on accepted impacts. Pausing stops world audio as well as the clock.
+
+Open **Tab → Sound settings** for **Master**, **Effects**, **Ambience**, and **Mute all sound**. Changes save automatically to `user://sound.cfg`, separately from your field slot. **Preview sound** plays a short chime while paused. Escape returns to the board; Tab resumes play. Setting any slider to zero silences that channel.
+
+All nine clips are original generated prototype sounds, supplied in `assets/audio/`. The game needs no external audio tools. Developers can reproduce the WAV files with `python3 tools/generate_audio.py`. This is a first sound pass; natural recordings and desktop mix tuning remain future polish.
+
+![Sound controls](docs/screenshots/sound-settings.png)
+
 ## Implemented M1–M3
 
 - 27.43 m basepaths, dirt diamond, mound, bases, foul lines, grass outfield, warning track, padded outfield wall, dugouts, bleachers, scoreboard, light towers, shed, and mower parking.
@@ -146,6 +156,7 @@ godot --headless --path . --script tests/test_tamping_gameplay.gd
 godot --headless --path . --script tests/test_shift_session.gd
 godot --headless --path . --script tests/test_shift_gameplay.gd
 godot --headless --path . --script tests/test_field_save.gd
+godot --headless --path . --script tests/test_audio.gd
 godot --headless --path . --quit-after 180
 ```
 
@@ -167,7 +178,7 @@ The mowing graphical test captures six images; the dragging graphical test captu
 
 - Prototype primitive art and generated scene content; no artist-authored assets, rigged animations, stadium crowds, career, or tools beyond the infield drag, chalk marker, hose, and tamper.
 - Cut grass uses color/texture variation and hides the sparse uncut tufts. It is not a dense simulated lawn. Manual saves include task states and chalk strokes; equipment positions and held tools reset on load.
-- Cutting audio has a named `CuttingAudioHook` AudioStreamPlayer3D on the mower, with no sound assigned.
+- Audio is an initial synthetic pass, with no music, crowd simulation, material-specific footsteps, or sound occlusion. Headphone/speaker balance still needs desktop playtesting.
 - Mostly flat terrain and arcade handling; no suspension. The mound now has a walkable sloped collider. The walking player hides while a separate seated visual appears on the mower. The remaining shallow infield surfaces still use the flat ground collider.
 - Only the outfield wall is a perimeter barrier; this is an explorable prototype, not a fully enclosed stadium. The dugouts now have open fronts, solid walls, and decorative benches.
 - Forward+ GPU visuals, native Windows behavior, controller support, and hardware performance remain unverified.

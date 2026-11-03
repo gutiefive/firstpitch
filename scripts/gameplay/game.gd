@@ -24,6 +24,7 @@ var moisture: DirtMoisture
 var watering: WateringTool
 var mound: MoundSurface
 var tamper: TampingTool
+var audio: GroundsAudio
 var shift: ShiftDirector
 
 func _ready() -> void:
@@ -99,6 +100,10 @@ func _ready() -> void:
  shift = ShiftDirector.new()
  shift.game = self
  add_child(shift)
+ audio = GroundsAudio.new()
+ audio.game = self
+ add_child(audio)
+ shift.overlay.attach_audio(audio)
  Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func configure_input() -> void:

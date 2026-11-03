@@ -40,6 +40,7 @@ func run() -> void:
  for i in range(120):
   await physics_frame
  check(game.chalk.covered_count > 10,"pushing on a foul line earns actual coverage")
+ check(game.audio.loops.chalk.playing,"actual forward open-gate chalking plays cart sound")
  check(game.progress.value > 0,"chalk coverage reaches HUD")
  check(game.grass.cut_count == 0 and game.infield.prepared_count == 0,"chalking does not progress other tasks")
  press_key(game,KEY_E)
@@ -111,4 +112,6 @@ func run() -> void:
  game.update_progress(0)
  check(game.hud.objective_label.text.begins_with("PARK READY"),"park completion requires all five full task counts")
  print("Chalk gameplay failures: ",failures)
+ game.queue_free()
+ await create_timer(0.1).timeout
  quit(1 if failures else 0)

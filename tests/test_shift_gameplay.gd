@@ -121,4 +121,6 @@ func run() -> void:
  check(game.shift.overlay.heading.text == "PARK READY" and paused,"full completion presents park-ready results")
  game.shift.close_board()
  print("Shift gameplay failures: ",failures)
+ game.queue_free()
+ await create_timer(0.1).timeout
  quit(1 if failures else 0)

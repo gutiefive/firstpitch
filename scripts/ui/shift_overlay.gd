@@ -22,6 +22,10 @@ var close_button: Button
 var save_button: Button
 var load_button: Button
 var save_message: Label
+var board_scroll: ScrollContainer
+var sound_screen: CenterContainer
+var sound_panel: SoundPanel
+var sound_button: Button
 const GOLD := Color("e1bb67")
 const CREAM := Color("f4ecd8")
 
@@ -89,6 +93,7 @@ func _ready() -> void:
  shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  modal.add_child(shade)
  var scroll := ScrollContainer.new()
+ board_scroll = scroll
  scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  modal.add_child(scroll)
  var center := CenterContainer.new()
@@ -144,6 +149,8 @@ func _ready() -> void:
  content.add_child(label("One slot. Loading replaces current work and parks equipment.",12,GOLD))
  save_message = label("Save manually before closing the game.",12,Color("adc7b7"))
  content.add_child(save_message)
+ sound_button = button("Sound settings")
+ content.add_child(sound_button)
  close_button = button("Return to practice")
  content.add_child(close_button)
  close_button.pressed.connect(func(): close_requested.emit())
@@ -151,9 +158,31 @@ func _ready() -> void:
  session.changed.connect(refresh)
  refresh()
 
+func attach_audio(audio: GroundsAudio) -> void:
+ sound_screen = CenterContainer.new()
+ sound_screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+ modal.add_child(sound_screen)
+ sound_panel = SoundPanel.new()
+ sound_panel.audio = audio
+ sound_screen.add_child(sound_panel)
+ sound_panel.back_requested.connect(show_board)
+ sound_button.pressed.connect(func():
+  board_scroll.visible = false
+  sound_screen.visible = true
+  sound_panel.sliders.master.grab_focus())
+ sound_screen.visible = false
+
+func show_board() -> void:
+ if sound_screen != null:
+  sound_screen.visible = false
+ board_scroll.visible = true
+
 func _input(event: InputEvent) -> void:
  if modal.visible and event is InputEventKey and event.pressed and not event.echo and event.keycode in [KEY_TAB,KEY_ESCAPE]:
-  close_requested.emit()
+  if event.keycode == KEY_ESCAPE and sound_screen != null and sound_screen.visible:
+   show_board()
+  else:
+   close_requested.emit()
   get_viewport().set_input_as_handled()
 
 func refresh() -> void:

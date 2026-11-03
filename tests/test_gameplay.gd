@@ -61,4 +61,6 @@ func run() -> void:
  check(game.mower.global_position.x < 34,"mower cannot pass through shed wall")
  check(absf(game.mower.speed) < 0.5,"wall collision stops drive speed")
  print("Gameplay failures: ",failures)
+ game.queue_free()
+ await create_timer(0.1).timeout
  quit(1 if failures else 0)

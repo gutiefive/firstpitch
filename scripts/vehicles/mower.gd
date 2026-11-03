@@ -16,7 +16,6 @@ var steering: MeshInstance3D
 var deck: Node3D
 var grass: MowingGrass
 var previous_deck := Vector3.ZERO
-var cutting_audio: AudioStreamPlayer3D
 var appearance: MowerVisual
 var infield: InfieldSurface
 var drag: DragAttachment
@@ -37,9 +36,6 @@ func _ready() -> void:
  wheels = appearance.wheels
  steering = appearance.steering
  deck = appearance.deck
- cutting_audio = AudioStreamPlayer3D.new()
- cutting_audio.name = "CuttingAudioHook"
- add_child(cutting_audio)
  drag = DragAttachment.new()
  drag.name = "TowBehindDrag"
  drag.position = Vector3(0,0,2.7)

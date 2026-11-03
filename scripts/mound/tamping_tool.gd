@@ -1,5 +1,6 @@
 class_name TampingTool
 extends Node3D
+signal impact(point: Vector3)
 signal equipped_changed(equipped: bool)
 @export var rack_position := Vector3(39.5,0,-5.8)
 @export var pickup_distance := 3.0
@@ -156,6 +157,7 @@ func _physics_process(delta: float) -> void:
    impact_checked = true
    if target_index == locked_index and can_work(locked_index):
     if mound.apply_tamp(locked_index):
+     impact.emit(mound.patch_world(locked_index))
      dust_time = 0
      dust_origin = mound.patch_world(locked_index)
    else:

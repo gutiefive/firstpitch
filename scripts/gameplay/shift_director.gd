@@ -59,6 +59,7 @@ func open_board() -> void:
 func close_board() -> void:
  if not overlay.modal.visible:
   return
+ overlay.show_board()
  overlay.modal.visible = false
  Input.action_release("spray_water")
  Input.action_release("tamp_mound")
@@ -120,6 +121,8 @@ func reset_field() -> void:
  game.moisture.reset_state()
  game.chalk.reset_state()
  game.mound.reset_state()
+ if game.audio != null:
+  game.audio.reset_tools()
  game.selected_task = 0
  game.update_progress(0)
 
