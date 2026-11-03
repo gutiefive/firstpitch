@@ -6,6 +6,8 @@ var stats: Label
 var chapter: Label
 var voice: Label
 var objective: Label
+var schedule: Label
+var season_review: Label
 var receipt: Label
 var notice: Label
 var join_button: Button
@@ -47,6 +49,9 @@ func _ready() -> void:
  voice = text(content,"",15)
  objective = text(content,"",14)
  objective.modulate = Color("b7d0bc")
+ schedule = text(content,"",15)
+ schedule.modulate = Color("e1bb67")
+ season_review = text(content,"",13)
  var actions := HBoxContainer.new()
  content.add_child(actions)
  join_button = button(actions,"Take the groundskeeper job")
@@ -98,6 +103,18 @@ func refresh() -> void:
  if state.active and state.games == 0 and not career.data.upgrades.is_empty():
   voice.text = "Mara: Your equipment gives us a head start. You cover priority prep and the volunteers finish routine passes. Let's bring the town back to this park."
  objective.text = story.goal
+ schedule.visible = state.active
+ season_review.visible = state.active
+ if state.active:
+  var date := ClubSchedule.fixture(state.games)
+  schedule.text = ClubSchedule.title(state.games)+"\n"+String(date.brief)+"\nOptional target: score %d+ in %d minutes. Standard checklist and pay apply." % [date.target,date.minutes]
+  var review := ClubSchedule.report(career)
+  season_review.text = "Season %d review · %d / 6 hosted · %d prep targets met · %.1f average score" % [review.season,review.played,review.targets,review.average]
+  if review.played > 0:
+   season_review.text += "\nLast date: "+("Mara's prep target met." if review.last_met else "Prep target missed; the game still went ahead. Try again next date.")
+  if review.played == 6:
+   season_review.text += "\nHome season complete! Your supporters, stadium and tools carry into the next season."
+
  join_button.visible = not state.active
  join_button.disabled = not ready or not career.healthy
  prep_button.visible = state.active

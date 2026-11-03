@@ -76,6 +76,7 @@ func run() -> void:
    disabled = disabled and shape.disabled
  check(disabled,"hidden legacy grandstands have no ghost colliders")
  check(g.shift.save_store.layout(g) == layout_hash,"stadium story visuals do not change the field-save layout signature")
+ check(g.shift.overlay.club_panel.schedule.text.contains("Mill Creek Foxes") and g.shift.overlay.club_panel.season_review.text.contains("0 / 6"),"clubhouse shows upcoming opponent and empty season review")
  check(g.hud.park_label.text.contains("48 fans") and g.shift.overlay.club_panel.chapter.text.contains("Chapter 1"),"HUD and manager dialogue reflect the starting club")
  g.tutorial.active = true
  check(g.club.prepare() and g.shift.session.profile_id == "home_game" and g.shift.session.start_mode == "game_day","Clubhouse starts its dedicated worn-field prep checklist")

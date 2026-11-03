@@ -369,3 +369,11 @@ Captures use `/tmp/firstpitch-*.png` on Linux. These scripts run controlled auto
 - Synthetic prototype sound; no music, crowd audio, surface-specific footsteps or acoustic occlusion. Desktop listening and mix tuning remain outstanding.
 - Windows exports, native Windows behavior, Forward+ GPU appearance/performance and physical controller hardware remain unverified. Controller mappings and tool/menu operation pass injected-event tests.
 - Park dimensions and exclusions now share one layout resource; there is no visual layout-authoring UI. Field v1/v2 migrations support the recorded Cedar Grove layouts; future geometry changes need an explicit migration.
+
+### Home seasons and manager targets
+
+The Clubhouse now shows a repeating six-date home schedule, with named visiting clubs and Mara's briefing before each game. Optional targets ask for a prep score of 85–95, sometimes with two or three minutes left. Finish the usual checklist and host even if you miss a target; wages and gate income follow the existing rules.
+
+The season review tracks hosted dates, targets met and average prep score. After the finale it stays visible until you host the next season's opener. Fans, buildings, equipment and budget carry forward. The review is reconstructed from saved hosting history, including existing careers; opponents are story context, with no simulated baseball wins or losses.
+
+Schedule regression test: `godot --headless --path . --script tests/test_club_schedule.gd`.
