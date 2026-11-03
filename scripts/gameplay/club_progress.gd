@@ -9,7 +9,10 @@ const STARTER_WATER := 0.55
 const PROJECTS := {
  "bleachers":{"title":"Community bleachers","cost":600,"fans":90,"requires":[],"seats":120,"fan_bonus":0,"ticket_bonus":0,"food":0,"detail":"Add 120 seats. Supporters need room before crowds can grow."},
  "snack_shack":{"title":"Family snack shack","cost":450,"fans":75,"requires":[],"seats":0,"fan_bonus":3,"ticket_bonus":0,"food":1,"detail":"Earn 1 cr per attendee in food profit; attract 3 extra fans per game."},
- "grandstand":{"title":"Covered grandstand","cost":1400,"fans":200,"requires":["bleachers","snack_shack"],"seats":240,"fan_bonus":5,"ticket_bonus":1,"food":0,"detail":"Add 240 seats, covered seating, 1 cr per ticket and 5 extra fans per game."}
+ "grandstand":{"title":"Covered grandstand","cost":1400,"fans":200,"requires":["bleachers","snack_shack"],"seats":240,"fan_bonus":5,"ticket_bonus":1,"food":0,"detail":"Add 240 seats, covered seating, 1 cr per ticket and 5 extra fans per game."},
+ "grill_stand":{"title":"Owls grill stand","cost":900,"fans":150,"requires":["snack_shack"],"seats":0,"fan_bonus":3,"ticket_bonus":0,"food":1,"detail":"Add a second concession stand: +1 cr food profit per attendee and +3 fans per game."},
+ "scoreboard":{"title":"Electronic scoreboard","cost":1100,"fans":120,"requires":[],"seats":0,"fan_bonus":2,"ticket_bonus":1,"food":0,"detail":"Replace the old board: +1 cr per ticket and +2 fans per game."},
+ "video_board":{"title":"Owls video board","cost":2600,"fans":320,"requires":["scoreboard","grandstand"],"seats":0,"fan_bonus":6,"ticket_bonus":1,"food":0,"detail":"Replace the electronic board with a video screen: another +1 cr per ticket and +6 fans per game."}
 }
 static func initial() -> Dictionary:
  return {"active":false,"fans":START_FANS,"capacity":START_CAPACITY,"games":0,"income":0,"spent":0,"buildings":PackedStringArray(),"hosted":{},"last":{},"pending":"","record_start":0}
@@ -40,7 +43,7 @@ static func project_ready(state: Dictionary,id: String) -> bool:
 static func replay(value: Variant,records: Array,tools: PackedStringArray) -> Dictionary:
  if not value is Dictionary or not value.has_all(["record_start","tool_start","events"]) or value.size() != 3:
   return {}
- if typeof(value.record_start) != TYPE_INT or typeof(value.tool_start) != TYPE_INT or not value.events is Array or value.events.size() > 2003:
+ if typeof(value.record_start) != TYPE_INT or typeof(value.tool_start) != TYPE_INT or not value.events is Array or value.events.size() > 2000+PROJECTS.size():
   return {}
  if value.record_start < 0 or value.record_start > records.size() or value.tool_start < 0 or value.tool_start > tools.size():
   return {}
@@ -108,4 +111,4 @@ static func chapter(state: Dictionary) -> Dictionary:
   return {"title":"Chapter 3 · Make it a night out","voice":"Mara: We made room for the families. Now let's give them somewhere to buy supper and spend the evening together.","goal":"Build the 450 cr snack shack. Every attendee then brings in more income and word of mouth."}
  if "grandstand" not in state.buildings:
   return {"title":"Chapter 4 · A park to be proud of","voice":"Mara: The Owls finally feel like the town's team. Keep the field sharp and let's put a roof over those supporters.","goal":"Reach 200 supporters and invest 1,400 cr in the covered grandstand: 480 seats and better ticket income."}
- return {"title":"Chapter 5 · The town's club","voice":"Mara: Look what we built from an old mower and a few loyal families. Now let's fill this place.","goal":"Grow toward 480 supporters, keep hosting home games, and finish improving your tools. The club keeps earning after this chapter."}
+ return {"title":"Chapter 5 · The town's club","voice":"Mara: Look what we built from an old mower and a few loyal families. Now let's fill this place.","goal":"Grow toward 480 supporters. Add the grill stand, electronic scoreboard and video board, then finish improving your tools. Keep hosting to fund the next investment."}

@@ -9,10 +9,15 @@ var rebuilds := 0
 const G = preload("res://scripts/gameplay/geometry.gd")
 func sync(state: Dictionary) -> void:
  var crowd: int = state.last.get("attendance",0)
- var key := str([state.active,state.buildings,crowd])
+ var key := str([state.active,state.buildings,crowd,state.fans if "video_board" in state.buildings else 0])
  if key == signature:
   return
  signature = key
+ var stock_board: Node3D = game.stadium.get_node("Scoreboard")
+ var upgraded: bool = state.active and "scoreboard" in state.buildings
+ stock_board.visible = not upgraded
+ for shape in stock_board.find_children("*","CollisionShape3D",true,false):
+  shape.set_deferred("disabled",upgraded)
  for stand in game.stadium.grandstands:
   stand.visible = not state.active
   for shape in stand.find_children("*","CollisionShape3D",true,false):
@@ -41,6 +46,10 @@ func sync(state: Dictionary) -> void:
  build_crowd(seats,crowd_count)
  if "snack_shack" in state.buildings:
   build_snacks()
+ if "grill_stand" in state.buildings:
+  build_grill()
+ if upgraded:
+  build_scoreboard("video_board" in state.buildings,state)
  var sign := G.label(structures,"CEDAR GROVE OWLS\nLOW-A BASEBALL",Vector3(0,5.8,9),36)
  sign.billboard = BaseMaterial3D.BILLBOARD_ENABLED
  sign.pixel_size = 0.012
@@ -114,3 +123,49 @@ func build_snacks() -> void:
  label.rotation.y = PI
  label.pixel_size = 0.006
  label.modulate = Color("28585a")
+
+func build_grill() -> void:
+ var root := Node3D.new()
+ root.name = "OwlsGrillStand"
+ root.position = Vector3(-32,0,20)
+ structures.add_child(root)
+ G.box(root,Vector3(0,0.04,0),Vector3(8,0.08,6),Color("c9b590"))
+ G.box(root,Vector3(0,1.4,0),Vector3(6,2.8,3.5),Color("28585a"),true)
+ G.box(root,Vector3(0,1.8,-1.8),Vector3(4.8,1,0.12),Color("172b30"))
+ G.box(root,Vector3(0,1.2,-2.05),Vector3(5.2,0.16,0.75),Color("eee3c6"),true)
+ for i in range(12):
+  G.box(root,Vector3(-3.3+i*0.6,3.05,-0.7),Vector3(0.6,0.18,4.5),Color("e1bb67") if i%2 else Color("b46948"))
+ G.box(root,Vector3(1.8,3.6,0.6),Vector3(0.65,1.2,0.65),Color("526569"))
+ var sign := G.label(root,"OWLS GRILL\nBURGERS · FRIES",Vector3(0,2.45,-1.88),36)
+ sign.rotation.y = PI
+ sign.pixel_size = 0.007
+ sign.modulate = Color("e1bb67")
+ for x in [-2,2]:
+  G.box(root,Vector3(x,0.8,-4),Vector3(2.4,0.15,1.1),Color("b69b73"),true)
+  for z in [-4.8,-3.2]:
+   G.box(root,Vector3(x,0.45,z),Vector3(2.4,0.15,0.4),Color("b69b73"),true)
+func build_scoreboard(video: bool,state: Dictionary) -> void:
+ var root := Node3D.new()
+ root.name = "OwlsVideoBoard" if video else "OwlsElectronicScoreboard"
+ root.position = game.layout.point3(game.layout.plate_position+Vector2(0,-game.layout.fence_radius-2))
+ structures.add_child(root)
+ for x in [-7,7]:
+  G.box(root,Vector3(x,5,0),Vector3(0.7,10,0.7),Color("526569"),true)
+ G.box(root,Vector3(0,9,0),Vector3(23,10,0.8),Color("e1bb67"),true)
+ G.box(root,Vector3(0,9,0.5),Vector3(22,9,0.3),Color("172b30"))
+ var content := "CEDAR GROVE OWLS\nELECTRONIC SCOREBOARD\nHOME   —     VISITORS   —\nREADY FOR FIRST PITCH"
+ if video:
+  content = "CEDAR GROVE OWLS\nWELCOME TO THE NEST\n%d SUPPORTERS · %d SEATS\nTHANK YOU, CEDAR GROVE!" % [state.fans,state.capacity]
+ var display := G.label(root,content,Vector3(0,9,0.7),64)
+ display.pixel_size = 0.018
+ display.modulate = Color("e1bb67") if not video else Color("b7e4ce")
+ if video:
+  # A framed screen and pixel owl distinguish the video tier at field distance.
+  G.box(root,Vector3(-8,9,0.68),Vector3(4.4,6.7,0.12),Color("28585a"))
+  for x in [-9,-7]:
+   G.box(root,Vector3(x,9.8,0.78),Vector3(1.4,1.4,0.08),Color("e1bb67"))
+   G.box(root,Vector3(x,9.8,0.84),Vector3(0.5,0.7,0.06),Color("172b30"))
+  G.box(root,Vector3(-8,8.5,0.78),Vector3(0.6,0.7,0.08),Color("b46948"))
+  display.position.x = 2.1
+  display.pixel_size = 0.015
+ G.box(root,Vector3(0,14.2,0),Vector3(24,0.2,1.2),Color("28585a"))

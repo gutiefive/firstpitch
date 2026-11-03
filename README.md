@@ -377,3 +377,17 @@ The Clubhouse now shows a repeating six-date home schedule, with named visiting 
 The season review tracks hosted dates, targets met and average prep score. After the finale it stays visible until you host the next season's opener. Fans, buildings, equipment and budget carry forward. The review is reconstructed from saved hosting history, including existing careers; opponents are story context, with no simulated baseball wins or losses.
 
 Schedule regression test: `godot --headless --path . --script tests/test_club_schedule.gd`.
+
+### More stadium investments
+
+Open **Tab → Clubhouse** and scroll through the stadium projects. The original bleachers, snack shack and covered grandstand keep their prices and benefits. New projects:
+
+| Project | Cost | Supporters | Prerequisites | Extra benefit per home game |
+| --- | ---: | ---: | --- | --- |
+| Owls grill stand | 900 cr | 150 | Snack shack | +1 cr food profit per attendee, +3 fans |
+| Electronic scoreboard | 1,100 cr | 120 | None | +1 cr per ticket, +2 fans |
+| Owls video board | 2,600 cr | 320 | Electronic scoreboard and covered grandstand | Another +1 cr per ticket, +6 fans |
+
+The grill adds a striped concession building and picnic tables behind the stands. Scoreboard tiers replace the existing outfield board; the video screen displays club supporters and capacity with an owl graphic. Benefits stack and apply to future hosted games. Purchases use the shared club budget and persist through season rollover and reloads. The video board is a static club display, with baseball games still simulated.
+
+Expansion regression test: `godot --headless --path . --script tests/test_stadium_expansion.gd`.

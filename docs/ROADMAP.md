@@ -20,3 +20,5 @@
 - **Minor-league club story: first playable loop implemented.** Accept the Cedar Grove Owls groundskeeper job, use weaker unowned starter tools, complete home-game priority prep and explicitly host the date. Five manager-led chapters connect supporters, capacity-limited crowds, net ticket/food income and reinvestment. Bleachers, a snack shack and covered stands grow the park from 120 to 480 seats. Shared budget and once-only settlements persist in a replayable career-v2 event ledger; old careers retain exact payouts and equipment. Home games currently use summaries, with volunteer routine field completion and static batched supporters. Next: human progression balance, richer story events and game-day presentation.
 
 - Home-season loop: six named fixtures, rotating optional score/time targets, durable season review and rollover with club investments retained. Baseball outcomes and target cash bonuses remain outside this feature.
+
+- Stadium amenities: second grill concession, electronic scoreboard and later video board, with physical additions, purchase prerequisites and stacked ticket/food/fan benefits.

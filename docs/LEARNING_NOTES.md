@@ -269,3 +269,7 @@ This is a playable story/economy foundation, not a baseball match engine. Home d
 ### Home schedule
 
 `ClubSchedule` derives fixture order from committed game events, not wage records or dictionary ordering. Optional targets use the original frozen result's score and elapsed time. Pending prep, side contracts and duplicate hosting cannot advance the calendar. Reviews show the just-completed season until the next hosting. This presentation layer adds no save fields and leaves version-2 economic replay unchanged; existing games receive retrospective target reviews, never new money.
+
+### Stadium amenities expansion
+
+Added three immutable project IDs to the existing version-2 event ledger. Existing project prices and economics stay unchanged; a new benefit enters replay only after its build event, so old receipts never gain retroactive income. The event bound now allows 2,000 records plus the number of available projects. The Clubhouse derives prerequisite names from each project rather than assuming all projects need the original seating/concessions pair. Scoreboard tiers replace the stock board visually and disable its old colliders. New buildings stay outside the playing field and add no seats; capacity remains 480. Video-board caching includes supporters so its display updates after hosting without rebuilding during every HUD refresh.

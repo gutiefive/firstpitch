@@ -73,6 +73,7 @@ func _ready() -> void:
  content.add_child(grid)
  for id in ClubProgress.PROJECTS:
   var card := VBoxContainer.new()
+  card.custom_minimum_size.x = 250
   card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   grid.add_child(card)
   var item: Dictionary = ClubProgress.PROJECTS[id]
@@ -82,7 +83,10 @@ func _ready() -> void:
   text(card,"%d cr · %d supporters required" % [item.cost,item.fans],12)
   text(card,item.detail,13)
   if not item.requires.is_empty():
-   text(card,"Needs bleachers and snack shack",12).modulate = Color("e1bb67")
+   var required := PackedStringArray()
+   for dependency in item.requires:
+    required.append(ClubProgress.PROJECTS[dependency].title)
+   text(card,"Needs: "+", ".join(required),12).modulate = Color("e1bb67")
  receipt = text(content,"",14)
  notice = text(content,"",13)
  notice.modulate = Color("e1bb67")
