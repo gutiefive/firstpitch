@@ -1,6 +1,7 @@
 shader_type spatial;
 render_mode cull_disabled;
 uniform sampler2D condition_mask : filter_nearest, repeat_disable;
+uniform sampler2D moisture_mask : hint_default_black, filter_linear, repeat_disable;
 uniform vec2 field_origin=vec2(-25.0,-45.0);
 uniform vec2 field_size=vec2(50.0,53.0);
 varying vec3 world_pos;
@@ -24,5 +25,7 @@ void fragment() {
  vec3 smooth_dirt=vec3(0.46,0.25,0.12)+lines+noise(p*35.0)*0.012;
  vec3 protected_dirt=mix(vec3(0.31,0.14,0.065),vec3(0.38,0.18,0.09),noise(p*3.0));
  ALBEDO=mix(protected_dirt,mix(rough,smooth_dirt,state.r),state.a);
- ROUGHNESS=mix(1.0,0.91,state.r);
+ float moisture=texture(moisture_mask,(world_pos.xz-field_origin)/field_size).r*state.a;
+ ALBEDO*=mix(1.0,0.48,moisture);
+ ROUGHNESS=mix(mix(1.0,0.91,state.r),0.62,moisture);
 }

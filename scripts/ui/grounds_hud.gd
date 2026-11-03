@@ -9,6 +9,7 @@ var progress: ProgressBar
 var objective_label: Label
 var summary_label: Label
 var detail_label: Label
+var reticle: Label
 
 func text_label(text: String,size: int,color: Color = CREAM) -> Label:
  var label := Label.new()
@@ -88,6 +89,17 @@ func _ready() -> void:
  prompt = text_label("",15)
  prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
  bottom.add_child(prompt)
+ reticle = text_label("+",26)
+ reticle.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+ reticle.offset_left = -10
+ reticle.offset_right = 10
+ reticle.offset_top = -16
+ reticle.offset_bottom = 16
+ reticle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+ reticle.add_theme_color_override("font_shadow_color",Color("203e36"))
+ reticle.add_theme_constant_override("shadow_outline_size",3)
+ reticle.visible = false
+ add_child(reticle)
  var reminder := text_label("MOUSE  Orbit     SCROLL  Zoom     ESC  Cursor",12)
  reminder.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
  reminder.offset_left = -360

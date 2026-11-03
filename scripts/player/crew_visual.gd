@@ -3,6 +3,7 @@ extends Node3D
 const G = preload("res://scripts/gameplay/geometry.gd")
 var seated_pose := false
 var pushing_pose := false
+var watering_pose := false
 var limbs: Array[Node3D] = []
 var phase := 0.0
 
@@ -50,6 +51,9 @@ func animate_walk(speed: float,delta: float) -> void:
  phase += speed*delta*2.6
  var strength := clampf(speed/4.5,0,1)
  for i in range(limbs.size()):
+  if watering_pose and i == 2:
+   limbs[i].rotation.x = 1.1
+   continue
   if pushing_pose and i in [0,2]:
    limbs[i].rotation.x = 0.95
    continue

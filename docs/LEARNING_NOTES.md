@@ -67,6 +67,21 @@ The R action is contextual: it lifts/lowers an occupied tractor's drag or toggle
 
 The foul-line objective uses two one-dimensional sets of approximately quarter-meter sections. For each swept nozzle segment, the system tests nearby section centers against the chalk footprint. The bases/plate are protected and excluded. Left and right counts have separate denominators. Off-guide chalk is drawn, but it cannot mark a target section that its footprint did not reach. The gold dashed guides themselves start with zero coverage.
 
-Main remembers the selected task when you leave a tool. Returning to the tractor or changing its attachment restores its mowing/dragging objective. The HUD shows all three percentages and a left/right breakdown while chalking. Completion uses exact tracked counts rather than a rounded percentage, so nearly finished work cannot prematurely declare the park ready.
+Main remembers the selected task when you leave a tool. Returning to the tractor or changing its attachment restores its mowing/dragging objective. The HUD shows all four percentages and a left/right breakdown while chalking. Completion uses exact tracked counts rather than a rounded percentage, so nearly finished work cannot prematurely declare the park ready.
 
 Try `push_speed`, `steering_rate`, and `stroke_spacing` on the marker; `chalk_width`, line bounds, `section_length`, and `update_frequency` on the chalk system. Surface-height projection currently describes Cedar Grove's fixed geometry. A future shared field-layout resource should supply these heights and exclusions for multiple parks. Unlimited chalk, no erase/undo, and no session save/load are deliberate prototype limits, not quality or supply mechanics.
+
+
+## M4: Water exposure and the on-foot hose
+
+`DirtMoisture` uses the same valid dirt cells as `InfieldSurface`, but keeps its own floating-point moisture array and qualified-cell flags. Each physics step adds application rate × elapsed time × distance falloff inside a circular footprint. A cell contributes once after reaching the target moisture. Values saturate at one. The model has no drying or overwatering penalties, so qualifying progress persists for the session.
+
+A small R8 texture carries moisture to the existing dirt material. Dirty changes upload at most 10 times per second; idle data is not re-uploaded. The shader multiplies the dirt color by a moisture-dependent darkening factor and reduces roughness. It does not replace the dragging mask or the separate chalk meshes, so those systems retain their patterns and counts.
+
+`WateringTool` owns the station, held nozzle, hose mesh, droplets, ground-ring indicator, and camera aiming. It rays through the center reticle into the physics world, then separately checks the path from the nozzle to the target. This prevents the third-person camera from watering around a wall that blocks the character's hand. Pickup range, hose reach, nozzle reach, grounded player state, equipment state, and cursor capture all gate spraying. Entering another tool stows the hose before transferring control.
+
+The droplet stream is one MultiMesh with 36 instances. The hose is one small tube mesh rebuilt only when its endpoint moves and at no more than 10 Hz. It follows a curved ground route using the park's existing surface-height query. This is a visual approximation: it does not route around obstacles, simulate tension, constrain walking, or consume water. Reach limits prevent watering beyond the station's working range even though the character may walk farther away.
+
+Desktop play reads the actual cursor mode. Godot's headless dummy display always reports a visible cursor, so the logic test supplies a capture-state adapter for this one OS detail. The graphical test uses the real cursor mode and verifies Escape blocks spraying while the spray action remains held. Camera rays, collision queries, walking, doses, progress, and equipment transitions still run through the real scene in the headless integration test.
+
+Try the moisture scene's `spray_radius`, `application_rate`, `target_moisture`, and `update_frequency`, plus the station scene's `pickup_distance`, `hose_reach`, and `spray_reach`. A lower target or higher application rate makes the job faster. Larger radii cover more area but still respect protected dirt cells. Mound repair remains a separate future task rather than silently including the mound in the dirt-watering objective.

@@ -20,6 +20,8 @@ var chalk: ChalkSystem
 var chalk_marker: ChalkMarker
 var pushing_chalk := false
 var selected_task := 0
+var moisture: DirtMoisture
+var watering: WateringTool
 
 func _ready() -> void:
  configure_input()
@@ -28,6 +30,9 @@ func _ready() -> void:
  infield = preload("res://scenes/environment/infield.tscn").instantiate()
  add_child(infield)
  infield.apply_to(stadium.infield_surfaces)
+ moisture = preload("res://scenes/environment/dirt_moisture.tscn").instantiate()
+ add_child(moisture)
+ moisture.bind_surface(infield)
  tool_bay = ToolBay.new()
  add_child(tool_bay)
  grass = preload("res://scenes/environment/grass.tscn").instantiate()
@@ -66,21 +71,35 @@ func _ready() -> void:
  camera.near = 0.25
  camera.far = 400
  boom.add_child(camera)
+ watering = preload("res://scenes/environment/water_station.tscn").instantiate()
+ watering.player = player
+ watering.camera = camera
+ watering.moisture = moisture
+ watering.surface_height = chalk.ground_height
+ add_child(watering)
  create_hud()
  grass.completion_changed.connect(update_progress)
  infield.completion_changed.connect(update_progress)
  chalk.completion_changed.connect(update_progress)
+ moisture.completion_changed.connect(update_progress)
+ watering.equipped_changed.connect(on_watering_changed)
  mower.tool_changed.connect(on_tool_changed)
  Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func configure_input() -> void:
- var keys := {"forward":KEY_W,"back":KEY_S,"left":KEY_A,"right":KEY_D,"sprint":KEY_SHIFT,"jump":KEY_SPACE,"interact":KEY_E,"brake":KEY_SPACE,"swap_tool":KEY_Q,"lift_drag":KEY_R}
+ var keys := {"forward":KEY_W,"back":KEY_S,"left":KEY_A,"right":KEY_D,"sprint":KEY_SHIFT,"jump":KEY_SPACE,"interact":KEY_E,"brake":KEY_SPACE,"swap_tool":KEY_Q,"lift_drag":KEY_R,"water_tool":KEY_F}
  for action in keys:
   if not InputMap.has_action(action):
    InputMap.add_action(action)
   var event := InputEventKey.new()
   event.physical_keycode = keys[action]
   InputMap.action_add_event(action,event)
+ if not InputMap.has_action("spray_water"):
+  InputMap.add_action("spray_water")
+ var spray_button := InputEventMouseButton.new()
+ spray_button.button_index = MOUSE_BUTTON_LEFT
+ if not InputMap.action_has_event("spray_water",spray_button):
+  InputMap.action_add_event("spray_water",spray_button)
 
 func _unhandled_input(event: InputEvent) -> void:
  if event is InputEventKey and event.echo:
@@ -97,6 +116,8 @@ func _unhandled_input(event: InputEvent) -> void:
    camera_distance = minf(18,camera_distance+0.7)
  if event.is_action_pressed("interact"):
   interact()
+ if event.is_action_pressed("water_tool") and not driving and not pushing_chalk:
+  watering.toggle_equipped()
  if event.is_action_pressed("swap_tool"):
   swap_work_tool()
  if event.is_action_pressed("lift_drag"):
@@ -134,12 +155,14 @@ func interact() -> void:
    driving = false
   return
  if near_chalk_marker():
+  watering.set_equipped(false)
   player.set_seated(true)
   chalk_marker.set_occupied(true)
   pushing_chalk = true
   selected_task = 2
   update_progress(0)
  elif player.global_position.distance_to(mower.global_position) < 3.5:
+  watering.set_equipped(false)
   player.set_seated(true)
   mower.set_occupied(true)
   driving = true
@@ -147,12 +170,17 @@ func interact() -> void:
   update_progress(0)
 
 func swap_work_tool() -> bool:
- if driving or pushing_chalk or not mower.can_exit() or not tool_bay.contains(mower.global_position):
+ if driving or pushing_chalk or watering.equipped or not mower.can_exit() or not tool_bay.contains(mower.global_position):
   return false
  if player.global_position.distance_to(mower.global_position) >= 3.5:
   return false
  var next_tool := RidingMower.WorkTool.DRAG if mower.active_tool == RidingMower.WorkTool.MOWER else RidingMower.WorkTool.MOWER
  return mower.set_tool(next_tool)
+
+func on_watering_changed(equipped: bool) -> void:
+ if equipped:
+  selected_task = 3
+ update_progress(0)
 
 func on_tool_changed(_tool: int) -> void:
  selected_task = 1 if mower.active_tool == RidingMower.WorkTool.DRAG else 0
@@ -170,19 +198,27 @@ func _process(delta: float) -> void:
  pivot.rotation = Vector3(pitch,yaw,0)
  boom.spring_length = lerpf(boom.spring_length,camera_distance,1-exp(-8*delta))
  var dragging := mower.active_tool == RidingMower.WorkTool.DRAG
- if pushing_chalk:
+ hud.reticle.visible = watering.equipped
+ if watering.equipped:
+  mode_label.text = "WATERING  /  " + watering.feedback
+  hud.reticle.modulate = Color("c3b996")
+  if watering.target_valid and moisture.is_workable(watering.target):
+   hud.reticle.modulate = Color("83c4cf") if moisture.moisture_at(watering.target) >= moisture.target_moisture else Color("e1bb67")
+ elif pushing_chalk:
   mode_label.text = "CHALKING  /  " + ("GATE OPEN" if chalk_marker.gate_open else "GATE CLOSED")
   if chalk_marker.gate_open and chalk.distance_to_guide(chalk_marker.nozzle.global_position) > chalk.chalk_width*0.5:
    mode_label.text = "CHALKING  /  OFF GUIDE — NO LINE CREDIT"
  elif not driving:
-  mode_label.text = "ON FOOT  /  " + ("CHALK MARKER PARKED" if selected_task == 2 else ("DRAG EQUIPPED" if dragging else "MOWER EQUIPPED"))
+  mode_label.text = "ON FOOT  /  " + ("HOSE STOWED" if selected_task == 3 else ("CHALK MARKER PARKED" if selected_task == 2 else ("DRAG EQUIPPED" if dragging else "MOWER EQUIPPED")))
  elif dragging:
   mode_label.text = "DRAGGING  /  " + ("LOWERED" if mower.drag.lowered else "RAISED")
   if mower.drag.lowered and mower.speed < -0.15:
    mode_label.text = "DRAGGING  /  REVERSE — NO PREPARATION"
  else:
   mode_label.text = "MOWING  /  DECK ENGAGED"
- if pushing_chalk:
+ if watering.equipped:
+  prompt.text = "WASD walk  •  Aim with mouse  •  Hold LMB to water  •  F stow hose  •  Esc cursor"
+ elif pushing_chalk:
   prompt.text = "WASD push / steer  •  R chalk gate  •  Space brake  •  " + ("E leave marker" if chalk_marker.can_exit() else "Stop to leave marker")
  elif driving and dragging:
   if mower.drag.lowered:
@@ -195,6 +231,8 @@ func _process(delta: float) -> void:
   prompt.text = "E use chalk marker  •  Follow the dashed gold foul-line guides"
  elif player.global_position.distance_to(mower.global_position) < 3.5:
   prompt.text = "E enter tractor  •  Q swap mower / drag" if tool_bay.contains(mower.global_position) else "E enter tractor  •  Return to tool bay to swap equipment"
+ elif player.global_position.distance_to(watering.station_position) <= watering.pickup_distance:
+  prompt.text = "F take hose  •  Water the workable infield dirt"
  else:
   prompt.text = "WASD walk  •  Shift sprint  •  Space jump  •  Find equipment beside the workshop"
 
@@ -211,19 +249,24 @@ func update_progress(_value: float) -> void:
  var mowing := grass.percentage()
  var dirt := infield.percentage()
  var lining := chalk.percentage()
- var completed := [grass.total > 0 and grass.cut_count == grass.total,infield.total > 0 and infield.prepared_count == infield.total,chalk.valid_count > 0 and chalk.covered_count == chalk.valid_count]
- var values := [mowing,dirt,lining]
- var objectives := ["Mow the outfield","Drag the infield dirt","Chalk both foul lines"]
+ var water := moisture.percentage()
+ var completed := [grass.total > 0 and grass.cut_count == grass.total,infield.total > 0 and infield.prepared_count == infield.total,chalk.valid_count > 0 and chalk.covered_count == chalk.valid_count,moisture.total > 0 and moisture.wet_count == moisture.total]
+ var values := [mowing,dirt,lining,water]
+ var objectives := ["Mow the outfield","Drag the infield dirt","Chalk both foul lines","Water the infield dirt"]
  var value: float = values[selected_task]
  hud.objective_label.text = objectives[selected_task]
- hud.summary_label.text = "MOW %.1f%%  /  DRAG %.1f%%  /  CHALK %.1f%%" % [mowing,dirt,lining]
+ hud.summary_label.text = "MOW %.1f%%  /  DRAG %.1f%%\nCHALK %.1f%%  /  WATER %.1f%%" % [mowing,dirt,lining,water]
  if selected_task == 2:
   hud.detail_label.text = "LEFT %.1f%%  /  RIGHT %.1f%%" % [chalk.line_percentage(0),chalk.line_percentage(1)]
+ elif selected_task == 3:
+  hud.detail_label.text = "Hold to soak · %.0f m hose / %.0f m spray" % [watering.hose_reach,watering.spray_reach]
+  if watering.equipped and watering.target_valid:
+   hud.detail_label.text = "AIM %.0f%% / TARGET %.0f%% MOISTURE" % [moisture.moisture_at(watering.target)*100,moisture.target_moisture*100]
  else:
   hud.detail_label.text = ""
  progress.value = value
  percent_label.text = "%.2f%%" % minf(value,99.99)
  if completed[selected_task]:
   percent_label.text = "TASK COMPLETE"
- if completed[0] and completed[1] and completed[2]:
-  hud.objective_label.text = "PARK READY — All three tasks complete"
+ if completed[0] and completed[1] and completed[2] and completed[3]:
+  hud.objective_label.text = "PARK READY — All four tasks complete"
