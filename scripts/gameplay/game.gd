@@ -34,6 +34,8 @@ var shift: ShiftDirector
 @export var tutorial_enabled := true
 @export var autosave_enabled := true
 var settings := CrewSettings.new()
+var stadium: Node3D
+var club: ClubDirector
 var input_device: CrewInput
 var tutorial: CrewTutorial
 var autosave: CrewAutosave
@@ -47,7 +49,7 @@ func _ready() -> void:
  settings.load_settings()
  input_device = CrewInput.new()
  input_device.game = self
- var stadium = preload("res://scenes/stadium/stadium.tscn").instantiate()
+ stadium = preload("res://scenes/stadium/stadium.tscn").instantiate()
  stadium.layout = layout
  add_child(stadium)
  add_child(input_device)
@@ -149,6 +151,9 @@ func _ready() -> void:
  inspection = CrewInspection.new()
  inspection.game = self
  add_child(inspection)
+ club = ClubDirector.new()
+ club.game = self
+ add_child(club)
  Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func configure_input() -> void:

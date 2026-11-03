@@ -6,6 +6,7 @@ enum Phase { PRACTICE, ACTIVE, FINISHED }
 const JOB_NAMES := ["Mow outfield","Drag dirt","Chalk lines","Water dirt","Repair mound"]
 const PROFILES := {
  "training": {"title":"Training shift","duration":900.0,"goals":[25.0,50.0,50.0,50.0,100.0],"pay_rate":1.0,"bonus":50,"start":"fresh","quality":{"minimum":0.7,"chalk_per_metre":0.005,"water_penalty":0.25,"rut_penalty":0.25,"stripe_bonus":0.03,"stripe_tolerance":0.15,"stripe_min_samples":20,"puddle_threshold":0.95,"puddle_seconds":12.0,"wet_drag_threshold":0.75,"dry_moisture":0.7},"wear_rules":{"dry_fraction":0.7,"base_radius":2.2,"batter_radius":4.5,"hole_radius":3.0,"hole_axis_x":0.55,"hole_axis_y":-0.35,"lane_width":1.8,"heavy_chance":0.85,"light_chance":0.12,"chalk_home_radius":8.0,"chalk_base_radius":3.0,"rear_mound_weight":0.55,"mound_min_fraction":0.65,"ready_moisture":0.8}},
+ "home_game": {"title":"Owls home-game prep","duration":1200.0,"goals":[15.0,50.0,100.0,50.0,100.0],"pay_rate":1.0,"bonus":60,"start":"game_day","wear":0.35,"club":true},
  "full": {"title":"Full park prep","duration":1800.0,"goals":[100.0,100.0,100.0,100.0,100.0],"pay_rate":3.0,"bonus":150,"start":"game_day","wear":0.55},
  "quick_mow": {"title":"Morning mowing","duration":600.0,"goals":[10.0,0.0,0.0,0.0,0.0],"pay_rate":0.6,"bonus":40,"contract":true,"minimum_earnings":0},
  "mound_callout": {"title":"Mound callout","duration":300.0,"goals":[0.0,0.0,0.0,0.0,100.0],"pay_rate":0.25,"bonus":15,"contract":true,"minimum_earnings":0},

@@ -1,14 +1,14 @@
 # First Pitch: Grounds Crew
 
-A playable Godot 3D groundskeeping prototype set at **Cedar Grove Ballpark**. Mow the outfield, drag and water the dirt, chalk foul lines, and repair the mound. Take timed shifts or focused contracts, earn crew credits, climb the ranks, and buy permanent tool upgrades. Save field work and resume later.
+A playable Godot 3D groundskeeping prototype set at **Cedar Grove Ballpark**. Mow the outfield, drag and water the dirt, chalk foul lines, and repair the mound. Take timed shifts or focused contracts, earn crew credits, climb the ranks, and buy permanent tool upgrades. Take a job with the **Cedar Grove Owls**, grow a supporter base, and reinvest home-game income in tools and a bigger ballpark. Save field work and resume later.
 
 Built with GDScript, procedural meshes and original generated sound effects. No plugins, downloaded art, or external runtime dependencies are required.
 
-**Current build: M1–M5 prototypes implemented, plus the first M6 career and contracts loop.** The latest verified build passed **642 headless assertions** and scripted graphical checks. Windows and Forward+ hardware testing remain outstanding.
+**Current build: M1–M5 prototypes implemented, plus a first minor-league club story, stadium growth and career loop.** The latest verified build passed **715 headless assertions** and scripted graphical checks. Windows and Forward+ hardware testing remain outstanding.
 
 ![Cedar Grove's connected dugouts and playing enclosure](docs/screenshots/dugout-layout.png)
 
-[Start playing](#start-playing) · [Controls](#controls) · [Field tools](#field-tools) · [Shifts and contracts](#shifts-and-contracts) · [Career and upgrades](#career-and-upgrades) · [Saving](#save-and-resume) · [Development](#development-and-verification)
+[Start playing](#start-playing) · [Controls](#controls) · [Club story](#club-story-loop) · [Field tools](#field-tools) · [Shifts and contracts](#shifts-and-contracts) · [Career and upgrades](#career-and-upgrades) · [Saving](#save-and-resume) · [Development](#development-and-verification)
 
 ## Current milestone status
 
@@ -19,7 +19,7 @@ Built with GDScript, procedural meshes and original generated sound effects. No 
 | **M3 — Grass mowing** | Persistent spatial cutting, directional stripes, disappearing grass tufts and overlap-safe coverage. |
 | **M4 — Field tools** | Tow-behind infield drag, pushable chalk marker, on-foot hose and timed hand tamper; five independent field jobs. |
 | **M5 — Shifts, scores and saving** | Free practice, training/full-park shifts, paused board, repair goals, finish quality, frozen results, manual save and autosave/paused resume. |
-| **M6 — First career slice** | Credits, four crew ranks, personal bests, recent results, four permanent upgrades and four focused contracts with two rank unlocks. |
+| **M6 — Club and career** | Owls story chapters, starter tools, home-game prep/hosting, supporters, gate income, three stadium projects, four tool upgrades, crew ranks and side contracts. |
 | **Guide and controller** | Seven-step first-run tutorial, checkpoint/skip/replay, InputMap Controls, pad tools/camera/menu navigation and saved sensitivity. |
 | **Field and sound polish** | Field-facing dugouts connected to fencing/backstop, proper home plate and reference markings, positional tool sounds, ambience and saved volume settings. |
 
@@ -43,12 +43,12 @@ godot --path . --rendering-method gl_compatibility
 You spawn beside the workshop in **free practice**, with no countdown. The tractor, chalk marker, hose station and tamper rack are nearby. Use the open **GROUNDS CREW / FIELD ACCESS** entrance beside the workshop to reach the field.
 
 1. Follow the first-run **Crew guide** through all five tools, or skip with **F8 / D-pad Up**. Finishing or skipping clears tutorial work; **Replay tutorial** on the board starts fresh practice.
-2. Press **Tab** and choose training or game-day full prep, or open **Contracts** for a shorter job.
-3. Complete its listed goals before the deadline, or use **End shift now** for a partial result.
-4. Open **Crew career** to spend earned credits on equipment.
+2. Press **Tab → Start club story → Take the groundskeeper job** to begin the Owls campaign. Existing training/full-prep shifts and Contracts stay available.
+3. Complete the home-game priority checklist, then open **Clubhouse → Host home game** to gain supporters and net ticket income.
+4. Reinvest the shared budget: **Buy better tools / Workshop** for equipment, or **Clubhouse** for seating and amenities.
 5. Quit normally to autosave your field and clock. Use **Save to manual slot** for a separate snapshot you control.
 
-**Training, Morning mowing and Mound callout reset work. Full prep, Between-games infield and Doubleheader turnaround apply seeded game-day wear to the current park.** All starts park equipment. It keeps your career and upgrades, and does not overwrite the manual field slot unless you save again.
+**Training, Morning mowing and Mound callout reset work. Full prep, Between-games infield, Doubleheader turnaround and club home prep apply seeded game-day wear to the current park.** All starts park equipment. It keeps your career and upgrades, and does not overwrite the manual field slot unless you save again.
 
 ## Controls
 
@@ -93,6 +93,29 @@ The board's **Controls** screen reads the current InputMap and switches key/pad 
 | D-pad Up during guide | Skip tutorial |
 
 A pad can aim and use hand tools while the mouse cursor is free. Switching back to the mouse restores the captured-cursor requirement. Tutorial progress and completion persist in local settings; the guide pauses during paid attempts. See [first-run guide](docs/screenshots/tutorial-first-run.png) and [controller Controls](docs/screenshots/controller-controls.png).
+
+## Club story loop
+
+You work for the fictional **Cedar Grove Owls**, a struggling Low-A minor-league team. General manager **Mara Vale** guides five short progression chapters: keep the gates open, win returning supporters, make the park a family night out, build a covered stand, and grow the town's club.
+
+Open **Tab → Start club story** to accept the job. A new club begins with **48 supporters**, **120 seats** and weaker equipment: **1.8 m mower deck**, **2.2 m drag mat**, and **0.55 watering rate**. Purchased tools and earned credits from an existing career carry over; owned equipment is never downgraded. The sandbox stays unchanged until you enroll.
+
+1. **Prepare a home game.** The 20-minute priority checklist asks for mowing 15%, repairing 50% of damaged dirt, all missing chalk, watering 50%, and finishing mound repairs. Goals use the existing game-day baselines and quality scoring. Volunteers handle routine work beyond your assigned checklist.
+2. **Host the home game.** A fully completed prep attempt pays up to **160 cr**, then unlocks one home-game settlement. Attendance depends on supporters and prep quality, capped by seating. Tickets and food minus operating costs add net money to the shared club budget, and good experiences attract more supporters. A clean first date brings 48 attendees, **84 cr net** and **20 new supporters**—244 cr including prep pay.
+3. **Choose what to improve.** Tools make work faster/easier; seating accommodates demand; amenities increase income and fan growth. Side contracts also fund the budget, but cash or idle time alone never creates supporters or gate money.
+4. **Repeat.** The next date wears the park again. Completed-but-unhosted prep survives quitting and is offered on resume; an attempt can never pay ticket income twice.
+
+| Stadium investment | Cost | Requirements | Effect |
+| --- | ---: | --- | --- |
+| Community bleachers | 600 cr | 90 supporters | Add 120 seats: **240 total**. |
+| Family snack shack | 450 cr | 75 supporters | New concession building; 1 cr food profit per attendee and 3 extra supporters per game. |
+| Covered grandstand | 1,400 cr | 200 supporters; both earlier projects | Covered seating and 240 more seats: **480 total**; 1 cr more per ticket and 5 extra supporters per game. |
+
+The stadium visibly grows and batched spectators show the last hosted crowd. Story, budget, supporters, construction and tool ownership persist together in the career file. Construction parks the crew without clearing field work. Starting home prep ends a running practice guide; Replay tutorial remains available.
+
+**This first story slice uses simulated home-game summaries**, not playable baseball innings, win/loss simulation or an animated match. Volunteers complete routine field work only after your paid attempt ends, so their work creates no extra coverage pay. Prices, checklist length and growth rates need human balance testing.
+
+[Clubhouse story](docs/screenshots/club-story.png) · [Starter park](docs/screenshots/club-starter.png) · [Expanded covered park](docs/screenshots/club-grown-stadium.png) · [Supporters](docs/screenshots/club-supporters.png)
 
 ## Field inspection
 
@@ -152,11 +175,12 @@ Tool screenshots: [mowing](docs/screenshots/mowing.png), [dragging](docs/screens
 
 ## Shifts and contracts
 
-Press **Tab** for the paused shift board. Training/full prep start from its main screen; shorter jobs live under **Contracts**.
+Press **Tab** for the paused shift board. Training/full prep start from its main screen; shorter jobs live under **Contracts**, and the club story uses **Clubhouse**.
 
 | Job | Deadline | Goals | Maximum total pay | Availability |
 | --- | --- | --- | --- | --- |
 | Free practice | None | Explore and practice any task | No earnings | Always |
+| Owls home-game prep | 20 min | Mow 15%; drag/water 50%; chalk/mound 100% | **160 cr** prep pay, plus variable game income | Accept the Clubhouse job |
 | Training shift | 15 min | Mow 25%; drag/chalk/water 50% each; mound 100% | **150 cr**, including 50 completion bonus | Always |
 | Full park prep | 30 min | 100% of every job | **450 cr**, including 150 completion bonus | Always |
 | Morning mowing | 10 min | Mow 10% | **100 cr**, including 40 completion bonus | Always |
@@ -180,7 +204,7 @@ Contracts are fixed, repeatable offers. You cannot replace an active attempt wit
 
 ## Career and upgrades
 
-Open **Tab → Crew career** for your wallet, lifetime earnings, rank, personal bests, latest five results and equipment shop. Career records retain up to **2,000 attempts**. Rewards and purchases save automatically, separately from field work.
+Open **Tab → Crew career** (called **Workshop** in the club story) for your wallet, lifetime earnings, rank, personal bests, latest five results and equipment shop. Career records retain up to **2,000 attempts**. Rewards and purchases save automatically, separately from field work.
 
 | Crew rank | Lifetime earnings |
 | --- | --- |
@@ -189,7 +213,7 @@ Open **Tab → Crew career** for your wallet, lifetime earnings, rank, personal 
 | Crew Lead | 1,500 cr |
 | Head Groundskeeper | 3,500 cr |
 
-Spending credits never reduces rank progress. Training pays one credit per score point plus 50 for completion; full prep pays three per point plus 150. Contract terms appear on their cards. Free practice earns nothing.
+Spending credits never reduces rank progress. Training pays one credit per score point plus 50 for completion; full prep pays three per point plus 150. Contract terms appear on their cards. Free practice earns nothing. In the club story, net game income also contributes to lifetime earnings; construction spending does not remove rank progress.
 
 | Permanent upgrade | Price | Unlock | Effect |
 | --- | --- | --- | --- |
@@ -197,6 +221,8 @@ Spending credits never reduces rank progress. Training pays one credit per score
 | High-flow nozzle | **200 cr** | Always | 25% faster watering; unchanged spray radius, reach and target. |
 | Wide drag mat | **400 cr** | Field Hand / 500 lifetime credits | Preparation width grows from 2.8 to 3.5 m; mounted and parked mat visuals match. |
 | Chalk guide wheel | **350 cr** | Field Hand / 500 lifetime credits | Helps hold a nearby foul guide while pushing forward with the gate open. Manual steering overrides. |
+
+Story upgrades replace the weaker starter kit: mower 1.8 → 3.0 m, drag 2.2 → 3.5 m, hose 0.55 → 1.0.
 
 Purchases apply immediately and survive fresh shifts, field loads and game restarts. Owned equipment cannot be bought twice. Loading an older field does not refund spending or roll back upgrades.
 
@@ -212,7 +238,7 @@ Upgrade views: [wide drag preparing dirt](docs/screenshots/wide-drag.png), [guid
 
 **Autosave and the manual slot are separate.** Autosave writes when an attempt starts/finishes, when the board opens, on a normal window close, and every **60 seconds during an active attempt when field work changed**. Writes are queued at no more than one per second; they never run from physics processing. The footer shows **Autosaved hh:mm:ss**. A crash can lose about a minute of recent work. Full-field save time measured roughly **110–140 ms** on the test machine, so a brief save hitch is possible.
 
-On launch, an active autosave or an unpaid finished attempt opens a paused **Resume last session** card with its title, remaining clock and goal progress. Choose Resume to restore work and park equipment at the workshop; the clock stays paused until you resume play. **Start fresh** discards that recovery choice and opens clean practice. Resuming a finished attempt claims its reward through the same once-only career ledger. A damaged autosave becomes `field-autosave.bad`, with a notice; startup continues.
+On launch, an active autosave, an unpaid finished attempt, or paid home prep that still needs hosting opens a paused **Resume last session** card with its title, remaining clock and goal progress. Choose Resume to restore work and park equipment at the workshop; the clock stays paused until you resume play. **Start fresh** discards that recovery choice and opens clean practice. Resuming a finished attempt claims its reward through the same once-only career ledger. A damaged autosave becomes `field-autosave.bad`, with a notice; startup continues.
 
 Use **Save to manual slot** and **Load manual slot** on the board for an independent snapshot. It includes all five jobs, patterns, chalk, moisture, mound hits, clock, attempt ID, wear seed/baselines, puddles/ruts, quality state and frozen results. Loading replaces current work and parks equipment; positions, motion, held tools and camera angle are not restored. Autosave and fresh starts leave the manual disk slot intact. See [resume card](docs/screenshots/resume-card.png).
 
@@ -221,7 +247,7 @@ Use **Save to manual slot** and **Load manual slot** on the board for an indepen
 | `user://field-save.dat` | No — manual Save button | Field work, active attempt/clock and last result. |
 | `user://field-autosave.dat` | Yes — shift, dirty interval, board and quit triggers | Separate resumable field/attempt snapshot. |
 | `user://settings.cfg` | Yes — tutorial/input changes | Guide checkpoint/completion and pad sensitivity. |
-| `user://career.dat` | Yes — rewards and purchases | Earnings, paid attempts, rank progress, personal bests and owned upgrades. |
+| `user://career.dat` | Yes — rewards, projects and purchases | Earnings, paid attempts, tools, crew ranks and the club story/event ledger. |
 | `user://sound.cfg` | Yes — volume changes | Master/effects/ambience levels and mute. |
 
 Use Godot's **Project → Open User Data Folder** to find these files. On Windows they are under the game's folder in `%APPDATA%/Godot/app_userdata/`. Saves are local, with no cloud/device sync or GitHub upload.
@@ -248,7 +274,7 @@ More views: [full field](docs/screenshots/field-layout.png), [home area](docs/sc
 
 ## Development and verification
 
-The last feature pass verified **642 headless assertions**, editor import, main-scene startup and scripted graphical flows. These include actual tool work, native board/shop controls, saved-attempt replay protection, upgrades and contract completion. Graphical checks used Linux Xorg/Mesa **OpenGL Compatibility**; synthetic fixtures and fast-forwarded branches are identified in [VERIFICATION.md](docs/VERIFICATION.md).
+The last feature pass verified **715 headless assertions**, editor import, main-scene startup and scripted graphical flows. These include actual tool work, native board/shop controls, saved-attempt replay protection, upgrades and contract completion. Graphical checks used Linux Xorg/Mesa **OpenGL Compatibility**; synthetic fixtures and fast-forwarded branches are identified in [VERIFICATION.md](docs/VERIFICATION.md).
 
 Run from the project directory:
 
@@ -280,6 +306,8 @@ godot --headless --path . --script tests/test_autosave.gd
 godot --headless --path . --script tests/test_controller_input.gd
 godot --headless --path . --script tests/test_inspection.gd
 godot --headless --path . --script tests/test_equipment_upgrades.gd
+godot --headless --path . --script tests/test_club_progress.gd
+godot --headless --path . --script tests/test_club_gameplay.gd
 godot --headless --path . --quit-after 180
 ```
 
@@ -303,6 +331,7 @@ godot --path . --rendering-method gl_compatibility --script tests/test_contracts
 | `test_sound_visual.gd` | Volume/mute controls and recorded mixer preview. |
 | `test_field_layout_visual.gd` | Field, dugouts, gate, plate and reference markings. |
 | `test_career_visual.gd` | Real earnings, native shop purchases and upgraded deck. |
+| `test_club_visual.gd` | Native story enrollment, home-game hosting, construction, workshop and growing stadium/crowds. |
 | `test_equipment_visual.gd` | Native rank-locked shop purchases, wider drag work and assisted chalking. |
 | `test_inspection_visual.gd` | Five inspection views, exact missing-section markers and Controls. |
 | `test_onboarding_visual.gd` | First launch, native skip/replay, pad menus and persisted paused resume. |
@@ -324,6 +353,7 @@ Captures use `/tmp/firstpitch-*.png` on Linux. These scripts run controlled auto
 | Profiles, clock, goals and contracts | `scripts/gameplay/shift_session.gd`, `scripts/gameplay/shift_director.gd` |
 | Field saves, career and audio | `scripts/gameplay/field_save.gd`, `scripts/gameplay/career_profile.gd`, `scripts/gameplay/grounds_audio.gd`, `scripts/gameplay/sound_preferences.gd` |
 | Field inspection | `scripts/gameplay/crew_inspection.gd`, grass/infield state shaders |
+| Minor-league club story | `club_progress.gd`, `club_director.gd`, `club_stadium.gd`, `scripts/ui/club_panel.gd` |
 | Guide, autosave and input | `scripts/gameplay/tutorial.gd`, `crew_autosave.gd`, `crew_input.gd`, `crew_settings.gd` |
 | HUD and board screens | `scripts/ui/` |
 
@@ -331,11 +361,11 @@ Captures use `/tmp/firstpitch-*.png` on Linux. These scripts run controlled auto
 
 ## Current limitations
 
-- One procedural prototype park. No authored character rigs, crowds, playable baseball, additional parks or park-unlock progression yet.
+- One procedural prototype park. No authored character rigs, animated crowds, playable baseball, additional parks or park-unlock progression yet. Club spectators are simple batched figures and home games are summaries.
 - Coverage and finish-quality scoring are implemented. Human deadline/pay balancing and deeper career progression remain future work.
 - Arcade vehicle handling and mostly flat ground; no suspension, articulated trailer physics, deformable terrain or physical hose simulation.
 - Unlimited supplies; drying is limited to game-day moisture loss and puddle timers. No clay inventory, chalk erasing or repainting of static reference markings.
 - One manual slot and one autosave, a 2,000-attempt local career ledger, no equipment resale and no cloud sync. Loading parks equipment rather than restoring its exact position.
-- Synthetic prototype sound; no music, crowds, surface-specific footsteps or acoustic occlusion. Desktop listening and mix tuning remain outstanding.
+- Synthetic prototype sound; no music, crowd audio, surface-specific footsteps or acoustic occlusion. Desktop listening and mix tuning remain outstanding.
 - Windows exports, native Windows behavior, Forward+ GPU appearance/performance and physical controller hardware remain unverified. Controller mappings and tool/menu operation pass injected-event tests.
 - Park dimensions and exclusions now share one layout resource; there is no visual layout-authoring UI. Field v1/v2 migrations support the recorded Cedar Grove layouts; future geometry changes need an explicit migration.

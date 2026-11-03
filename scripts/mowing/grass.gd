@@ -170,3 +170,17 @@ func set_inspection(enabled: bool) -> void:
  surface_material.set_shader_parameter("inspection_enabled",enabled)
  if tufts != null:
   tufts.visible = not enabled
+
+func prepare_all() -> void:
+ image.copy_from(pristine)
+ cut = valid.duplicate()
+ cut_count = total
+ for i in range(valid.size()):
+  if valid[i] == 1:
+   image.set_pixel(i%resolution.x,i/resolution.x,Color(1,0.5,0,1))
+ reset_quality()
+ texture.update(image)
+ dirty = false
+ elapsed = 0
+ set_process(false)
+ completion_changed.emit(100)

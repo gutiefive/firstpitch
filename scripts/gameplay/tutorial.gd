@@ -57,7 +57,7 @@ func instruction() -> String:
   3: return "%s use chalk marker. %s open gate, then push along a dashed gold guide." % [b.call("interact"),b.call("lift_drag")]
   4: return "%s take hose at station. Aim at dirt and hold %s until a patch reaches target moisture." % [b.call("water_tool"),b.call("spray_water")]
   5: return "%s take tamper at rack. Aim at one worn mound patch; stop and press %s three times, holding aim through each impact." % [b.call("mound_tool"),b.call("tamp_mound")]
-  6: return "%s open the board: shifts set goals, Contracts offer shorter jobs, Crew career holds pay/upgrades. Close the board to finish; tutorial work will be cleared." % b.call("shift_board")
+  6: return "%s open the board: shifts set goals, Clubhouse starts the Owls story, Contracts offer side work, and Crew career holds pay/upgrades. Close the board to finish; tutorial work will be cleared." % b.call("shift_board")
  return ""
 func step_complete() -> bool:
  match step:

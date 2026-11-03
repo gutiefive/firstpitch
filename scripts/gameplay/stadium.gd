@@ -4,6 +4,7 @@ const G = preload("res://scripts/gameplay/geometry.gd")
 const Props = preload("res://scripts/environment/park_props.gd")
 const CREAM := Color("eee3c6")
 const TEAL := Color("28585a")
+var grandstands: Array[Node3D] = []
 var infield_surfaces: Array[MeshInstance3D] = []
 
 func _ready() -> void:
@@ -81,7 +82,7 @@ func build_boundary() -> void:
   marker.modulate = CREAM
  build_foul_boundary()
  for side in [-1,1]:
-  Props.grandstand(self,side)
+  grandstands.append(Props.grandstand(self,side))
  Props.scoreboard(self,layout)
  for pos in [Vector3(-55,0,-35),Vector3(55,0,-35),Vector3(-35,0,15),Vector3(35,0,15)]:
   Props.light_tower(self,pos)

@@ -5,6 +5,9 @@ signal start_requested(profile: String)
 signal save_requested
 signal load_requested
 signal end_requested
+var club_screen: ScrollContainer
+var club_panel: ClubPanel
+var club_button: Button
 var controls_screen: ScrollContainer
 var controls_panel: ControlsPanel
 var controls_button: Button
@@ -276,6 +279,8 @@ func attach_audio(audio: GroundsAudio) -> void:
  sound_screen.visible = false
 
 func show_board() -> void:
+ if club_screen != null:
+  club_screen.visible = false
  if controls_screen != null:
   controls_screen.visible = false
  if sound_screen != null:
@@ -308,7 +313,10 @@ func refresh() -> void:
   child.visible = true
  resume_card.visible = offered
  if career_button != null:
-  career_button.text = "Crew career · %d cr" % director.career.balance
+  career_button.text = ("Workshop · %d cr" if director.career.club_started() else "Crew career · %d cr") % director.career.balance
+ if club_button != null:
+  club_button.disabled = offered
+  club_button.text = "Clubhouse · Host" if not String(director.career.club.pending).is_empty() else ("Clubhouse" if director.career.club_started() else "Start club story")
  career_reward.text = director.career_message
  career_reward.visible = not director.career_message.is_empty()
  var active := session.phase == ShiftSession.Phase.ACTIVE
@@ -329,7 +337,7 @@ func refresh() -> void:
   status_rows[i].visible = active and session.goals()[i] > 0
   status_rows[i].text = "%s %s  %.1f / %.0f%%" % ["✓" if session.goal_met(i) else "·",ShiftSession.JOB_NAMES[i],session.values[i],session.goals()[i]]
  heading.text = "SHIFT BOARD"
- description.text = "Free practice. Choose training or a game-day preparation shift."
+ description.text = "Free practice. Visit Clubhouse to take the Owls groundskeeper job." if not director.career.club_started() else "Between home games. Clubhouse has your next story objective."
  score_label.visible = active or finished
  score_label.text = ""
  var values: Array = Array(session.values)
@@ -346,7 +354,7 @@ func refresh() -> void:
   targets = result["goals"]
   met = result["met"]
   if result["reason"] == "completed":
-   heading.text = "CONTRACT COMPLETE" if ShiftSession.PROFILES[result.profile_id].get("contract",false) else ("TRAINING COMPLETE" if result["profile_id"] == "training" else "PARK READY")
+   heading.text = "HOME GAME PREPARED" if result.profile_id == "home_game" else ("CONTRACT COMPLETE" if ShiftSession.PROFILES[result.profile_id].get("contract",false) else ("TRAINING COMPLETE" if result["profile_id"] == "training" else "PARK READY"))
   else:
    heading.text = "TIME’S UP" if result["reason"] == "time_up" else "SHIFT ENDED"
   description.text = "%s · Last shift result · Active time %s" % [result["title"],ShiftSession.clock_text(result["elapsed_seconds"])]
@@ -398,7 +406,7 @@ func focus_current() -> void:
  if not is_inside_tree() or not modal.visible:
   return
  var screen: Control = board_scroll
- for candidate in [controls_screen,career_screen,contracts_screen,sound_screen]:
+ for candidate in [club_screen,controls_screen,career_screen,contracts_screen,sound_screen]:
   if candidate != null and candidate.visible:
    screen = candidate
  CrewInput.focus_screen(screen)
@@ -429,3 +437,28 @@ func show_resume(data: Dictionary) -> void:
  check.free()
  refresh()
  focus_current()
+
+func attach_club(club: ClubDirector) -> void:
+ club_button = button("Clubhouse")
+ club_button.add_theme_color_override("font_color",GOLD)
+ club_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+ controls_button.get_parent().add_child(club_button)
+ controls_button.get_parent().move_child(club_button,0)
+ club_screen = ScrollContainer.new()
+ club_screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+ modal.add_child(club_screen)
+ var center := CenterContainer.new()
+ center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+ center.size_flags_vertical = Control.SIZE_EXPAND_FILL
+ club_screen.add_child(center)
+ club_panel = ClubPanel.new()
+ club_panel.director = club
+ center.add_child(club_panel)
+ club_panel.back_requested.connect(show_board)
+ club_screen.visible = false
+ club_button.pressed.connect(func():
+  show_board()
+  board_scroll.visible = false
+  club_screen.visible = true
+  club_panel.refresh()
+  focus_current())

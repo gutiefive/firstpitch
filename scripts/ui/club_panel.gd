@@ -1,0 +1,120 @@
+class_name ClubPanel
+extends PanelContainer
+signal back_requested
+var director: ClubDirector
+var stats: Label
+var chapter: Label
+var voice: Label
+var objective: Label
+var receipt: Label
+var notice: Label
+var join_button: Button
+var prep_button: Button
+var host_button: Button
+var workshop_button: Button
+var back_button: Button
+var projects := {}
+func text(parent: Node,value: String,size: int = 14) -> Label:
+ var label := Label.new()
+ label.text = value
+ label.add_theme_font_size_override("font_size",size)
+ label.modulate = Color("f4ecd8")
+ label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ parent.add_child(label)
+ return label
+func button(parent: Node,value: String) -> Button:
+ var node := Button.new()
+ node.text = value
+ node.custom_minimum_size.y = 40
+ node.add_theme_font_size_override("font_size",14)
+ parent.add_child(node)
+ return node
+func _ready() -> void:
+ custom_minimum_size.x = 860
+ var style := StyleBoxFlat.new()
+ style.bg_color = Color("173c39")
+ style.set_corner_radius_all(10)
+ style.set_content_margin_all(22)
+ add_theme_stylebox_override("panel",style)
+ var content := VBoxContainer.new()
+ content.add_theme_constant_override("separation",8)
+ add_child(content)
+ text(content,"CEDAR GROVE OWLS · CLUBHOUSE",26).modulate = Color("e1bb67")
+ text(content,"LOW-A BASEBALL · A small club with a town to win back",13)
+ stats = text(content,"",20)
+ chapter = text(content,"",19)
+ chapter.modulate = Color("e1bb67")
+ voice = text(content,"",15)
+ objective = text(content,"",14)
+ objective.modulate = Color("b7d0bc")
+ var actions := HBoxContainer.new()
+ content.add_child(actions)
+ join_button = button(actions,"Take the groundskeeper job")
+ prep_button = button(actions,"Prepare home game · 20 min")
+ host_button = button(actions,"Host home game")
+ workshop_button = button(actions,"Buy better tools")
+ for item in [join_button,prep_button,host_button,workshop_button]:
+  item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+ join_button.pressed.connect(director.join)
+ prep_button.pressed.connect(director.prepare)
+ host_button.pressed.connect(director.host)
+ workshop_button.pressed.connect(func():
+  director.game.shift.overlay.show_board()
+  director.game.shift.overlay.career_button.pressed.emit())
+ text(content,"REINVEST IN YOUR BALLPARK",18).modulate = Color("e1bb67")
+ var grid := GridContainer.new()
+ grid.columns = 3
+ grid.add_theme_constant_override("h_separation",12)
+ content.add_child(grid)
+ for id in ClubProgress.PROJECTS:
+  var card := VBoxContainer.new()
+  card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  grid.add_child(card)
+  var item: Dictionary = ClubProgress.PROJECTS[id]
+  var buy := button(card,item.title)
+  buy.pressed.connect(func(): director.build(id))
+  projects[id] = buy
+  text(card,"%d cr · %d supporters required" % [item.cost,item.fans],12)
+  text(card,item.detail,13)
+  if not item.requires.is_empty():
+   text(card,"Needs bleachers and snack shack",12).modulate = Color("e1bb67")
+ receipt = text(content,"",14)
+ notice = text(content,"",13)
+ notice.modulate = Color("e1bb67")
+ text(content,"Shared budget: prep pay + net home-game income. Seats cap attendance; volunteers finish routine work. Construction parks equipment. Starting prep ends the practice guide. Home games are simulated.",12)
+ back_button = button(content,"Back to shift board")
+ back_button.pressed.connect(func(): back_requested.emit())
+ director.game.shift.career.changed.connect(refresh)
+ director.game.shift.session.changed.connect(refresh)
+ refresh()
+func refresh() -> void:
+ var career: CareerProfile = director.game.shift.career
+ var state: Dictionary = career.club
+ var story := ClubProgress.chapter(state)
+ var ready := director.available()
+ stats.text = "%d cr budget  ·  %d supporters  ·  %d seats  ·  %d home games" % [career.balance,state.fans,state.capacity,state.games]
+ chapter.text = story.title
+ voice.text = story.voice
+ if state.active and state.games == 0 and not career.data.upgrades.is_empty():
+  voice.text = "Mara: Your equipment gives us a head start. You cover priority prep and the volunteers finish routine passes. Let's bring the town back to this park."
+ objective.text = story.goal
+ join_button.visible = not state.active
+ join_button.disabled = not ready or not career.healthy
+ prep_button.visible = state.active
+ host_button.visible = state.active
+ prep_button.disabled = not ready or not career.healthy or not String(state.pending).is_empty()
+ host_button.disabled = not ready or not career.healthy or String(state.pending).is_empty()
+ for id in projects:
+  projects[id].text = ClubProgress.PROJECTS[id].title+(" · BUILT" if id in state.buildings else "")
+  projects[id].disabled = not ready or not career.healthy or not state.active or not ClubProgress.project_ready(state,id) or career.balance < int(ClubProgress.PROJECTS[id].cost)
+ receipt.text = "Priority goals: mow 15%, repair 50% of worn dirt, touch up all missing chalk, water 50% and finish mound repairs. Up to 160 cr prep pay, plus game income."
+ if not state.last.is_empty():
+  var last: Dictionary = state.last
+  receipt.text = "Last home game: %d / %d seats filled · +%d fans\nTickets %d + food %d − operating costs %d = %d cr net" % [last.attendance,last.capacity,last.fans_gained,last.ticket_income,last.food_income,last.costs,last.net]
+ if not String(state.pending).is_empty():
+  for record in career.data.records:
+   if record.id == state.pending:
+    var preview := ClubProgress.forecast(state,record.result)
+    receipt.text += "\nReady to host: %d expected attendance · %d cr net at current facilities" % [preview.attendance,preview.net]
+    break
+ notice.text = career.error if not career.error.is_empty() else director.message

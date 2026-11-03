@@ -130,6 +130,8 @@ func start_shift(profile: String) -> bool:
   return false
  if session.phase == ShiftSession.Phase.ACTIVE or not ShiftSession.PROFILES.has(profile):
   return false
+ if profile == "home_game" and (not career.club_started() or not String(career.club.pending).is_empty()):
+  return false
  if career.earned < int(ShiftSession.PROFILES[profile].get("minimum_earnings",0)):
   return false
  career_message = ""
@@ -231,11 +233,12 @@ func load_field() -> void:
 
 func apply_upgrades() -> void:
  var wide := career.owns("wide_deck")
- game.grass.deck_width = standard_deck_width*1.25 if wide else standard_deck_width
- game.mower.deck.scale.x = 1.25 if wide else 1.0
- game.tool_bay.spare_deck.scale.x = 1.25 if wide else 1.0
- game.moisture.application_rate = standard_water_rate*1.25 if career.owns("hose_nozzle") else standard_water_rate
- var drag_width := standard_drag_width*float(CareerProfile.UPGRADES.wide_drag.width_multiplier) if career.owns("wide_drag") else standard_drag_width
+ var starter := career.club_started()
+ game.grass.deck_width = standard_deck_width*1.25 if wide else (ClubProgress.STARTER_DECK if starter else standard_deck_width)
+ game.mower.deck.scale.x = game.grass.deck_width/standard_deck_width
+ game.tool_bay.spare_deck.scale.x = game.grass.deck_width/standard_deck_width
+ game.moisture.application_rate = standard_water_rate*1.25 if career.owns("hose_nozzle") else (ClubProgress.STARTER_WATER if starter else standard_water_rate)
+ var drag_width := standard_drag_width*float(CareerProfile.UPGRADES.wide_drag.width_multiplier) if career.owns("wide_drag") else (ClubProgress.STARTER_DRAG if starter else standard_drag_width)
  game.mower.drag.set_working_width(drag_width)
  game.tool_bay.parked_drag.set_working_width(drag_width)
  game.chalk_marker.set_guide_wheel(career.owns("guide_wheel"))

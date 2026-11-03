@@ -98,7 +98,7 @@ static func bench(parent: Node3D,pos: Vector3,width: float = 3.0) -> void:
   G.box(root,Vector3(x,0.27,0),Vector3(0.08,0.54,0.6),STEEL)
   G.box(root,Vector3(x,0.7,-0.38),Vector3(0.07,0.8,0.07),STEEL)
 
-static func grandstand(parent: Node3D,side: int) -> void:
+static func grandstand(parent: Node3D,side: int) -> Node3D:
  var root := group(parent,"Grandstand",Vector3(side*12,0,11))
  var seats := PackedVector3Array()
  var backs := PackedVector3Array()
@@ -129,6 +129,7 @@ static func grandstand(parent: Node3D,side: int) -> void:
  sign.rotation.y = PI
  sign.pixel_size = 0.008
  sign.modulate = TEAL
+ return root
 
 static func scoreboard(parent: Node3D,layout: FieldLayout) -> void:
  var root := group(parent,"Scoreboard",layout.point3(layout.plate_position+Vector2(0,-layout.fence_radius-2)))

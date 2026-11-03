@@ -2,6 +2,7 @@ class_name GroundsHUD
 extends CanvasLayer
 const CREAM := Color("f4ecd8")
 const GOLD := Color("e1bb67")
+var park_label: Label
 var mode_label: Label
 var prompt: Label
 var percent_label: Label
@@ -58,7 +59,8 @@ func _ready() -> void:
  var gap := Control.new()
  gap.custom_minimum_size.y = 8
  stack.add_child(gap)
- stack.add_child(text_label("CEDAR GROVE  /  MORNING PREP",11,Color("aac2ad")))
+ park_label = text_label("CEDAR GROVE / MORNING PREP",11,Color("aac2ad"))
+ stack.add_child(park_label)
  objective_label = text_label("Mow the outfield",19)
  stack.add_child(objective_label)
  var row := HBoxContainer.new()

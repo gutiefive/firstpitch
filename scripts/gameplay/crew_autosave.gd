@@ -43,7 +43,7 @@ func probe() -> void:
   notice = "Autosave damaged; started normally."+(" Backup kept as field-autosave.bad." if quarantined else " Could not move damaged backup.")
   game.shift.overlay.autosave_footer.text = notice
   return
- if data.session.phase == ShiftSession.Phase.ACTIVE or (data.session.phase == ShiftSession.Phase.FINISHED and not paid(data.session.attempt_id)):
+ if data.session.phase == ShiftSession.Phase.ACTIVE or (data.session.phase == ShiftSession.Phase.FINISHED and (not paid(data.session.attempt_id) or game.shift.career.pending_home_game(data.session.attempt_id))):
   candidate = data
   pending = false
   game.shift.open_board()

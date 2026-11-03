@@ -2,12 +2,14 @@ class_name CareerPanel
 extends PanelContainer
 signal back_requested
 var director: ShiftDirector
+var heading: Label
 var summary: Label
 var progress: Label
 var record: Label
 var history: Label
 var message: Label
 var shop: Dictionary = {}
+var details: Dictionary = {}
 var back_button: Button
 var retry_button: Button
 
@@ -32,7 +34,8 @@ func _ready() -> void:
  var content := VBoxContainer.new()
  content.add_theme_constant_override("separation",10)
  add_child(content)
- text(content,"CREW CAREER",28).modulate = Color("e1bb67")
+ heading = text(content,"CREW CAREER",28)
+ heading.modulate = Color("e1bb67")
  summary = text(content,"",22)
  progress = text(content,"",14)
  record = text(content,"",14)
@@ -58,6 +61,7 @@ func _ready() -> void:
   item.add_child(button)
   shop[id] = button
   var detail := text(item,CareerProfile.UPGRADES[id].detail,13)
+  details[id] = detail
   detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  text(content,"RECENT SHIFTS",18).modulate = Color("e1bb67")
  history = text(content,"",14)
@@ -80,11 +84,15 @@ func _ready() -> void:
 
 func refresh() -> void:
  var career := director.career
+ heading.text = "OWLS WORKSHOP" if career.club_started() else "CREW CAREER"
  summary.text = "%s  /  %d credits" % [career.rank_title(),career.balance]
  progress.text = "%d lifetime earnings · %s" % [career.earned,career.next_rank_text()]
  record.text = "%d shifts · %d completed · Best training %.1f / full %.1f" % [career.data.records.size(),career.completed,career.best.training,career.best.full]
  for id in shop:
   var item: Dictionary = CareerProfile.UPGRADES[id]
+  details[id].text = item.detail
+  if career.club_started():
+   details[id].text = {"wide_deck":"Replace the 1.8 m starter deck with a 3.0 m deck.","hose_nozzle":"Replace the worn hose: application rises from 0.55 to 1.0.","wide_drag":"Replace the 2.2 m starter mat with a 3.5 m drag. Requires Field Hand."}.get(id,item.detail)
   var term := "OWNED" if career.owns(id) else str(item.cost)+" cr"
   if not career.upgrade_unlocked(id):
    term += " · Field Hand required"

@@ -16,6 +16,7 @@ var error := ""
 var earned := 0
 var balance := 0
 var completed := 0
+var club := ClubProgress.initial()
 var best := {"training":0.0,"full":0.0}
 
 static func valid_id(id: Variant) -> bool:
@@ -33,7 +34,7 @@ static func payout(result: Dictionary) -> int:
  return floori(float(result.score)*float(profile.pay_rate))+(int(profile.bonus) if result.reason == "completed" else 0)
 
 func validate(value: Variant) -> bool:
- if not value is Dictionary or not value.has_all(["version","records","upgrades"]) or value.version != 1:
+ if not value is Dictionary or not value.has_all(["version","records","upgrades"]) or typeof(value.version) != TYPE_INT or value.version not in [1,2]:
   return false
  if not value.records is Array or value.records.size()>MAX_RECORDS or not value.upgrades is PackedStringArray:
   return false
@@ -44,14 +45,27 @@ func validate(value: Variant) -> bool:
    return false
   ids[record.id] = true
   total += payout(record.result)
- var lifetime := total
  var owned := {}
+ var costs := 0
  for id in value.upgrades:
-  if not UPGRADES.has(id) or owned.has(id) or lifetime < int(UPGRADES[id].get("minimum_earnings",0)):
+  if not UPGRADES.has(id) or owned.has(id):
    return false
   owned[id] = true
-  total -= int(UPGRADES[id].cost)
- return total >= 0
+  costs += int(UPGRADES[id].cost)
+ var income := 0
+ var stadium_cost := 0
+ if value.version == 2:
+  var state := ClubProgress.replay(value.get("club"),value.records,value.upgrades)
+  if state.is_empty():
+   return false
+  income = state.income
+  stadium_cost = state.spent
+ elif value.has("club"):
+  return false
+ for id in value.upgrades:
+  if total+income < int(UPGRADES[id].get("minimum_earnings",0)):
+   return false
+ return total+income-costs-stadium_cost >= 0
 
 func load_profile() -> bool:
  error = ""
@@ -156,7 +170,9 @@ func rebuild() -> void:
   earned += payout(result)
   completed += 1 if result.reason == "completed" else 0
   best[result.profile_id] = maxf(best[result.profile_id],result.score)
- balance = earned
+ club = ClubProgress.replay(data.club,data.records,data.upgrades) if club_started() else ClubProgress.initial()
+ earned += int(club.income)
+ balance = earned-int(club.spent)
  for id in data.upgrades:
   balance -= int(UPGRADES[id].cost)
 
@@ -173,3 +189,43 @@ func rank_title() -> String:
 func next_rank_text() -> String:
  var index := rank_index()
  return "%d cr lifetime earnings to %s" % [int(RANKS[index+1][0])-earned,RANKS[index+1][1]] if index < RANKS.size()-1 else "Top crew rank reached"
+
+func club_started() -> bool:
+ return data.version == 2
+
+func start_club() -> bool:
+ if not healthy or club_started():
+  return false
+ var candidate := data.duplicate(true)
+ candidate.version = 2
+ candidate.club = {"record_start":data.records.size(),"tool_start":data.upgrades.size(),"events":[]}
+ return commit(candidate)
+
+func pending_home_game(id: String) -> bool:
+ if not club_started() or club.hosted.has(id):
+  return false
+ for i in range(int(club.record_start),data.records.size()):
+  if data.records[i].id == id:
+   return ClubProgress.eligible(data.records[i].result)
+ return false
+
+func host_game(id: String) -> Dictionary:
+ if not healthy or not club_started():
+  return {"status":"error","message":"Join the Owls before hosting a home game."}
+ if club.hosted.has(id):
+  return {"status":"recorded","message":"This home game has already been hosted."}
+ if not pending_home_game(id):
+  return {"status":"error","message":"Complete all home-game prep goals first."}
+ var candidate := data.duplicate(true)
+ candidate.club.events.append({"type":"game","id":id,"records":data.records.size(),"tools":data.upgrades.size()})
+ if not commit(candidate):
+  return {"status":"error","message":error}
+ var receipt: Dictionary = club.last.duplicate(true)
+ return {"status":"hosted","receipt":receipt,"message":"Home game %d: %d attended · +%d fans · %d cr net club income" % [receipt.game,receipt.attendance,receipt.fans_gained,receipt.net]}
+
+func purchase_stadium(id: String) -> bool:
+ if not healthy or not club_started() or not ClubProgress.project_ready(club,id) or balance < int(ClubProgress.PROJECTS[id].cost):
+  return false
+ var candidate := data.duplicate(true)
+ candidate.club.events.append({"type":"build","id":id,"records":data.records.size(),"tools":data.upgrades.size()})
+ return commit(candidate)
