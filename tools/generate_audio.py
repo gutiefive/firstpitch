@@ -50,3 +50,32 @@ def bell(t,n,l):
             value += .18*math.sin(math.tau*pitch*age)*math.exp(-9*age)*min(1,age/.008)
     return value
 render('shift', .9, bell)
+
+# Stadium life: diffuse voiced-noise murmurs, claps, counter clinks and a gate cue.
+def crowd(t,n,l):
+    swell = .55+.15*math.sin(math.tau*t/7)+.12*math.sin(math.tau*t/2.9)
+    murmur = sum(math.sin(math.tau*(pitch*t+.5*math.sin(t*(.6+j*.13)))) for j,pitch in enumerate([113,147,183,229]))*.018
+    return swell*(.35*l+murmur)+.006*n
+render('crowd', 8, crowd, True)
+def concessions(t,n,l):
+    value=.12*l
+    for start in [.8,1.02,2.5,3.8,4.03,5.2]:
+        age=t-start
+        if 0<=age<.13:
+            value+=(.035*n+.035*math.sin(math.tau*1270*age))*math.exp(-45*age)
+    return value
+render('concessions', 6, concessions, True)
+def cheer(t,n,l):
+    envelope=math.sin(math.pi*min(1,t/2.8))**1.4
+    claps=max(0,math.sin(math.tau*7.3*t))**16
+    voices=sum(math.sin(math.tau*(p*t+3*math.sin(t*(1.1+i*.14)))) for i,p in enumerate([151,197,237,281]))*.023
+    return envelope*(voices+.40*l+.10*n*claps)
+render('crowd_cheer', 2.8, cheer)
+def gate(t,n,l):
+    value=.10*l*max(0,1-t/1.8)
+    for start in [.06,.22,1.45]:
+        age=t-start
+        if age>=0:
+            value+=(.12*math.sin(math.tau*210*age)+.06*n)*math.exp(-17*age)
+    return value*min(1,t/.01)
+render('gate_open', 2.2, gate)

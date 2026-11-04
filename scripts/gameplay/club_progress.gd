@@ -4,8 +4,8 @@ const TEAM := "Cedar Grove Owls"
 const START_FANS := 48
 const START_CAPACITY := 120
 const STARTER_DECK := 1.8
-const STARTER_DRAG := 2.2
-const STARTER_WATER := 0.55
+const STARTER_DRAG := 2.4
+const STARTER_WATER := 0.65
 const PROJECTS := {
  "bleachers":{"title":"Community bleachers","cost":600,"fans":90,"requires":[],"seats":120,"fan_bonus":0,"ticket_bonus":0,"food":0,"detail":"Add 120 seats. Supporters need room before crowds can grow."},
  "snack_shack":{"title":"Family snack shack","cost":450,"fans":75,"requires":[],"seats":0,"fan_bonus":3,"ticket_bonus":0,"food":1,"detail":"Earn 1 cr per attendee in food profit; attract 3 extra fans per game."},

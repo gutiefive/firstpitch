@@ -4,7 +4,7 @@ A playable Godot 3D groundskeeping prototype set at **Cedar Grove Ballpark**. Mo
 
 Built with GDScript, procedural meshes and original generated sound effects. No plugins, downloaded art, or external runtime dependencies are required.
 
-**Current build: M1–M5 prototypes, rotating game-day conditions, paid manager priorities, postgame recaps, six stadium projects and visual revisions.** The latest loop pass verified **408 targeted assertions** and rendered gameplay checks. The earlier full-suite baseline was 715 assertions; see [verification history](docs/VERIFICATION.md) for subsequent feature checks. Windows and native Forward+ hardware testing remain outstanding.
+**Current build: M1–M5 prototypes, rotating game-day conditions, paid manager priorities, postgame recaps, six stadium projects and visual revisions.** The latest progression/stadium-life pass verified **513 targeted assertions** and rendered gameplay checks. The earlier full-suite baseline was 715 assertions; see [verification history](docs/VERIFICATION.md) for subsequent feature checks. Windows and native Forward+ hardware testing remain outstanding.
 
 ![Cedar Grove stadium after the four-pass visual revision](docs/screenshots/art-after-stadium.png)
 
@@ -98,7 +98,7 @@ A pad can aim and use hand tools while the mouse cursor is free. Switching back 
 
 You work for the fictional **Cedar Grove Owls**, a struggling Low-A minor-league team. General manager **Mara Vale** guides five short progression chapters: keep the gates open, win returning supporters, make the park a family night out, build a covered stand, and grow the town's club.
 
-Open **Tab → Start club story** to accept the job. A new club begins with **48 supporters**, **120 seats** and weaker equipment: **1.8 m mower deck**, **2.2 m drag mat**, and **0.55 watering rate**. Purchased tools and earned credits from an existing career carry over; owned equipment is never downgraded. The sandbox stays unchanged until you enroll.
+Open **Tab → Start club story** to accept the job. A new club begins with **48 supporters**, **120 seats** and weaker equipment: **1.8 m mower deck**, **2.4 m drag mat**, and **0.65 watering rate**. Purchased tools and earned credits from an existing career carry over; owned equipment is never downgraded. The sandbox stays unchanged until you enroll.
 
 1. **Prepare a home game.** The opener’s 20-minute checklist asks for mowing 15%, repairing 50% of damaged dirt, all missing chalk, watering 50%, and finishing mound repairs. Later dates rotate hot afternoons, rain recovery and doubleheader turnaround with distinct goals, starting conditions and clocks. Goals use the existing game-day baselines and quality scoring. Volunteers handle routine work beyond your assigned checklist.
 2. **Host the home game.** A fully completed prep attempt pays up to **160 cr**, then unlocks one home-game settlement. Attendance depends on supporters and prep quality, capped by seating. Tickets and food minus operating costs add net money to the shared club budget, and good experiences attract more supporters. A clean first date brings 48 attendees, **84 cr net** and **20 new supporters**—244 cr including prep pay.
@@ -225,7 +225,7 @@ Spending credits never reduces rank progress. Training pays one credit per score
 | Wide drag mat | **400 cr** | Field Hand / 500 lifetime credits | Preparation width grows from 2.8 to 3.5 m; mounted and parked mat visuals match. |
 | Chalk guide wheel | **350 cr** | Field Hand / 500 lifetime credits | Helps hold a nearby foul guide while pushing forward with the gate open. Manual steering overrides. |
 
-Story upgrades replace the weaker starter kit: mower 1.8 → 3.0 m, drag 2.2 → 3.5 m, hose 0.55 → 1.0.
+Story upgrades replace the weaker starter kit: mower 1.8 → 3.0 m, drag 2.4 → 3.5 m, hose 0.65 → 1.0.
 
 Purchases apply immediately and survive fresh shifts, field loads and game restarts. Owned equipment cannot be bought twice. Loading an older field does not refund spending or roll back upgrades.
 
@@ -424,3 +424,15 @@ Hosting opens a recap with **prep wages already received + gate profit + manager
 Manager bonuses use the original recorded result and settle once with hosting. Missing a request does not block hosting or take away prep/gate earnings. Existing wages, hosted games and old manager-free results are unchanged; loading an old field cannot pay a bonus twice. Saved active conditions retain their profile, work baselines and puddle timers.
 
 Tests: `test_game_day.gd` (rules, ledger and replay) and `test_game_day_gameplay.gd` (live fields, HUD, saves and recap). Screenshots: [hot-day briefing](docs/screenshots/loop-hot-day.png), [rain recovery](docs/screenshots/loop-rain-recovery.png), [postgame recap](docs/screenshots/loop-postgame.png).
+
+### Progression, stadium life and ownership
+
+The starter hose and drag are a little more forgiving: **0.65 application rate** and a **2.4 m mat**. The mower remains 1.8 m. Purchased equipment still reaches 1.0 watering rate, 3.5 m drag and 3.0 m mower width. Existing prices, payouts and manager rules are unchanged. A deterministic progression audit compares tools-first and seats-first strategies; see [balance review](docs/BALANCE_REVIEW.md) for its assumptions and purchase dates.
+
+After hosting, a **3.2-second gates-opening view** shows the park and plays a crowd cheer/gate cue before revealing the recap. **Enter / A / click** continues; **Esc / B** skips. The world and shift clock stay paused. Skipping does not alter earnings or start the next date. Failed or duplicate hosting and career reloads do not replay the presentation.
+
+When you return to the postgame park, spectators murmur and occasionally react. Built concession stands have localized counter sounds. Paid prep hides spectators and fades their audio out. Crowd/concession sounds and cheers use the existing **Ambience** control; the gate cue uses **Effects**, and Master/mute controls both. Sounds are original synthetic prototype clips.
+
+Every **six hosted dates**, Mara gives an **ownership review**: season targets, average prep score, supporters, seats and season earnings. She sets a concrete next-season goal: gain 80 supporters and open the next stadium project, buy a missing tool if the stadium is complete, or meet four manager targets once everything is owned. Fan targets cap at 10,000. The goal is fixed from the finale's saved state, and the following finale records whether you met its deadline. Later purchases cannot change the original assignment or rewrite a missed objective. Reviews add no extra money and survive reloads without new save fields.
+
+[Opening the gates](docs/screenshots/payoff-gates.png) · [Mara's season review](docs/screenshots/payoff-ownership.png)

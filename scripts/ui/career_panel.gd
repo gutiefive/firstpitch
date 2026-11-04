@@ -92,7 +92,7 @@ func refresh() -> void:
   var item: Dictionary = CareerProfile.UPGRADES[id]
   details[id].text = item.detail
   if career.club_started():
-   details[id].text = {"wide_deck":"Replace the 1.8 m starter deck with a 3.0 m deck.","hose_nozzle":"Replace the worn hose: application rises from 0.55 to 1.0.","wide_drag":"Replace the 2.2 m starter mat with a 3.5 m drag. Requires Field Hand."}.get(id,item.detail)
+   details[id].text = {"wide_deck":"Replace the 1.8 m starter deck with a 3.0 m deck.","hose_nozzle":"Replace the worn hose: application rises from 0.65 to 1.0.","wide_drag":"Replace the 2.4 m starter mat with a 3.5 m drag. Requires Field Hand."}.get(id,item.detail)
   var term := "OWNED" if career.owns(id) else str(item.cost)+" cr"
   if not career.upgrade_unlocked(id):
    term += " · Field Hand required"

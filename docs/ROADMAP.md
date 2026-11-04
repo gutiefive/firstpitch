@@ -34,3 +34,5 @@
 - Field surface art pass: rounded mound shoulder, irregular repair overlays, shorter bent turf tufts, smooth visual cut boundaries and distance-faded chalk guides.
 
 - Game-day loop expansion: rotating hot/rain/doubleheader prep profiles, once-only manager cash priorities and consolidated postgame recaps with next-investment progress. Existing home-game payouts remain unchanged.
+
+- Progression/payoff pass: eased starter hose/drag, reproducible purchase-route balance audit, skippable opening-gates presentation, crowd/concession audio and six-date ownership reviews with frozen next-season goals.

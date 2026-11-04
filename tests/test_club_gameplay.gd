@@ -65,7 +65,7 @@ func run() -> void:
  check(g.shift.overlay.club_panel.prep_button.has_focus(),"controller focus moves to home prep after accepting the job")
  g.shift.close_board()
  await process_frame
- check(g.grass.deck_width == 1.8 and g.mower.deck.scale.x == 0.75 and g.mower.drag.working_width == 2.2 and g.moisture.application_rate == 0.55,"unowned equipment becomes the weaker starter kit")
+ check(g.grass.deck_width == 1.8 and g.mower.deck.scale.x == 0.75 and g.mower.drag.working_width == 2.4 and g.moisture.application_rate == 0.65,"unowned equipment becomes the weaker starter kit")
  g.grass.reset_state()
  g.grass.paint(Vector3(0,0,-60),Vector3.FORWARD)
  check(g.grass.cut_count < original_cut,"starter deck actually cuts less area")

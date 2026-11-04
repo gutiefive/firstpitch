@@ -8,6 +8,7 @@ var voice: Label
 var objective: Label
 var schedule: Label
 var season_review: Label
+var ownership_review: Label
 var receipt: Label
 var notice: Label
 var investment: Label
@@ -50,6 +51,8 @@ func _ready() -> void:
  receipt.modulate = Color("f4ecd8")
  investment = text(content,"",14)
  investment.modulate = Color("b7d0bc")
+ ownership_review = text(content,"",14)
+ ownership_review.modulate = Color("e1bb67")
  recap_continue = button(content,"Continue to next date")
  recap_continue.pressed.connect(func(): prep_button.grab_focus())
  chapter = text(content,"",19)
@@ -151,6 +154,8 @@ func refresh() -> void:
  if not state.last.is_empty():
   receipt.text = GameDay.recap(career)
  investment.text = GameDay.investment_text(career) if state.active else ""
+ ownership_review.visible = not director.ownership.is_empty()
+ ownership_review.text = director.ownership.get("text","")
  recap_continue.visible = state.active and not state.last.is_empty() and ready and String(state.pending).is_empty()
  if not String(state.pending).is_empty():
   for record in career.data.records:

@@ -21,6 +21,8 @@ func complete(g: Node) -> void:
 func capture(name: String) -> void:
  if DisplayServer.get_name() == "headless":
   return
+ if name == "recap":
+  root.get_child(0).club.opening.finish()
  for i in range(5):
   await process_frame
  await RenderingServer.frame_post_draw
@@ -42,6 +44,7 @@ func run() -> void:
  check(paused and g.shift.overlay.club_screen.visible and g.shift.overlay.club_panel.receipt.text.contains("already received"),"hosting opens consolidated recap with wage accounting")
  check(g.shift.overlay.club_panel.investment.text.contains("Next tool:"),"recap shows next investment progress")
  check(not g.hud.condition_label.visible,"postgame practice clears the active condition HUD even while paused")
+ g.club.opening.finish()
  for pressed in [true,false]:
   var accept := InputEventJoypadButton.new()
   accept.device = 7
