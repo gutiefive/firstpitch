@@ -63,6 +63,11 @@ func run() -> void:
  g = scene()
  await process_frame
  check(paused and g.shift.overlay.resume_card.visible and g.shift.session.phase == ShiftSession.Phase.PRACTICE,"launch offers active autosave without applying it before choice")
+ var rail_locked := true
+ for control in g.shift.overlay.navigation.get_children():
+  if control is Button:
+   rail_locked = rail_locked and control.disabled
+ check(rail_locked and g.shift.overlay.resume_button.has_focus(),"recovery locks every navigation shortcut and focuses Resume")
  check(g.shift.overlay.resume_summary.text.contains("Mound callout") and g.shift.overlay.resume_summary.text.contains("left"),"resume card describes title, remaining clock and progress")
  check(not g.shift.start_shift("training") and not g.autosave.pending,"unresolved resume protects backup from replacement starts and board writes")
  check(g.autosave.resume() and paused and g.shift.session.attempt_id == id,"resume restores original attempt and leaves world paused")

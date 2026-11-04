@@ -19,6 +19,8 @@ func complete(g: Node) -> void:
  g.shift.collect_progress()
  g.shift.session.advance(0)
 func capture(name: String) -> void:
+ if name == "ownership":
+  root.get_child(0).shift.overlay.club_panel.show_section("season")
  if DisplayServer.get_name() == "headless":
   return
  for i in range(5):

@@ -436,3 +436,18 @@ When you return to the postgame park, spectators murmur and occasionally react. 
 Every **six hosted dates**, Mara gives an **ownership review**: season targets, average prep score, supporters, seats and season earnings. She sets a concrete next-season goal: gain 80 supporters and open the next stadium project, buy a missing tool if the stadium is complete, or meet four manager targets once everything is owned. Fan targets cap at 10,000. The goal is fixed from the finale's saved state, and the following finale records whether you met its deadline. Later purchases cannot change the original assignment or rewrite a missed objective. Reviews add no extra money and survive reloads without new save fields.
 
 [Opening the gates](docs/screenshots/payoff-gates.png) · [Mara's season review](docs/screenshots/payoff-ownership.png)
+
+## Modern UI and game flow
+
+The pause menu now has a persistent icon rail for **Operations, Clubhouse, Workshop, Contracts, Audio, Controls, Tutorial, and Return to field**. A shared navy and mint theme brings consistent cards, buttons, spacing, scrollbars, and visible controller focus to the menus. Operations puts the club career first while retaining practice, training, full prep and manual saves.
+
+The Clubhouse has four focused views:
+
+- **Matchday:** next opponent, prep target, manager request, story objective, and prepare/host actions.
+- **Stadium:** upgrade cards with prices, supporter requirements, prerequisites, and benefits; two columns in smaller windows.
+- **Results:** a prominent Continue action, settled earnings, attendance, fan growth, and the next investment.
+- **Season:** performance and Mara's ownership review.
+
+Workshop and contract purchases use cards. The field HUD uses a compact task/progress card, a separate shift checklist, contextual condition/tutorial panels, and a bottom interaction prompt. Menu navigation supports mouse, keyboard and controller: D-pad left/right crosses between the rail and content, B/Esc returns, and Tab returns to the field. Autosave recovery locks the rail until you choose Resume or Start fresh.
+
+[Clubhouse](docs/screenshots/ui-matchday.png) · [Stadium upgrades](docs/screenshots/ui-stadium.png) · [Postgame report](docs/screenshots/ui-results.png) · [Field HUD](docs/screenshots/ui-hud.png)

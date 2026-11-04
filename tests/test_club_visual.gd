@@ -31,6 +31,9 @@ func click(button: Button) -> void:
   Input.parse_input_event(event)
  await idle(4)
 func capture(path: String) -> void:
+ var game = root.get_child(0)
+ if game.club.opening.active:
+  game.club.opening.finish()
  await idle(4)
  await RenderingServer.frame_post_draw
  root.get_texture().get_image().save_png(path)
@@ -64,6 +67,8 @@ func park_view(g: Node,camera: Camera3D,path: String) -> void:
  g.hud.visible = true
  g.shift.overlay.visible = true
 func open_club(g: Node) -> void:
+ if g.club.opening.active:
+  g.club.opening.finish()
  if not g.shift.overlay.modal.visible:
   await key(KEY_TAB)
  await click(g.shift.overlay.club_button)
@@ -103,6 +108,8 @@ func run() -> void:
  fund(g)
  fund(g)
  await open_club(g)
+ g.shift.overlay.club_panel.show_section("stadium")
+ await idle(3)
  await click(g.shift.overlay.club_panel.projects.bleachers)
  assert(g.club.world.seat_count == 240)
  await click(g.shift.overlay.club_panel.projects.snack_shack)
@@ -111,8 +118,12 @@ func run() -> void:
  while g.shift.career.club.fans < 200:
   finish_date(g)
  await open_club(g)
+ g.shift.overlay.club_panel.show_section("stadium")
+ await idle(3)
  await click(g.shift.overlay.club_panel.projects.grandstand)
  assert(g.club.world.seat_count == 480)
+ g.shift.overlay.club_panel.show_section("matchday")
+ await idle(3)
  await click(g.shift.overlay.club_panel.workshop_button)
  assert(g.shift.overlay.career_screen.visible)
  for id in ["wide_deck","hose_nozzle","wide_drag","guide_wheel"]:

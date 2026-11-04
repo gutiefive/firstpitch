@@ -12,7 +12,7 @@ func text(parent: Node,value: String,size: int = 14) -> Label:
  var label := Label.new()
  label.text = value
  label.add_theme_font_size_override("font_size",size)
- label.modulate = Color("f4ecd8")
+ label.modulate = Color("edf4f3")
  label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  parent.add_child(label)
  return label
@@ -28,28 +28,35 @@ func style(color: Color,margin: int) -> StyleBoxFlat:
  return box
 
 func _ready() -> void:
- custom_minimum_size.x = 780
- add_theme_stylebox_override("panel",style(Color("173c39"),20))
+ theme = GameUI.theme()
+ GameUI.width(self,860)
+ add_theme_stylebox_override("panel",style(Color("15252f"),20))
  var content := VBoxContainer.new()
  content.add_theme_constant_override("separation",12)
  add_child(content)
- text(content,"CONTRACT BOARD",28).modulate = Color("e1bb67")
+ text(content,"Contract board",28).modulate = Color("76d8bd")
  text(content,"Short, repeatable jobs. Only the listed tasks count toward each contract.")
  wallet = text(content,"",16)
+ var jobs := GridContainer.new()
+ jobs.columns = 2
+ jobs.add_theme_constant_override("h_separation",12)
+ jobs.add_theme_constant_override("v_separation",12)
+ content.add_child(jobs)
  for id in ShiftSession.PROFILES:
   var profile: Dictionary = ShiftSession.PROFILES[id]
   if not profile.get("contract",false):
    continue
   var card := PanelContainer.new()
-  card.add_theme_stylebox_override("panel",style(Color("254b43"),12))
-  content.add_child(card)
-  var row := HBoxContainer.new()
+  card.add_theme_stylebox_override("panel",style(Color("1b2e39"),12))
+  card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  jobs.add_child(card)
+  var row := VBoxContainer.new()
   row.add_theme_constant_override("separation",14)
   card.add_child(row)
   var details := VBoxContainer.new()
   details.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   row.add_child(details)
-  text(details,profile.title,20).modulate = Color("e1bb67")
+  text(details,profile.title,20).modulate = Color("76d8bd")
   var goals := PackedStringArray()
   for i in range(5):
    if profile.goals[i] > 0:
@@ -58,12 +65,13 @@ func _ready() -> void:
   text(details,("GAME DAY · " if profile.get("start","fresh") == "game_day" else "FRESH · ")+"%d min · Up to %d cr · %d cr completion bonus" % [int(profile.duration)/60,floori(100*float(profile.pay_rate))+int(profile.bonus),profile.bonus],13)
   best_labels[id] = text(details,"",13)
   var button := Button.new()
-  button.custom_minimum_size = Vector2(180,42)
+  button.custom_minimum_size.y = 44
+  button.clip_text = true
   button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
   button.pressed.connect(func(): director.start_shift(id))
   row.add_child(button)
   buttons[id] = button
- text(content,"Fresh jobs reset the field. Game-day jobs wear it. Equipment parks; each attempt pays once.",13).modulate = Color("e1bb67")
+ text(content,"Fresh jobs reset the field. Game-day jobs wear it. Equipment parks; each attempt pays once.",13).modulate = Color("76d8bd")
  message = text(content,"",13)
  back_button = Button.new()
  back_button.text = "Back to shift board"

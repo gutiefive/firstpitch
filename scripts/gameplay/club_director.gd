@@ -79,6 +79,7 @@ func host() -> bool:
  game.shift.open_board()
  game.shift.overlay.club_button.pressed.emit()
  sync()
+ game.shift.overlay.club_panel.show_section("results")
  game.shift.overlay.club_panel.recap_continue.grab_focus()
  game.shift.overlay.club_panel.call_deferred("scroll_to_recap")
  opening.present(receipt.receipt)

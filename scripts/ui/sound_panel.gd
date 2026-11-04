@@ -10,9 +10,10 @@ var preview_button: Button
 var back_button: Button
 
 func _ready() -> void:
+ theme = GameUI.theme()
  custom_minimum_size = Vector2(620,0)
  var box := StyleBoxFlat.new()
- box.bg_color = Color("173c39")
+ box.bg_color = Color("15252f")
  box.set_corner_radius_all(10)
  box.content_margin_left = 24
  box.content_margin_right = 24
@@ -25,7 +26,7 @@ func _ready() -> void:
  var title := Label.new()
  title.text = "SOUND SETTINGS"
  title.add_theme_font_size_override("font_size",28)
- title.modulate = Color("e1bb67")
+ title.modulate = Color("76d8bd")
  content.add_child(title)
  var hint := Label.new()
  hint.text = "World and clock stay paused. Changes save automatically."

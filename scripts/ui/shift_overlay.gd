@@ -5,6 +5,13 @@ signal start_requested(profile: String)
 signal save_requested
 signal load_requested
 signal end_requested
+var navigation: VBoxContainer
+var nav_panel: PanelContainer
+var nav_wallet: Label
+var home_button: Button
+var primary_action: Button
+var primary_caption: Label
+var career_hero: VBoxContainer
 var club_screen: ScrollContainer
 var club_panel: ClubPanel
 var club_button: Button
@@ -51,47 +58,35 @@ var board_scroll: ScrollContainer
 var sound_screen: CenterContainer
 var sound_panel: SoundPanel
 var sound_button: Button
-const GOLD := Color("e1bb67")
-const CREAM := Color("f4ecd8")
+const GOLD := GameUI.ACCENT
+const CREAM := GameUI.TEXT
 
 func label(text: String,size: int,color: Color = CREAM) -> Label:
  var node := Label.new()
  node.text = text
+ node.mouse_filter = Control.MOUSE_FILTER_IGNORE
  node.add_theme_font_size_override("font_size",size)
  node.add_theme_color_override("font_color",color)
  return node
 
 func style(color: Color) -> StyleBoxFlat:
- var value := StyleBoxFlat.new()
- value.bg_color = color
- value.corner_radius_top_left = 10
- value.corner_radius_top_right = 10
- value.corner_radius_bottom_left = 10
- value.corner_radius_bottom_right = 10
- value.content_margin_left = 22
- value.content_margin_right = 22
- value.content_margin_top = 16
- value.content_margin_bottom = 16
- return value
+ return GameUI.box(GameUI.SURFACE,22)
 
 func button(text: String) -> Button:
  var node := Button.new()
  node.text = text
- node.custom_minimum_size.y = 38
- node.add_theme_font_size_override("font_size",16)
- node.add_theme_color_override("font_color",CREAM)
- var colors := {"normal":"365d57","hover":"49766a","pressed":"25453e"}
- for state in colors:
-  var box := style(Color(colors[state]))
-  box.content_margin_top = 8
-  box.content_margin_bottom = 8
-  node.add_theme_stylebox_override(state,box)
+ node.custom_minimum_size.y = 44
+ node.add_theme_font_size_override("font_size",15)
+ node.clip_text = true
+ node.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
  return node
 
 func _ready() -> void:
  layer = 10
  var panel := PanelContainer.new()
  status_panel = panel
+ panel.theme = GameUI.theme()
+ panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
  panel.custom_minimum_size = Vector2(306,0)
  panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
  panel.offset_left = -330
@@ -101,6 +96,7 @@ func _ready() -> void:
  add_child(panel)
  var stack := VBoxContainer.new()
  stack.add_theme_constant_override("separation",6)
+ stack.mouse_filter = Control.MOUSE_FILTER_IGNORE
  panel.add_child(stack)
  status_title = label("FREE PRACTICE",16,GOLD)
  stack.add_child(status_title)
@@ -111,10 +107,11 @@ func _ready() -> void:
   status_rows.append(row)
   stack.add_child(row)
  modal = Control.new()
+ modal.theme = GameUI.theme()
  modal.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  add_child(modal)
  var shade := ColorRect.new()
- shade.color = Color(0.015,0.04,0.035,0.8)
+ shade.color = GameUI.BG
  shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  modal.add_child(shade)
  var scroll := ScrollContainer.new()
@@ -126,7 +123,7 @@ func _ready() -> void:
  center.size_flags_vertical = Control.SIZE_EXPAND_FILL
  scroll.add_child(center)
  var card := PanelContainer.new()
- card.custom_minimum_size = Vector2(720,0)
+ card.custom_minimum_size = Vector2(860,0)
  card.add_theme_stylebox_override("panel",style(Color("173c39")))
  center.add_child(card)
  var content := VBoxContainer.new()
@@ -148,7 +145,15 @@ func _ready() -> void:
  fresh_button.pressed.connect(func(): director.game.autosave.start_fresh())
  resume_card.visible = false
  description = label("",14)
+ description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  content.add_child(description)
+ career_hero = GameUI.card(content,"YOUR CLUB CAREER")
+ primary_caption = GameUI.label(career_hero,"",20)
+ primary_action = GameUI.button(career_hero,"Continue your club career",true)
+ primary_action.pressed.connect(func():
+  if club_button != null:
+   club_button.pressed.emit()
+   club_panel.show_section("matchday"))
  score_label = label("",22,GOLD)
  content.add_child(score_label)
  quality_label = label("",13,Color("adc7b7"))
@@ -202,14 +207,14 @@ func _ready() -> void:
  content.add_child(menus)
  contracts_button = button("Contracts")
  career_button = button("Crew career")
- sound_button = button("Sound settings")
+ sound_button = button("Audio")
  for item in [contracts_button,career_button,sound_button]:
   item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   menus.add_child(item)
  var help := HBoxContainer.new()
  content.add_child(help)
  controls_button = button("Controls")
- replay_button = button("Replay tutorial")
+ replay_button = button("Tutorial")
  replay_button.tooltip_text = "Starts a fresh practice field. Career and manual slot are kept."
  for item in [controls_button,replay_button]:
   item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -222,6 +227,7 @@ func _ready() -> void:
  attach_career()
  attach_contracts()
  attach_controls()
+ build_navigation()
  session.changed.connect(refresh)
  refresh()
 
@@ -238,6 +244,7 @@ func attach_career() -> void:
  center.add_child(career_panel)
  career_panel.back_requested.connect(show_board)
  career_button.pressed.connect(func():
+  show_board()
   board_scroll.visible = false
   career_screen.visible = true
   career_panel.refresh()
@@ -258,6 +265,7 @@ func attach_contracts() -> void:
  center.add_child(contracts_panel)
  contracts_panel.back_requested.connect(show_board)
  contracts_button.pressed.connect(func():
+  show_board()
   board_scroll.visible = false
   contracts_screen.visible = true
   contracts_panel.refresh()
@@ -273,10 +281,12 @@ func attach_audio(audio: GroundsAudio) -> void:
  sound_screen.add_child(sound_panel)
  sound_panel.back_requested.connect(show_board)
  sound_button.pressed.connect(func():
+  show_board()
   board_scroll.visible = false
   sound_screen.visible = true
   focus_current())
  sound_screen.visible = false
+ fit_screens()
 
 func show_board() -> void:
  if club_screen != null:
@@ -309,14 +319,21 @@ func _input(event: InputEvent) -> void:
 
 func refresh() -> void:
  var offered := resume_card.visible
+ if navigation != null:
+  for node in navigation.get_children():
+   if node is Button:
+    node.disabled = offered
+  nav_wallet.text = "%d cr available\n%s" % [director.career.balance,director.career.rank_title()]
+  primary_caption.text = "Pick up where your crew left off" if director.career.club_started() else "Build a club worth coming back to"
+  primary_action.text = "Review prepared home game" if not String(director.career.club.pending).is_empty() else ("Continue club career" if director.career.club_started() else "Start your club career")
  for child in board_content.get_children():
   child.visible = true
  resume_card.visible = offered
  if career_button != null:
-  career_button.text = ("Workshop · %d cr" if director.career.club_started() else "Crew career · %d cr") % director.career.balance
+  career_button.text = "Workshop" if director.career.club_started() else "Career"
  if club_button != null:
   club_button.disabled = offered
-  club_button.text = "Clubhouse · Host" if not String(director.career.club.pending).is_empty() else ("Clubhouse" if director.career.club_started() else "Start club story")
+  club_button.text = "Clubhouse"
  career_reward.text = director.career_message
  career_reward.visible = not director.career_message.is_empty()
  var active := session.phase == ShiftSession.Phase.ACTIVE
@@ -365,7 +382,7 @@ func refresh() -> void:
  quality_label.text = "Coverage %.1f / 100 · Finish quality %.1f%%" % [coverage,multiplier*100]
  quality_tip.text = result.get("quality_tip","Legacy result: finish quality is neutral.") if finished else session.quality_tip()
  for i in range(5):
-  board_rows[i].visible = targets[i] > 0
+  board_rows[i].visible = (active or finished) and targets[i] > 0
   board_rows[i].text = "%s  %s     %.1f%% / %.0f%% goal" % ["✓" if met[i] else "·",ShiftSession.JOB_NAMES[i],values[i],targets[i]]+ (" · Quality %.0f%%" % (float(qualities[i])*100) if i != 4 else " · Quality —")
   board_rows[i].modulate = Color("a5d2b9") if met[i] else Color.WHITE
  replay_button.disabled = active or offered
@@ -376,7 +393,9 @@ func refresh() -> void:
  training_button.disabled = active or offered
  full_button.disabled = active or offered
  end_button.visible = active
- close_button.text = "Resume shift" if active else "Continue practicing"
+ close_button.text = "Resume" if active else "Return to field"
+ scoring_label.visible = active or finished
+ career_hero.get_parent().visible = not active
  status_panel.reset_size()
  if offered:
   for child in board_content.get_children():
@@ -398,11 +417,14 @@ func attach_controls() -> void:
  controls_panel.back_requested.connect(show_board)
  controls_screen.visible = false
  controls_button.pressed.connect(func():
+  show_board()
   board_scroll.visible = false
   controls_screen.visible = true
   controls_panel.refresh()
   focus_current())
 func focus_current() -> void:
+ if navigation != null:
+  CrewInput.focus_screen(navigation)
  if not is_inside_tree() or not modal.visible:
   return
  var screen: Control = board_scroll
@@ -410,6 +432,10 @@ func focus_current() -> void:
   if candidate != null and candidate.visible:
    screen = candidate
  CrewInput.focus_screen(screen)
+ if screen == club_screen:
+  club_panel.preferred_focus().grab_focus()
+ wire_navigation(screen)
+ call_deferred("wire_navigation",screen)
  if resume_card.visible and screen == board_scroll:
   resume_button.grab_focus()
 func show_resume(data: Dictionary) -> void:
@@ -443,7 +469,11 @@ func attach_club(club: ClubDirector) -> void:
  club_button.add_theme_color_override("font_color",GOLD)
  club_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
  controls_button.get_parent().add_child(club_button)
- controls_button.get_parent().move_child(club_button,0)
+ controls_button.get_parent().move_child(club_button,3)
+ club_button.icon = preload("res://assets/ui/club.svg")
+ club_button.toggle_mode = true
+ club_button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+ club_button.add_theme_font_size_override("font_size",13)
  club_screen = ScrollContainer.new()
  club_screen.follow_focus = true
  club_screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -457,9 +487,94 @@ func attach_club(club: ClubDirector) -> void:
  center.add_child(club_panel)
  club_panel.back_requested.connect(show_board)
  club_screen.visible = false
+ fit_screens()
  club_button.pressed.connect(func():
   show_board()
   board_scroll.visible = false
   club_screen.visible = true
+  club_panel.show_section("matchday")
   club_panel.refresh()
   focus_current())
+
+func build_navigation() -> void:
+ nav_panel = PanelContainer.new()
+ nav_panel.set_anchors_and_offsets_preset(Control.PRESET_LEFT_WIDE)
+ nav_panel.offset_left = 24
+ nav_panel.offset_right = 200
+ nav_panel.offset_top = 24
+ nav_panel.offset_bottom = -24
+ nav_panel.add_theme_stylebox_override("panel",GameUI.box(GameUI.BG,12))
+ modal.add_child(nav_panel)
+ navigation = VBoxContainer.new()
+ navigation.add_theme_constant_override("separation",8)
+ nav_panel.add_child(navigation)
+ GameUI.label(navigation,"FIRST\nPITCH",27,GameUI.TEXT)
+ GameUI.label(navigation,"GROUNDS CREW",10,GameUI.ACCENT)
+ home_button = GameUI.button(navigation,"Operations")
+ home_button.toggle_mode = true
+ home_button.icon = preload("res://assets/ui/home.svg")
+ home_button.pressed.connect(show_board)
+ for pair in [[career_button,"workshop"],[contracts_button,"contracts"],[sound_button,"sound"],[controls_button,"controls"],[replay_button,"help"],[close_button,"exit"]]:
+  var node: Button = pair[0]
+  node.reparent(navigation)
+  node.icon = load("res://assets/ui/"+String(pair[1])+".svg")
+  node.alignment = HORIZONTAL_ALIGNMENT_LEFT
+  node.add_theme_font_size_override("font_size",13)
+  node.toggle_mode = node != replay_button and node != close_button
+  node.custom_minimum_size.y = 42
+ nav_wallet = GameUI.label(navigation,"",12,GameUI.MUTED)
+ nav_wallet.size_flags_vertical = Control.SIZE_EXPAND_FILL
+ nav_wallet.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+ GameUI.label(navigation,"B / Esc  Back\nTab  Return to field",11,GameUI.MUTED)
+ get_viewport().size_changed.connect(fit_screens)
+ fit_screens()
+func fit_screens() -> void:
+ for pane in [board_scroll,career_screen,contracts_screen,controls_screen,sound_screen,club_screen]:
+  if pane != null:
+   pane.offset_left = 224
+   pane.offset_top = 24
+   pane.offset_right = -24
+   pane.offset_bottom = -24
+   if pane is ScrollContainer:
+    pane.follow_focus = true
+ for pair in [[career_panel,860],[contracts_panel,860],[controls_panel,740],[sound_panel,660]]:
+  if pair[0] != null:
+   GameUI.width(pair[0],pair[1])
+ if board_scroll != null:
+  var card: Control = board_content.get_parent()
+  GameUI.width(card,860)
+func menu_controls(screen: Control) -> Array[Control]:
+ var result: Array[Control] = []
+ for node in screen.find_children("*","Control",true,false):
+  if (node is BaseButton or node is Range) and node.is_visible_in_tree() and not (node is BaseButton and node.disabled):
+   result.append(node)
+ return result
+func wire_navigation(screen: Control) -> void:
+ if navigation == null or resume_card.visible or not modal.visible:
+  return
+ var rail := menu_controls(navigation)
+ var content := menu_controls(screen)
+ if rail.is_empty() or content.is_empty():
+  return
+ var active: Button = home_button
+ if screen == club_screen:
+  active = club_button
+ elif screen == career_screen:
+  active = career_button
+ elif screen == contracts_screen:
+  active = contracts_button
+ elif screen == controls_screen:
+  active = controls_button
+ elif screen == sound_screen:
+  active = sound_button
+ for node in rail:
+  if node is Button and node.toggle_mode:
+   node.set_pressed_no_signal(node == active)
+  node.focus_neighbor_right = node.get_path_to(content[0])
+ for node in content:
+  if node.get_global_rect().get_center().x < screen.get_global_rect().get_center().x:
+   node.focus_neighbor_left = node.get_path_to(active)
+ rail[-1].focus_next = rail[-1].get_path_to(content[0])
+ content[0].focus_previous = content[0].get_path_to(rail[-1])
+ content[-1].focus_next = content[-1].get_path_to(rail[0])
+ rail[0].focus_previous = rail[0].get_path_to(content[-1])

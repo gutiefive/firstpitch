@@ -16,15 +16,17 @@ var retry_button: Button
 func text(content: VBoxContainer,value: String,size: int = 16) -> Label:
  var label := Label.new()
  label.text = value
+ label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  label.add_theme_font_size_override("font_size",size)
- label.modulate = Color("f4ecd8")
+ label.modulate = Color("edf4f3")
  content.add_child(label)
  return label
 
 func _ready() -> void:
- custom_minimum_size.x = 740
+ theme = GameUI.theme()
+ GameUI.width(self,860)
  var style := StyleBoxFlat.new()
- style.bg_color = Color("173c39")
+ style.bg_color = Color("15252f")
  style.set_corner_radius_all(10)
  style.content_margin_left = 24
  style.content_margin_right = 24
@@ -34,24 +36,22 @@ func _ready() -> void:
  var content := VBoxContainer.new()
  content.add_theme_constant_override("separation",10)
  add_child(content)
- heading = text(content,"CREW CAREER",28)
- heading.modulate = Color("e1bb67")
+ heading = text(content,"Equipment workshop",28)
+ heading.modulate = Color("76d8bd")
  summary = text(content,"",22)
  progress = text(content,"",14)
  record = text(content,"",14)
  text(content,"Training: 1 cr/point + 50 for completion. Full prep: 3 cr/point + 150.",13)
  text(content,"Partial work pays; practice does not. Each attempt pays once. Credits round down.",13)
- text(content,"EQUIPMENT UPGRADES",18).modulate = Color("e1bb67")
+ text(content,"EQUIPMENT UPGRADES",18).modulate = Color("76d8bd")
  var equipment := GridContainer.new()
  equipment.columns = 2
  equipment.add_theme_constant_override("h_separation",12)
  equipment.add_theme_constant_override("v_separation",12)
  content.add_child(equipment)
  for id in CareerProfile.UPGRADES:
-  var item := VBoxContainer.new()
-  item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-  item.add_theme_constant_override("separation",6)
-  equipment.add_child(item)
+  var item := GameUI.card(equipment)
+  text(item,CareerProfile.UPGRADES[id].title,19)
   var button := Button.new()
   button.custom_minimum_size.y = 40
   button.add_theme_font_size_override("font_size",14)
@@ -63,7 +63,7 @@ func _ready() -> void:
   var detail := text(item,CareerProfile.UPGRADES[id].detail,13)
   details[id] = detail
   detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
- text(content,"RECENT SHIFTS",18).modulate = Color("e1bb67")
+ text(content,"RECENT SHIFTS",18).modulate = Color("76d8bd")
  history = text(content,"",14)
  history.custom_minimum_size.y = 92
  message = text(content,"",13)
@@ -96,7 +96,8 @@ func refresh() -> void:
   var term := "OWNED" if career.owns(id) else str(item.cost)+" cr"
   if not career.upgrade_unlocked(id):
    term += " · Field Hand required"
-  shop[id].text = "%s  ·  %s" % [item.title,term]
+  shop[id].text = term if career.owns(id) else ("Locked · "+term if not career.upgrade_unlocked(id) else "Buy · "+term)
+  shop[id].clip_text = true
   shop[id].disabled = not career.healthy or not career.upgrade_unlocked(id) or career.owns(id) or career.balance < int(item.cost)
  var rows := PackedStringArray()
  for i in range(career.data.records.size()-1,maxi(-1,career.data.records.size()-6),-1):

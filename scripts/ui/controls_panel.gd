@@ -7,9 +7,10 @@ var sensitivity: HSlider
 var value_label: Label
 var back_button: Button
 func _ready() -> void:
- custom_minimum_size.x = 680
+ theme = GameUI.theme()
+ GameUI.width(self,740)
  var box := StyleBoxFlat.new()
- box.bg_color = Color("173c39")
+ box.bg_color = Color("15252f")
  box.set_corner_radius_all(10)
  box.set_content_margin_all(20)
  add_theme_stylebox_override("panel",box)
@@ -19,7 +20,7 @@ func _ready() -> void:
  var title := Label.new()
  title.text = "CONTROLS"
  title.add_theme_font_size_override("font_size",26)
- title.modulate = Color("e1bb67")
+ title.modulate = Color("76d8bd")
  content.add_child(title)
  for action in ["move"]+CrewInput.ACTIONS.slice(4)+["look_left"]:
   var row := Label.new()
