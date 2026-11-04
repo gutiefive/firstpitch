@@ -401,3 +401,5 @@ The ballpark now uses more natural character proportions, softened tractor shape
 The close-up refinement adds molded seating and rails, stocked concession serving displays, varied batched crowd details, articulated walking knees/boots and tractor lens/vent details. Updated screenshots are in the [art review](docs/ART_REVIEW.md#close-up-refinement).
 
 The park entrance now includes a paved ticket plaza, mounted signs, lamps, bins and planted borders. Subtle slab paving connects the concourse, and low hills frame the outfield beyond the trees. See the [entrance and surroundings review](docs/ART_REVIEW.md#entrance-and-surroundings), including the normal player-camera view.
+
+Field visuals now include a softer mound profile, irregular worn clay that blends away as it is repaired, shorter bent grass tufts, smoother visible mowing edges and chalk guides that fade at distance. Exact scoring, repair targets and inspection masks retain their existing behavior. See the [field surface comparison](docs/ART_REVIEW.md#field-surface-refinement).

@@ -1,6 +1,7 @@
 shader_type spatial;
 render_mode cull_disabled;
 uniform sampler2D state_mask : filter_nearest, repeat_disable;
+uniform sampler2D visual_mask : filter_linear, repeat_disable;
 uniform bool inspection_enabled=false;
 varying vec3 world_pos;
 float hash(vec2 p) { return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
@@ -14,9 +15,9 @@ void fragment() {
  if(state.a<0.5) { discard; }
  float variation=noise(world_pos.xz*1.2)*0.7+noise(world_pos.xz*22.0)*0.3;
  vec3 uncut=mix(vec3(0.09,0.15,0.055),vec3(0.115,0.19,0.075),variation);
- vec3 cut=mix(vec3(0.13,0.235,0.075),vec3(0.175,0.29,0.105),state.g);
+ vec3 cut=mix(vec3(0.12,0.20,0.065),vec3(0.15,0.245,0.085),state.g);
  cut*=0.95+0.1*variation;
- ALBEDO=mix(uncut,cut,state.r);
+ ALBEDO=mix(uncut,cut,texture(visual_mask,UV).r);
  ROUGHNESS=mix(0.97,0.85,state.r);
  if(inspection_enabled) {
   EMISSION=mix(vec3(0.75,0.50,0.14),vec3(0.04,0.13,0.10),state.r);

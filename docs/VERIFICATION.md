@@ -298,3 +298,7 @@ Godot Compatibility graphical playback also passed all 9 hose checks; inspected 
 ### Entrance and surroundings visual pass
 
 187 targeted assertions passed: gameplay 13, field layout 20, shared layout resource 37, field save 28, club gameplay 39, stadium expansion 17 and tutorial 33. Rendered entrance, concourse, field and expanded stadium views were reviewed in Godot 4.6.3 Compatibility. The capture helper additionally verifies a clear entrance approach using the real player controller and records its normal orbit camera. Saves/settings/cache use isolated `/tmp/firstpitch-arrival` XDG roots. New scenery is decorative, with existing collision footprints and scoring masks retained. Native Forward+ and Windows performance remain outside this verification.
+
+### Field surface visual refinement
+
+239 assertions passed across mowing (14), mound (16), tamping gameplay (30), chalk (23), chalk gameplay (28), inspection (30), field save (28), tutorial (33) and shared layout resource (37). Reviewed Compatibility captures of worn and repaired mound states, mowed versus uncut turf, contextual guides and the park. Mowing screenshots call the real mowing API on fixture lanes; they are not a human tool playthrough. Isolated XDG roots: `/tmp/firstpitch-field-art`. State masks, protected cells, repair targets, costs, scoring and original mound collision geometry are retained. Native Forward+ rendering and hardware performance remain unverified.

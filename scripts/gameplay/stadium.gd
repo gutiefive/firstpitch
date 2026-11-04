@@ -40,6 +40,7 @@ func build_field() -> void:
  mound_shape.shape = mound_mesh.create_convex_shape()
  mound_body.add_child(mound_shape)
  mound.add_child(mound_body)
+ mound.mesh = G.mound_visual(layout.mound_base_radius,layout.mound_top_radius,layout.mound_height)
  G.box(self,layout.point3(layout.mound_position,layout.mound_height+0.02),Vector3(0.61,0.05,0.15),CREAM)
  for pos in layout.base_positions():
   var base := G.box(self,layout.point3(pos,layout.base_height-layout.base_thickness*0.5),Vector3(layout.base_width,layout.base_thickness,layout.base_width),CREAM)

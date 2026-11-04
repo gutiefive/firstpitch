@@ -42,7 +42,7 @@ godot --path . --rendering-method gl_compatibility \
   --script tools/capture_art_review.gd -- review
 ```
 
-The helper uses dedicated fixture paths, advances a synthetic club career to show all stadium projects and writes ten screenshots to `/tmp/firstpitch-art`. It is an art-review tool, not a balance playthrough.
+The helper uses dedicated fixture paths, advances a synthetic club career to show all stadium projects and writes thirteen screenshots to `/tmp/firstpitch-art`. It is an art-review tool, not a balance playthrough.
 
 ## Verification scope
 
@@ -73,3 +73,17 @@ The review helper now captures ten views, including the entrance, concourse and 
 ![Paved concourse at pedestrian height](screenshots/park-concourse.png)
 
 ![Entrance approach through the normal player camera](screenshots/park-player-arrival.png)
+
+## Field surface refinement
+
+The mound now has a softly rounded visual shoulder, irregular worn-clay edges and smaller clumps. Repairing a patch fades the worn overlay away to reveal the matching underlying clay, rather than leaving six circular decals. The original convex collider, repair positions and three-hit rules are retained.
+
+Uncut tufts now use shorter bent blades with a consistent two-sided color response. Cut turf has quieter contrast and linearly filtered visual edges; exact nearest-sampled state remains responsible for scoring and inspection. Gold chalk guides fade between 20 and 45 meters from the camera, reducing distant clutter while remaining visible near the work. This changes no chalk placement or assistance rules.
+
+The helper captures thirteen views, including worn/repaired mound comparisons and an actual mowing-API cut-strip fixture. 239 assertions passed across mowing, mound, tamping gameplay, chalk, chalk gameplay, inspection, field saves, tutorial and shared layouts. Rendered review used Compatibility; Forward+ remains unverified.
+
+![Worn clay with irregular edges and subtle clumps](screenshots/field-mound-worn.png)
+
+![Repaired mound blended back into its clay surface](screenshots/field-mound-repaired.png)
+
+![Shorter tufts and softer visible mowing boundaries](screenshots/field-turf-work.png)

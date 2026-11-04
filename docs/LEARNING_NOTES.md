@@ -289,3 +289,7 @@ Cached seat-shell meshes reuse MultiMesh transforms and preserve 120/240/480 cap
 ### Entrance and surroundings
 
 `ParkArrival` keeps the decorative entrance and distant landscape separate from the field/work systems. Existing box collisions, field geometry resources and masks are retained; new decorations add no physics bodies. The rolling landscape begins beyond the outfield fence/tree line. A shared paving shader uses world-space slab joints with derivative antialiasing and restrained per-slab variation. The art-review fixture now walks the real player through the right-hand entrance approach and asserts forward clearance before recording the actual orbit camera.
+
+### Field presentation versus work state
+
+The grass surface binds the same texture twice: nearest sampling for exact validity/inspection, linear sampling for visual coverage edges. CPU counts and saved masks are untouched. Uncut tufts retain one MultiMesh and mask-based disappearance, with bent blade geometry and explicit renderer-aware unshaded color to avoid black backlit spikes. Mound overlays use irregular alpha edges and fade with compaction; the underlying visual mesh rounds the shoulder while the original convex collider and node transforms remain intact. Gold guide fading is a presentation shader over existing transforms, not a change to scoring, protection or steering assistance.

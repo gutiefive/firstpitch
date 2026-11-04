@@ -33,17 +33,19 @@ func _ready() -> void:
   plane.position = Vector3(point.x,top_height+0.009,point.y)
   var mat := ShaderMaterial.new()
   mat.shader = preload("res://shaders/mound_patch.gdshader")
-  mat.set_shader_parameter("dark_color",Color("a96140").srgb_to_linear())
-  mat.set_shader_parameter("light_color",Color("bd7950").srgb_to_linear())
+  mat.set_shader_parameter("dark_color",Color("8b6247").srgb_to_linear())
+  mat.set_shader_parameter("light_color",Color("a37b56").srgb_to_linear())
   plane.material_override = mat
+  plane.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
   add_child(plane)
   materials.append(mat)
   var lumps := Node3D.new()
   lumps.position = Vector3(point.x,top_height,point.y)
   add_child(lumps)
   for i in range(3):
-   var angle := index+i*TAU/3
-   var lump := ParkGeometry.sphere(lumps,Vector3(sin(angle)*0.3,0.025,cos(angle)*0.3),Vector3(0.15,0.05,0.12),Color("905431"))
+   var angle := index*1.71+i*2.17
+   var radius := 0.15+0.08*sin(index*2.1+i*3.3)
+   var lump := ParkGeometry.sphere(lumps,Vector3(sin(angle)*radius,0.018,cos(angle)*radius),Vector3(0.12,0.035,0.09),Color("765139"))
    lump.rotation.y = angle
   clumps.append(lumps)
 

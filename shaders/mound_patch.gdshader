@@ -1,5 +1,5 @@
 shader_type spatial;
-render_mode cull_disabled;
+render_mode cull_disabled, blend_mix, depth_draw_never;
 uniform float compaction=0.0;
 uniform vec4 dark_color=vec4(0.4,0.12,0.05,1.0);
 uniform vec4 light_color=vec4(0.51,0.19,0.08,1.0);
@@ -11,13 +11,15 @@ float noise(vec2 p) {
 }
 void vertex() { world_pos=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz; }
 void fragment() {
- float radius=length((UV-0.5)*2.0);
- if(radius>1.0) { discard; }
- vec2 p=world_pos.xz*1.3;
- float grain=noise(p*0.8)*0.65+noise(p*9.0)*0.25+noise(p*70.0)*0.1;
- vec3 base=mix(dark_color.rgb,light_color.rgb,grain);
- float wear=(1.0-smoothstep(0.2,1.0,radius))*(1.0-compaction);
- vec3 scuffed=base*mix(0.32,0.7,noise(world_pos.xz*25.0));
- ALBEDO=mix(base,scuffed,wear);
- ROUGHNESS=0.97;
+ vec2 local=(UV-0.5)*2.0;
+ float irregularity=(noise(world_pos.xz*13.0)-0.5)*0.20;
+ float radius=length(local*vec2(1.0,1.15))+irregularity;
+ float edge=1.0-smoothstep(0.58,0.98,radius);
+ float grain=noise(world_pos.xz*18.0);
+ vec3 clay=mix(dark_color.rgb,light_color.rgb,grain);
+ float scuff=(1.0-compaction)*(0.12+0.12*noise(world_pos.xz*32.0));
+ ALBEDO=clay*(1.0-scuff);
+ ALPHA=edge*(1.0-compaction);
+ ROUGHNESS=0.98;
+ SPECULAR=0.12;
 }

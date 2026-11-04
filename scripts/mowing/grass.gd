@@ -63,6 +63,7 @@ func _ready() -> void:
  var mat := surface_material
  mat.shader = load("res://shaders/grass.gdshader")
  mat.set_shader_parameter("state_mask",texture)
+ mat.set_shader_parameter("visual_mask",texture)
  surface.material_override = mat
  add_child(surface)
  if tuft_count > 0:
@@ -115,9 +116,10 @@ func build_tufts() -> void:
  geometry.begin(Mesh.PRIMITIVE_TRIANGLES)
  for rotation_index in range(2):
   var basis := Basis(Vector3.UP,rotation_index*PI/2)
-  for vertex in [Vector3(-0.018,0,0),Vector3(0,0.16,0),Vector3(0.018,0,0)]:
+  var vertices := [Vector3(-0.018,0,0),Vector3(-0.009,0.055,0),Vector3(0.012,0.055,0),Vector3(-0.018,0,0),Vector3(0.012,0.055,0),Vector3(0.018,0,0),Vector3(-0.009,0.055,0),Vector3(0.025,0.11,0),Vector3(0.012,0.055,0)]
+  for vertex in vertices:
    geometry.set_normal(Vector3.UP)
-   geometry.set_uv(Vector2(0,1 if vertex.y>0 else 0))
+   geometry.set_uv(Vector2(0,vertex.y/0.11))
    geometry.add_vertex(basis*vertex)
  var mesh := geometry.commit()
  var mat := ShaderMaterial.new()

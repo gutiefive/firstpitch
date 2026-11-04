@@ -58,7 +58,9 @@ func _ready() -> void:
 func build_guides() -> void:
  var mesh := BoxMesh.new()
  mesh.size = Vector3(0.055,0.006,0.5)
- mesh.material = ParkGeometry.material(Color("bda76b"))
+ var guide_material := ShaderMaterial.new()
+ guide_material.shader = preload("res://shaders/chalk_guide.gdshader")
+ mesh.material = guide_material
  var batch := MultiMesh.new()
  batch.transform_format = MultiMesh.TRANSFORM_3D
  batch.mesh = mesh

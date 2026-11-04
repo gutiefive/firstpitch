@@ -40,6 +40,17 @@ func run() -> void:
  camera.fov = 52
  await capture(camera,Vector3(25,3,-7),Vector3(31,1.1,-17),"workshop")
  await capture(camera,Vector3(8,3.8,-5),Vector3(0,0,-28),"field")
+ var mound_focus: Vector3 = g.layout.point3(g.layout.mound_position,g.layout.mound_height)
+ await capture(camera,mound_focus+Vector3(3.7,2.2,4.3),mound_focus,"mound-worn")
+ g.mound.prepare_all()
+ await capture(camera,mound_focus+Vector3(3.7,2.2,4.3),mound_focus,"mound-repaired")
+ g.mound.reset_state()
+ for lane in range(5):
+  var start := Vector3(-6+lane*2.4,0,-48)
+  var finish := Vector3(start.x,0,-78)
+  g.grass.mow_segment(start,finish,Vector3.FORWARD)
+ await capture(camera,Vector3(11,2.3,-43),Vector3(0,0,-56),"turf-work")
+ g.grass.reset_state()
  var crew: Node3D = g.player.visual
  g.player.global_position = Vector3(28,0.05,-17)
  crew.rotation.y = 0.5

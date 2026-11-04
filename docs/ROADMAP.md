@@ -30,3 +30,5 @@
 - Close-up visual refinement: curved seating and stand rails, detailed concession displays, varied crowd batches, articulated walking legs and equipment finishing details.
 
 - Park surroundings pass: ticket-plaza entrance, concourse paving and furnishings, native-style planting and a distant rolling landscape; reviewed from pedestrian and player cameras.
+
+- Field surface art pass: rounded mound shoulder, irregular repair overlays, shorter bent turf tufts, smooth visual cut boundaries and distance-faded chalk guides.

@@ -319,3 +319,24 @@ static func tube(parent: Node3D,from: Vector3,to: Vector3,radius: float,color: C
  var node := cylinder(parent,(from+to)*0.5,radius,from.distance_to(to),color)
  node.quaternion = Quaternion(Vector3.UP,(to-from).normalized())
  return node
+
+static func mound_visual(base_radius: float,top_radius: float,height: float) -> ArrayMesh:
+ # Visual bevel only; the caller retains its original convex collision shape.
+ var profile := [Vector2(0,height),Vector2(top_radius*0.95,height),Vector2(top_radius*1.02,height*0.97),Vector2(lerpf(top_radius,base_radius,0.42),height*0.76),Vector2(lerpf(top_radius,base_radius,0.78),height*0.32),Vector2(base_radius,0)]
+ var surface := SurfaceTool.new()
+ surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+ for row in range(profile.size()-1):
+  for column in range(64):
+   var vertices := []
+   var normals := []
+   for pair in [Vector2(0,0),Vector2(1,0),Vector2(1,1),Vector2(0,1)]:
+    var index := row+int(pair.y)
+    var ring: Vector2 = profile[index]
+    var angle: float = TAU*(column+pair.x)/64
+    var delta: Vector2 = profile[mini(profile.size()-1,index+1)]-profile[maxi(0,index-1)]
+    vertices.append(Vector3(cos(angle)*ring.x,ring.y-height*0.5,sin(angle)*ring.x))
+    normals.append(Vector3(-cos(angle)*delta.y,delta.x,-sin(angle)*delta.y).normalized())
+   for i in [0,2,1,0,3,2]:
+    surface.set_normal(normals[i])
+    surface.add_vertex(vertices[i])
+ return surface.commit()
