@@ -325,3 +325,11 @@ The UI now shares a navy/mint Theme and eight original outline SVG icons. Operat
 - Inspected actual captures for Operations, Matchday, Stadium, Workshop, Contracts, Audio, Controls, Results and the live HUD. Selected `ui-*.png` captures are under `docs/screenshots/`. The UI script disables covered 3D rendering beneath the opaque menus for software-rendering efficiency and restores it for the HUD capture. Full prep is a surface-state fixture, not a human full-game playthrough.
 
 Graphics used Linux Xorg dummy/Mesa llvmpipe OpenGL Compatibility. Unsupported virtual-display V-Sync and occasional existing ObjectDB teardown warnings remain. Physical controllers, native Windows and Forward+ hardware rendering remain unverified. No economy, reward, save-version or field-layout changes were made in this UI pass.
+
+## UI refinement: purchase states and postgame disclosure
+
+Equipment and stadium cards now show savings meters, explicit cash/rank/supporter/construction requirements, installed/built states, and remaining funds for affordable purchases. Equipment purchases show confirmation and restore usable controller focus. Results shows gate profit, manager bonus and fan growth as summary tiles; the full existing receipt expands on request, keeping the next action and investment easier to find.
+
+- `test_modern_ui.gd`: **28 checks passed** headlessly and graphically, including native purchase/install and wallet reconciliation, exact lock reasons, postgame metrics, expandable wages and post-purchase focus, alongside the previous mouse/D-pad and three-size layout checks.
+- Existing career gameplay (18), club gameplay (39), game-day gameplay (31), equipment upgrades (30) controller input (34) and autosave (27) passed: **207 distinct checks** across seven suites including modern UI. No script errors or failed assertions remained in the verified logs.
+- Reviewed updated software-rendered Stadium, Workshop, purchase confirmation and Results screenshots. Linux Xorg/Mesa Compatibility verification retains the prior hardware and human playtesting limits. Economy and save formats are unchanged.

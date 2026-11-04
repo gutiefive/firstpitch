@@ -451,3 +451,5 @@ The Clubhouse has four focused views:
 Workshop and contract purchases use cards. The field HUD uses a compact task/progress card, a separate shift checklist, contextual condition/tutorial panels, and a bottom interaction prompt. Menu navigation supports mouse, keyboard and controller: D-pad left/right crosses between the rail and content, B/Esc returns, and Tab returns to the field. Autosave recovery locks the rail until you choose Resume or Start fresh.
 
 [Clubhouse](docs/screenshots/ui-matchday.png) · [Stadium upgrades](docs/screenshots/ui-stadium.png) · [Postgame report](docs/screenshots/ui-results.png) · [Field HUD](docs/screenshots/ui-hud.png)
+
+Purchase cards now show savings meters and explain each lock: missing credits, supporters, rank, earlier buildings, or an unfinished shift. Available equipment previews your remaining balance; completed purchases show an installed state and a confirmation. Postgame summaries highlight gate profit, manager bonus and new supporters, with the full settled earnings available under **Show earnings breakdown**.

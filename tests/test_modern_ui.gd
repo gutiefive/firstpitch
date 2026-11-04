@@ -21,6 +21,8 @@ func capture(name: String) -> void:
  root.get_texture().get_image().save_png("/tmp/firstpitch-ui-"+name+".png")
 func click(control: Control) -> void:
  if DisplayServer.get_name() == "headless":
+  if control is BaseButton and control.toggle_mode:
+   control.button_pressed = not control.button_pressed
   control.pressed.emit()
   await idle()
   return
@@ -75,9 +77,11 @@ func run() -> void:
     visible_sections += 1
   check(club.selected_section == key and visible_sections == 1,"tab shows only "+key)
  await click(club.tabs.stadium)
+ check(club.project_status.bleachers.text.contains("42 more supporters") and club.project_status.grandstand.text.contains("Build Community bleachers"),"stadium cards explain fan and construction prerequisites")
  await capture("stadium")
  await click(ui.career_button)
  check(ui.career_screen.visible and not ui.club_screen.visible,"rail switches directly from Clubhouse to Workshop")
+ check(ui.career_panel.availability.hose_nozzle.text.contains("200 more cr") and ui.career_panel.availability.wide_drag.text.contains("Field Hand"),"workshop explains funding and rank locks")
  await capture("workshop")
  await click(ui.contracts_button)
  check(ui.contracts_screen.visible and not ui.career_screen.visible,"rail opens contract cards")
@@ -124,9 +128,23 @@ func run() -> void:
  g.club.opening.finish()
  await idle()
  check(club.selected_section == "results" and club.recap_continue.has_focus(),"hosting opens Results with Continue focused")
+ check(club.result_metrics["GATE PROFIT"].text == "84 cr" and club.result_metrics["NEW SUPPORTERS"].text == "+20","result summary matches settled gate and fan growth")
+ check(not club.receipt.visible,"financial details start collapsed")
+ await click(club.result_details)
+ check(club.receipt.visible and club.receipt.text.contains("Prep pay 160 cr"),"earnings disclosure shows settled wages")
+ await click(club.result_details)
  await capture("results")
  await click(club.recap_continue)
  check(club.selected_section == "matchday" and club.prep_button.has_focus(),"Continue returns to next date with prep focused")
+ await click(ui.career_button)
+ check(not ui.career_panel.shop.hose_nozzle.disabled and ui.career_panel.availability.hose_nozzle.text.contains("44 cr left"),"affordable purchase previews remaining balance")
+ await click(ui.career_panel.shop.hose_nozzle)
+ check(g.shift.career.owns("hose_nozzle") and g.shift.career.balance == 44 and ui.career_panel.availability.hose_nozzle.text.contains("Installed"),"native purchase updates ownership, wallet and installed state")
+ check(ui.career_panel.purchase_feedback.visible and root.gui_get_focus_owner() != null,"purchase feedback preserves usable menu focus")
+ await idle(4)
+ var owner: Control = root.gui_get_focus_owner()
+ check(owner != null and ui.career_screen.get_global_rect().has_point(owner.get_global_rect().get_center()) and ui.career_screen.get_global_rect().has_point(ui.career_panel.purchase_feedback.get_global_rect().get_center()),"post-purchase focus and confirmation remain inside the visible page")
+ await capture("purchase")
  g.queue_free()
  await idle(3)
  DirAccess.remove_absolute("user://test-modern-ui-career.dat")

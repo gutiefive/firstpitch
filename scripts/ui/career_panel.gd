@@ -10,6 +10,9 @@ var history: Label
 var message: Label
 var shop: Dictionary = {}
 var details: Dictionary = {}
+var availability := {}
+var savings := {}
+var purchase_feedback: Label
 var back_button: Button
 var retry_button: Button
 
@@ -52,22 +55,30 @@ func _ready() -> void:
  for id in CareerProfile.UPGRADES:
   var item := GameUI.card(equipment)
   text(item,CareerProfile.UPGRADES[id].title,19)
+  var detail := text(item,CareerProfile.UPGRADES[id].detail,13)
+  details[id] = detail
+  savings[id] = GameUI.meter(item)
+  availability[id] = GameUI.label(item,"",12,GameUI.MUTED)
   var button := Button.new()
   button.custom_minimum_size.y = 40
   button.add_theme_font_size_override("font_size",14)
   button.pressed.connect(func():
-   director.career.purchase(id)
-   refresh())
+   var bought := director.career.purchase(id)
+   purchase_feedback.text = "%s installed · %d cr remaining" % [CareerProfile.UPGRADES[id].title,director.career.balance] if bought else (director.career.error if not director.career.error.is_empty() else "Purchase unavailable. Check the requirements below.")
+   purchase_feedback.visible = true
+   refresh()
+   if director.game.shift.overlay.career_screen.visible:
+    director.game.shift.overlay.focus_current()
+    finish_purchase_focus())
   item.add_child(button)
   shop[id] = button
-  var detail := text(item,CareerProfile.UPGRADES[id].detail,13)
-  details[id] = detail
-  detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  text(content,"RECENT SHIFTS",18).modulate = Color("76d8bd")
  history = text(content,"",14)
  history.custom_minimum_size.y = 92
  message = text(content,"",13)
  message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ purchase_feedback = GameUI.label(content,"",14,GameUI.ACCENT)
+ purchase_feedback.visible = false
  retry_button = Button.new()
  retry_button.text = "Reload career / retry last reward"
  retry_button.pressed.connect(func():
@@ -94,11 +105,22 @@ func refresh() -> void:
   if career.club_started():
    details[id].text = {"wide_deck":"Replace the 1.8 m starter deck with a 3.0 m deck.","hose_nozzle":"Replace the worn hose: application rises from 0.65 to 1.0.","wide_drag":"Replace the 2.4 m starter mat with a 3.5 m drag. Requires Field Hand."}.get(id,item.detail)
   var term := "OWNED" if career.owns(id) else str(item.cost)+" cr"
-  if not career.upgrade_unlocked(id):
-   term += " · Field Hand required"
   shop[id].text = term if career.owns(id) else ("Locked · "+term if not career.upgrade_unlocked(id) else "Buy · "+term)
   shop[id].clip_text = true
   shop[id].disabled = not career.healthy or not career.upgrade_unlocked(id) or career.owns(id) or career.balance < int(item.cost)
+  savings[id].value = minf(100,100.0*career.balance/int(item.cost))
+  savings[id].visible = not career.owns(id)
+  var status := GameUI.funding(career.balance,int(item.cost))
+  if not career.upgrade_unlocked(id):
+   status = "Reach Field Hand · %d / 500 lifetime cr" % career.earned
+  if not career.healthy:
+   status = "Reload your career before buying."
+  if career.owns(id):
+   status = "Installed · available on your equipment"
+  availability[id].text = status
+  availability[id].add_theme_color_override("font_color",GameUI.ACCENT if career.owns(id) or not shop[id].disabled else GameUI.GOLD)
+  shop[id].tooltip_text = item.title+"\n"+status
+
  var rows := PackedStringArray()
  for i in range(career.data.records.size()-1,maxi(-1,career.data.records.size()-6),-1):
   var result: Dictionary = career.data.records[i].result
@@ -107,3 +129,13 @@ func refresh() -> void:
  history.text = "No shifts recorded yet. Start a training shift from the board." if rows.is_empty() else "\n".join(rows)
  message.text = career.error if not career.error.is_empty() else (director.career_message if not director.career_message.is_empty() else "Career and purchases save automatically, separately from the field slot.")
  retry_button.visible = not career.error.is_empty() or not career.healthy or director.session.phase == ShiftSession.Phase.FINISHED
+
+func finish_purchase_focus() -> void:
+ await get_tree().process_frame
+ await get_tree().process_frame
+ if not is_inside_tree():
+  return
+ var screen: ScrollContainer = director.game.shift.overlay.career_screen
+ var owner := get_viewport().gui_get_focus_owner()
+ if screen.is_visible_in_tree() and owner != null and screen.is_ancestor_of(owner):
+  screen.ensure_control_visible(owner)

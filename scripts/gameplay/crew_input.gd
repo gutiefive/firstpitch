@@ -83,7 +83,7 @@ func _process(delta: float) -> void:
 static func focus_screen(screen: Control) -> void:
  var controls: Array[Control] = []
  for node in screen.find_children("*","Control",true,false):
-  if (node is BaseButton or node is Range) and node.is_visible_in_tree() and not (node is BaseButton and node.disabled):
+  if (node is BaseButton or node is Slider) and node.is_visible_in_tree() and not (node is BaseButton and node.disabled):
    node.focus_mode = Control.FOCUS_ALL
    controls.append(node)
  if controls.is_empty():

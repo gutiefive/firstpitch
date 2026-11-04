@@ -546,7 +546,7 @@ func fit_screens() -> void:
 func menu_controls(screen: Control) -> Array[Control]:
  var result: Array[Control] = []
  for node in screen.find_children("*","Control",true,false):
-  if (node is BaseButton or node is Range) and node.is_visible_in_tree() and not (node is BaseButton and node.disabled):
+  if (node is BaseButton or node is Slider) and node.is_visible_in_tree() and not (node is BaseButton and node.disabled):
    result.append(node)
  return result
 func wire_navigation(screen: Control) -> void:

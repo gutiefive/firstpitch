@@ -19,6 +19,10 @@ var host_button: Button
 var workshop_button: Button
 var back_button: Button
 var projects := {}
+var project_status := {}
+var project_savings := {}
+var result_metrics := {}
+var result_details: Button
 var sections := {}
 var tabs := {}
 var selected_section := "matchday"
@@ -90,10 +94,27 @@ func _ready() -> void:
  objective.modulate = GameUI.ACCENT
  recap_continue = GameUI.button(sections.results,"Continue to next date",true)
  recap_continue.pressed.connect(func(): show_section("matchday"); prep_button.grab_focus())
- var result_card := GameUI.card(sections.results,"POSTGAME REPORT")
- results_title = text(result_card,"Your next home game starts here",28)
- receipt = text(result_card,"",16)
+ sections.results.add_theme_constant_override("separation",10)
+ var earnings := HBoxContainer.new()
+ earnings.add_theme_constant_override("separation",10)
+ sections.results.add_child(earnings)
+ for key in ["GATE PROFIT","MANAGER BONUS","NEW SUPPORTERS"]:
+  var tile := GameUI.card(earnings,key)
+  tile.get_parent().add_theme_stylebox_override("panel",GameUI.box(GameUI.RAISED,12))
+  result_metrics[key] = text(tile,"—",23)
+ var result_card := GameUI.card(sections.results)
+ result_card.get_parent().add_theme_stylebox_override("panel",GameUI.box(Color("1b2e39"),12))
+ results_title = text(result_card,"Your next home game starts here",24)
+ GameUI.label(result_card,"Prep wages are paid when your shift ends. Gate profit and manager bonuses settle when you host.",12,GameUI.MUTED)
+ result_details = GameUI.button(result_card,"Show earnings breakdown")
+ result_details.toggle_mode = true
+ receipt = text(result_card,"",14)
+ receipt.visible = false
+ result_details.toggled.connect(func(expanded: bool):
+  receipt.visible = expanded
+  result_details.text = "Hide earnings breakdown" if expanded else "Show earnings breakdown")
  var investment_card := GameUI.card(sections.results,"YOUR NEXT INVESTMENT")
+ investment_card.get_parent().add_theme_stylebox_override("panel",GameUI.box(Color("1b2e39"),12))
  investment = text(investment_card,"",14)
  GameUI.label(sections.stadium,"Build a better night at the ballpark",24)
  GameUI.label(sections.stadium,"Permanent upgrades share your club budget. Requirements and benefits are shown before you buy.",13,GameUI.MUTED)
@@ -108,11 +129,8 @@ func _ready() -> void:
   text(card,item.title,19)
   GameUI.label(card,"%d cr  /  %d supporters" % [item.cost,item.fans],13,GameUI.ACCENT)
   text(card,item.detail,13)
-  if not item.requires.is_empty():
-   var required := PackedStringArray()
-   for dependency in item.requires:
-    required.append(ClubProgress.PROJECTS[dependency].title)
-   GameUI.label(card,"Requires "+", ".join(required),12,GameUI.MUTED)
+  project_savings[id] = GameUI.meter(card)
+  project_status[id] = GameUI.label(card,"",12,GameUI.MUTED)
   var buy := GameUI.button(card,"Build upgrade")
   buy.pressed.connect(func(): director.build(id))
   projects[id] = buy
@@ -202,6 +220,30 @@ func refresh() -> void:
  for id in projects:
   projects[id].text = "Built" if id in state.buildings else ("Build · %d cr" % ClubProgress.PROJECTS[id].cost)
   projects[id].disabled = not ready or not career.healthy or not state.active or not ClubProgress.project_ready(state,id) or career.balance < int(ClubProgress.PROJECTS[id].cost)
+  var item: Dictionary = ClubProgress.PROJECTS[id]
+  project_savings[id].value = minf(100,100.0*career.balance/int(item.cost))
+  project_savings[id].visible = id not in state.buildings
+  var requirements := PackedStringArray()
+  if not state.active:
+   requirements.append("Take the Owls job first")
+  if state.fans < int(item.fans):
+   requirements.append("%d more supporters" % (int(item.fans)-int(state.fans)))
+  for dependency in item.requires:
+   if dependency not in state.buildings:
+    requirements.append("Build "+String(ClubProgress.PROJECTS[dependency].title))
+  if career.balance < int(item.cost):
+   requirements.append("Save %d more cr" % (int(item.cost)-career.balance))
+  if not ready:
+   requirements.append("Finish your current shift first")
+  if not career.healthy:
+   requirements.append("Reload your career first")
+  project_status[id].text = "Built · benefits active" if id in state.buildings else (GameUI.funding(career.balance,int(item.cost)) if requirements.is_empty() else " · ".join(requirements))
+  project_status[id].add_theme_color_override("font_color",GameUI.ACCENT if id in state.buildings or not projects[id].disabled else GameUI.GOLD)
+  projects[id].tooltip_text = item.title+"\n"+project_status[id].text
+ result_metrics["GATE PROFIT"].text = "%d cr" % int(state.last.net) if not state.last.is_empty() else "—"
+ result_metrics["MANAGER BONUS"].text = "%d cr" % int(state.last.get("priority_bonus",0)) if not state.last.is_empty() else "—"
+ result_metrics["NEW SUPPORTERS"].text = "+%d" % int(state.last.fans_gained) if not state.last.is_empty() else "—"
+
  receipt.text = "Next checklist: "+GameDay.checklist(GameDay.profile(state.games))+". Up to 160 cr prep pay, plus gate income and eligible manager bonus."
  if not state.last.is_empty():
   receipt.text = GameDay.recap(career)

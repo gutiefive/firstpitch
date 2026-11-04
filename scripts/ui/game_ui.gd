@@ -96,3 +96,13 @@ static func card(parent: Node,title: String = "") -> VBoxContainer:
  return content
 static func width(control: Control,preferred: float = 900) -> void:
  control.custom_minimum_size.x = minf(preferred,maxf(600,control.get_viewport_rect().size.x-280))
+
+static func meter(parent: Node) -> ProgressBar:
+ var node := ProgressBar.new()
+ node.custom_minimum_size.y = 5
+ node.show_percentage = false
+ node.mouse_filter = Control.MOUSE_FILTER_IGNORE
+ parent.add_child(node)
+ return node
+static func funding(balance: int,cost: int) -> String:
+ return "Ready to buy · %d cr left afterward" % (balance-cost) if balance >= cost else "Save %d more cr · %d / %d cr" % [cost-balance,balance,cost]

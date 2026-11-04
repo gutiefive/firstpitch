@@ -317,3 +317,9 @@ Starter handling can be tuned without touching result reconstruction or ledger e
 - Build focus links after layout as well as immediately. Godot's container positions settle after visibility changes; rail-to-content links must use the active page and exclude hidden/disabled controls. Resume offers disable every rail button.
 - Use one shared Theme and original outline SVG icons; preserve public HUD fields for tool/tutorial controllers. Noninteractive HUD controls ignore mouse input so panels cannot intercept watering.
 - The UI capture test disables covered world rendering beneath opaque menus to speed software rendering, then restores it for the live HUD capture. Menu widgets, native click routing and injected D-pad events still run through Godot itself. Headless tests emit button signals because Godot's headless display does not route these pointer events.
+
+### UI purchase clarity
+
+Disabled buttons need an adjacent reason because mouse hover and tooltips alone do not serve controller users. Equipment and stadium cards now show dynamic requirements and cash savings; owned upgrades replace that information with an installed/built state. Equipment purchase callbacks refresh menu focus after disabling the purchased button, and place confirmation near the resulting focus destination. Postgame highlights are read from the settled receipt; expanding details retains the original full wage/gate/request breakdown. Headless button helpers must also toggle toggle-mode buttons before emitting their pressed signal.
+
+Progress bars inherit Range, just like interactive sliders. Filtering controller targets by Range made the new savings meters focusable. Navigation now accepts buttons and Slider controls explicitly, and the UI regression checks the final focus and confirmation positions inside the scroll viewport.
