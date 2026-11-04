@@ -10,6 +10,8 @@ var schedule: Label
 var season_review: Label
 var receipt: Label
 var notice: Label
+var investment: Label
+var recap_continue: Button
 var join_button: Button
 var prep_button: Button
 var host_button: Button
@@ -44,6 +46,12 @@ func _ready() -> void:
  text(content,"CEDAR GROVE OWLS · CLUBHOUSE",26).modulate = Color("e1bb67")
  text(content,"LOW-A BASEBALL · A small club with a town to win back",13)
  stats = text(content,"",20)
+ receipt = text(content,"",15)
+ receipt.modulate = Color("f4ecd8")
+ investment = text(content,"",14)
+ investment.modulate = Color("b7d0bc")
+ recap_continue = button(content,"Continue to next date")
+ recap_continue.pressed.connect(func(): prep_button.grab_focus())
  chapter = text(content,"",19)
  chapter.modulate = Color("e1bb67")
  voice = text(content,"",15)
@@ -87,7 +95,6 @@ func _ready() -> void:
    for dependency in item.requires:
     required.append(ClubProgress.PROJECTS[dependency].title)
    text(card,"Needs: "+", ".join(required),12).modulate = Color("e1bb67")
- receipt = text(content,"",14)
  notice = text(content,"",13)
  notice.modulate = Color("e1bb67")
  text(content,"Shared budget: prep pay + net home-game income. Seats cap attendance; volunteers finish routine work. Construction parks equipment. Starting prep ends the practice guide. Home games are simulated.",12)
@@ -111,7 +118,19 @@ func refresh() -> void:
  season_review.visible = state.active
  if state.active:
   var date := ClubSchedule.fixture(state.games)
-  schedule.text = ClubSchedule.title(state.games)+"\n"+String(date.brief)+"\nOptional target: score %d+ in %d minutes. Standard checklist and pay apply." % [date.target,date.minutes]
+  var upcoming := GameDay.profile(state.games)
+  var session: ShiftSession = director.game.shift.session
+  if session.phase == ShiftSession.Phase.ACTIVE and ShiftSession.PROFILES[session.profile_id].get("club",false):
+   upcoming = session.profile_id
+  for record in career.data.records:
+   if record.id == state.pending:
+    upcoming = record.result.profile_id
+    break
+  prep_button.text = "Prepare · %d min" % (int(ShiftSession.PROFILES[upcoming].duration)/60)
+  schedule.text = ClubSchedule.title(state.games)
+  if upcoming == "home_game":
+   schedule.text += "\n"+String(date.brief)+"\nSeason target: score %d+ in %d minutes." % [date.target,date.minutes]
+  schedule.text += "\n"+GameDay.info(upcoming).title+": "+GameDay.info(upcoming).brief+"\n"+GameDay.request_text(upcoming)
   var review := ClubSchedule.report(career)
   season_review.text = "Season %d review · %d / 6 hosted · %d prep targets met · %.1f average score" % [review.season,review.played,review.targets,review.average]
   if review.played > 0:
@@ -128,14 +147,25 @@ func refresh() -> void:
  for id in projects:
   projects[id].text = ClubProgress.PROJECTS[id].title+(" · BUILT" if id in state.buildings else "")
   projects[id].disabled = not ready or not career.healthy or not state.active or not ClubProgress.project_ready(state,id) or career.balance < int(ClubProgress.PROJECTS[id].cost)
- receipt.text = "Priority goals: mow 15%, repair 50% of worn dirt, touch up all missing chalk, water 50% and finish mound repairs. Up to 160 cr prep pay, plus game income."
+ receipt.text = "Next checklist: "+GameDay.checklist(GameDay.profile(state.games))+". Up to 160 cr prep pay, plus gate income and eligible manager bonus."
  if not state.last.is_empty():
-  var last: Dictionary = state.last
-  receipt.text = "Last home game: %d / %d seats filled · +%d fans\nTickets %d + food %d − operating costs %d = %d cr net" % [last.attendance,last.capacity,last.fans_gained,last.ticket_income,last.food_income,last.costs,last.net]
+  receipt.text = GameDay.recap(career)
+ investment.text = GameDay.investment_text(career) if state.active else ""
+ recap_continue.visible = state.active and not state.last.is_empty() and ready and String(state.pending).is_empty()
  if not String(state.pending).is_empty():
   for record in career.data.records:
    if record.id == state.pending:
     var preview := ClubProgress.forecast(state,record.result)
     receipt.text += "\nReady to host: %d expected attendance · %d cr net at current facilities" % [preview.attendance,preview.net]
+    receipt.text += " · manager bonus %d cr" % int(preview.get("priority_bonus",0))
     break
  notice.text = career.error if not career.error.is_empty() else director.message
+
+func scroll_to_recap() -> void:
+ # Wait for text wrapping/focus following to settle before aligning the heading.
+ await get_tree().process_frame
+ await get_tree().process_frame
+ if not is_inside_tree() or not director.game.shift.overlay.club_screen.visible:
+  return
+ var scroll: ScrollContainer = director.game.shift.overlay.club_screen
+ scroll.scroll_vertical = 0

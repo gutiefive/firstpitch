@@ -32,3 +32,5 @@
 - Park surroundings pass: ticket-plaza entrance, concourse paving and furnishings, native-style planting and a distant rolling landscape; reviewed from pedestrian and player cameras.
 
 - Field surface art pass: rounded mound shoulder, irregular repair overlays, shorter bent turf tufts, smooth visual cut boundaries and distance-faded chalk guides.
+
+- Game-day loop expansion: rotating hot/rain/doubleheader prep profiles, once-only manager cash priorities and consolidated postgame recaps with next-investment progress. Existing home-game payouts remain unchanged.

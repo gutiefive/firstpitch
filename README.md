@@ -4,7 +4,7 @@ A playable Godot 3D groundskeeping prototype set at **Cedar Grove Ballpark**. Mo
 
 Built with GDScript, procedural meshes and original generated sound effects. No plugins, downloaded art, or external runtime dependencies are required.
 
-**Current build: M1–M5 prototypes, Owls club seasons, six stadium projects and a four-pass visual revision.** The latest art pass verified **219 targeted assertions** and rendered review views. The earlier full-suite baseline was 715 assertions; see [verification history](docs/VERIFICATION.md) for subsequent feature checks. Windows and native Forward+ hardware testing remain outstanding.
+**Current build: M1–M5 prototypes, rotating game-day conditions, paid manager priorities, postgame recaps, six stadium projects and visual revisions.** The latest loop pass verified **408 targeted assertions** and rendered gameplay checks. The earlier full-suite baseline was 715 assertions; see [verification history](docs/VERIFICATION.md) for subsequent feature checks. Windows and native Forward+ hardware testing remain outstanding.
 
 ![Cedar Grove stadium after the four-pass visual revision](docs/screenshots/art-after-stadium.png)
 
@@ -19,7 +19,7 @@ Built with GDScript, procedural meshes and original generated sound effects. No 
 | **M3 — Grass mowing** | Persistent spatial cutting, directional stripes, disappearing grass tufts and overlap-safe coverage. |
 | **M4 — Field tools** | Tow-behind infield drag, pushable chalk marker, on-foot hose and timed hand tamper; five independent field jobs. |
 | **M5 — Shifts, scores and saving** | Free practice, training/full-park shifts, paused board, repair goals, finish quality, frozen results, manual save and autosave/paused resume. |
-| **M6 — Club and career** | Owls story chapters, starter tools, home-game prep/hosting, supporters, gate income, six stadium projects, four tool upgrades, crew ranks and side contracts. |
+| **M6 — Club and career** | Owls story chapters, starter tools, home-game prep/hosting, supporters, gate income, six stadium projects, four tool upgrades, crew ranks, rotating conditions, manager priorities and postgame recaps. |
 | **Guide and controller** | Seven-step first-run tutorial, checkpoint/skip/replay, InputMap Controls, pad tools/camera/menu navigation and saved sensitivity. |
 | **Field and sound polish** | Field-facing dugouts connected to fencing/backstop, proper home plate and reference markings, positional tool sounds, ambience and saved volume settings. |
 
@@ -100,7 +100,7 @@ You work for the fictional **Cedar Grove Owls**, a struggling Low-A minor-league
 
 Open **Tab → Start club story** to accept the job. A new club begins with **48 supporters**, **120 seats** and weaker equipment: **1.8 m mower deck**, **2.2 m drag mat**, and **0.55 watering rate**. Purchased tools and earned credits from an existing career carry over; owned equipment is never downgraded. The sandbox stays unchanged until you enroll.
 
-1. **Prepare a home game.** The 20-minute priority checklist asks for mowing 15%, repairing 50% of damaged dirt, all missing chalk, watering 50%, and finishing mound repairs. Goals use the existing game-day baselines and quality scoring. Volunteers handle routine work beyond your assigned checklist.
+1. **Prepare a home game.** The opener’s 20-minute checklist asks for mowing 15%, repairing 50% of damaged dirt, all missing chalk, watering 50%, and finishing mound repairs. Later dates rotate hot afternoons, rain recovery and doubleheader turnaround with distinct goals, starting conditions and clocks. Goals use the existing game-day baselines and quality scoring. Volunteers handle routine work beyond your assigned checklist.
 2. **Host the home game.** A fully completed prep attempt pays up to **160 cr**, then unlocks one home-game settlement. Attendance depends on supporters and prep quality, capped by seating. Tickets and food minus operating costs add net money to the shared club budget, and good experiences attract more supporters. A clean first date brings 48 attendees, **84 cr net** and **20 new supporters**—244 cr including prep pay.
 3. **Choose what to improve.** Tools make work faster/easier; seating accommodates demand; amenities increase income and fan growth. Side contracts also fund the budget, but cash or idle time alone never creates supporters or gate money.
 4. **Repeat.** The next date wears the park again. Completed-but-unhosted prep survives quitting and is offered on resume; an attempt can never pay ticket income twice.
@@ -180,7 +180,10 @@ Press **Tab** for the paused shift board. Training/full prep start from its main
 | Job | Deadline | Goals | Maximum total pay | Availability |
 | --- | --- | --- | --- | --- |
 | Free practice | None | Explore and practice any task | No earnings | Always |
-| Owls home-game prep | 20 min | Mow 15%; drag/water 50%; chalk/mound 100% | **160 cr** prep pay, plus variable game income | Accept the Clubhouse job |
+| Owls opening-day prep | 20 min | Mow 15%; drag/water 50%; chalk/mound 100% | **160 cr** prep pay, plus variable game income | Accept the Clubhouse job |
+| Owls hot afternoon | 20 min | Mow 15%; drag 25%; chalk/mound 100%; water 90% | **160 cr** prep + gate + optional **35 cr** manager bonus | After opener, rotating |
+| Owls rain recovery | 20 min | Mow 10%; drag 75%; chalk/mound 100%; no watering | **160 cr** prep + gate + optional **40 cr** manager bonus | After hot date, rotating |
+| Owls doubleheader prep | 15 min | Mow 10%; drag 75%; chalk/mound 100%; water 25% | **160 cr** prep + gate + optional **50 cr** manager bonus | After rain date, rotating |
 | Training shift | 15 min | Mow 25%; drag/chalk/water 50% each; mound 100% | **150 cr**, including 50 completion bonus | Always |
 | Full park prep | 30 min | 100% of every job | **450 cr**, including 150 completion bonus | Always |
 | Morning mowing | 10 min | Mow 10% | **100 cr**, including 40 completion bonus | Always |
@@ -372,7 +375,7 @@ Captures use `/tmp/firstpitch-*.png` on Linux. These scripts run controlled auto
 
 ### Home seasons and manager targets
 
-The Clubhouse now shows a repeating six-date home schedule, with named visiting clubs and Mara's briefing before each game. Optional targets ask for a prep score of 85–95, sometimes with two or three minutes left. Finish the usual checklist and host even if you miss a target; wages and gate income follow the existing rules.
+The Clubhouse now shows a repeating six-date home schedule, with named visiting clubs and Mara's briefing before each game. Legacy home-game results retain their original score/time season targets. New condition dates use the same manager request for the season review and cash bonus. Finish the checklist and host even if you miss the request; prep wages and gate income still apply.
 
 The season review tracks hosted dates, targets met and average prep score. After the finale it stays visible until you host the next season's opener. Fans, buildings, equipment and budget carry forward. The review is reconstructed from saved hosting history, including existing careers; opponents are story context, with no simulated baseball wins or losses.
 
@@ -403,3 +406,21 @@ The close-up refinement adds molded seating and rails, stocked concession servin
 The park entrance now includes a paved ticket plaza, mounted signs, lamps, bins and planted borders. Subtle slab paving connects the concourse, and low hills frame the outfield beyond the trees. See the [entrance and surroundings review](docs/ART_REVIEW.md#entrance-and-surroundings), including the normal player-camera view.
 
 Field visuals now include a softer mound profile, irregular worn clay that blends away as it is repaired, shorter bent grass tufts, smoother visible mowing edges and chalk guides that fade at distance. Exact scoring, repair targets and inspection masks retain their existing behavior. See the [field surface comparison](docs/ART_REVIEW.md#field-surface-refinement).
+
+### Conditions, manager priorities and postgame recaps
+
+Use **Tab → Clubhouse → Prepare**. Opening Day stays familiar; subsequent home dates rotate through these conditions, continuing across season boundaries:
+
+| Condition | Field/work change | Manager request | Bonus paid when hosted |
+| --- | --- | --- | ---: |
+| Hot afternoon | Drier soil, 90% watering repair goal | Water-job quality at least 95%, total score at least 85, finish within 18 min | 35 cr |
+| Rain recovery | Standing puddles drain in about 12 unpaused game seconds; 75% dirt repair, no watering goal | Dirt-job quality at least 95%, total score at least 85, finish within 18 min | 40 cr |
+| Doubleheader | Heavier wear, 75% dirt repair and a 15-minute clock | Finish all assigned work, score at least 90, within 12 min | 50 cr |
+
+The active HUD shows the condition, its practical advice and Mara's request. Rain puddles block dragging until they drain to workable moisture. Natural rain is not recorded as player overwatering; spraying and dragging still use the usual quality rules. These are starting field conditions, not continuous weather simulation.
+
+Hosting opens a recap with **prep wages already received + gate profit + manager bonus**, the ticket/food/cost breakdown, attendance, fan growth, request result with actual quality/score/time, current budget and progress toward the next tool and stadium upgrade. The Continue button moves focus to the next date’s preparation button. The Clubhouse follows controller focus when scrolling.
+
+Manager bonuses use the original recorded result and settle once with hosting. Missing a request does not block hosting or take away prep/gate earnings. Existing wages, hosted games and old manager-free results are unchanged; loading an old field cannot pay a bonus twice. Saved active conditions retain their profile, work baselines and puddle timers.
+
+Tests: `test_game_day.gd` (rules, ledger and replay) and `test_game_day_gameplay.gd` (live fields, HUD, saves and recap). Screenshots: [hot-day briefing](docs/screenshots/loop-hot-day.png), [rain recovery](docs/screenshots/loop-rain-recovery.png), [postgame recap](docs/screenshots/loop-postgame.png).

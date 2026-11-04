@@ -17,7 +17,7 @@ const PROJECTS := {
 static func initial() -> Dictionary:
  return {"active":false,"fans":START_FANS,"capacity":START_CAPACITY,"games":0,"income":0,"spent":0,"buildings":PackedStringArray(),"hosted":{},"last":{},"pending":"","record_start":0}
 static func eligible(result: Dictionary) -> bool:
- return result.get("profile_id") == "home_game" and result.get("reason") == "completed"
+ return result.get("profile_id") in ["home_game","home_hot","home_rain","home_double"] and result.get("reason") == "completed"
 static func forecast(state: Dictionary,result: Dictionary) -> Dictionary:
  var score: float = result.score
  var ticket := 4
@@ -32,7 +32,10 @@ static func forecast(state: Dictionary,result: Dictionary) -> Dictionary:
  var food_income := crowd*food
  var costs := 60+crowd
  var growth := mini(10000-int(state.fans),8+floori(score*0.12)+bonus)
- return {"game":int(state.games)+1,"score":score,"attendance":crowd,"capacity":state.capacity,"fans_before":state.fans,"fans_gained":growth,"fans_after":int(state.fans)+growth,"ticket_income":tickets,"food_income":food_income,"costs":costs,"net":maxi(0,tickets+food_income-costs)}
+ var receipt := {"game":int(state.games)+1,"score":score,"attendance":crowd,"capacity":state.capacity,"fans_before":state.fans,"fans_gained":growth,"fans_after":int(state.fans)+growth,"ticket_income":tickets,"food_income":food_income,"costs":costs,"net":maxi(0,tickets+food_income-costs)}
+ if GameDay.TYPES.has(result.get("profile_id","")):
+  receipt.priority_bonus = GameDay.bonus(result)
+ return receipt
 static func project_ready(state: Dictionary,id: String) -> bool:
  if not PROJECTS.has(id) or id in state.buildings or state.fans < int(PROJECTS[id].fans):
   return false
@@ -84,7 +87,7 @@ static func replay(value: Variant,records: Array,tools: PackedStringArray) -> Di
    var receipt := forecast(state,records[index].result)
    state.games = receipt.game
    state.fans = receipt.fans_after
-   state.income += receipt.net
+   state.income += receipt.net+int(receipt.get("priority_bonus",0))
    state.hosted[event.id] = receipt.duplicate(true)
    state.last = receipt
   elif event.type == "build":

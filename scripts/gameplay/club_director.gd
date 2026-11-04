@@ -34,7 +34,7 @@ func prepare() -> bool:
   return false
  if game.tutorial.can_run():
   game.tutorial.finish()
- return game.shift.start_shift("home_game")
+ return game.shift.start_shift(GameDay.profile(game.shift.career.club.games))
 func host() -> bool:
  if not available():
   return false
@@ -57,7 +57,11 @@ func host() -> bool:
  game.shift.overlay.refresh()
  if game.autosave != null:
   game.autosave.request()
+ game.shift.open_board()
+ game.shift.overlay.club_button.pressed.emit()
  sync()
+ game.shift.overlay.club_panel.recap_continue.grab_focus()
+ game.shift.overlay.club_panel.call_deferred("scroll_to_recap")
  return true
 func build(id: String) -> bool:
  if not available() or not game.shift.career.purchase_stadium(id):

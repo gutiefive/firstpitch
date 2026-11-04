@@ -16,6 +16,8 @@ static func fixture(index: int) -> Dictionary:
  date.day = posmod(index,DATES.size())+1
  return date
 static func target_met(index: int,result: Dictionary) -> bool:
+ if GameDay.TYPES.has(result.get("profile_id","")):
+  return GameDay.priority_met(result)
  var date := fixture(index)
  return ClubProgress.eligible(result) and float(result.score) >= date.target and float(result.elapsed_seconds) <= int(date.minutes)*60
 static func title(index: int) -> String:

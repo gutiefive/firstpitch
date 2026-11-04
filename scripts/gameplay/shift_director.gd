@@ -35,6 +35,7 @@ func _ready() -> void:
  overlay.save_requested.connect(save_field)
  overlay.load_requested.connect(load_field)
  session.finished.connect(on_finished)
+ session.changed.connect(refresh_condition)
  build_noticeboard()
 
 func build_noticeboard() -> void:
@@ -79,7 +80,16 @@ func collect_progress() -> void:
   bonus = float(rules.stripe_bonus)*game.grass.stripe_matches/maxi(1,game.grass.stripe_samples)
  session.set_quality(qualities,clampf(bonus,0,float(rules.stripe_bonus)))
 
+func refresh_condition() -> void:
+ game.hud.condition_label.visible = session.phase == ShiftSession.Phase.ACTIVE and bool(ShiftSession.PROFILES[session.profile_id].get("club",false))
+ if game.hud.condition_label.visible:
+  var brief: String = GameDay.info(session.profile_id).brief
+  if session.profile_id == "home_rain":
+   brief = "Standing water has drained. The dirt is ready to drag; no watering needed." if game.moisture.active_puddles.is_empty() else "Standing water is draining. Wait before dragging to avoid ruts."
+  game.hud.condition_label.text = GameDay.info(session.profile_id).title+"\n"+brief+"\n"+GameDay.request_text(session.profile_id)
+
 func _process(delta: float) -> void:
+ refresh_condition()
  collect_progress()
  session.advance(delta)
 
@@ -130,7 +140,7 @@ func start_shift(profile: String) -> bool:
   return false
  if session.phase == ShiftSession.Phase.ACTIVE or not ShiftSession.PROFILES.has(profile):
   return false
- if profile == "home_game" and (not career.club_started() or not String(career.club.pending).is_empty()):
+ if ShiftSession.PROFILES[profile].get("club",false) and (not career.club_started() or not String(career.club.pending).is_empty()):
   return false
  if career.earned < int(ShiftSession.PROFILES[profile].get("minimum_earnings",0)):
   return false
@@ -145,6 +155,7 @@ func start_shift(profile: String) -> bool:
    wear.bootstrap(game,profile)
   var seed := session.attempt_id.sha256_buffer().decode_u32(0)
   wear.apply(game,seed,float(config.wear),profile)
+  GameDay.apply_conditions(game,profile)
   game.infield.reset_quality()
   game.moisture.reset_quality()
   game.chalk.reset_quality()

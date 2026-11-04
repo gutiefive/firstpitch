@@ -3,6 +3,7 @@ extends CanvasLayer
 const CREAM := Color("f4ecd8")
 const GOLD := Color("e1bb67")
 var park_label: Label
+var condition_label: Label
 var mode_label: Label
 var prompt: Label
 var percent_label: Label
@@ -61,6 +62,11 @@ func _ready() -> void:
  stack.add_child(gap)
  park_label = text_label("CEDAR GROVE / MORNING PREP",11,Color("aac2ad"))
  stack.add_child(park_label)
+ condition_label = text_label("",11,Color("b7d0bc"))
+ condition_label.custom_minimum_size.x = 280
+ condition_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ condition_label.visible = false
+ stack.add_child(condition_label)
  objective_label = text_label("Mow the outfield",19)
  stack.add_child(objective_label)
  var row := HBoxContainer.new()

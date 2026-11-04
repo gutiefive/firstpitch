@@ -354,7 +354,7 @@ func refresh() -> void:
   targets = result["goals"]
   met = result["met"]
   if result["reason"] == "completed":
-   heading.text = "HOME GAME PREPARED" if result.profile_id == "home_game" else ("CONTRACT COMPLETE" if ShiftSession.PROFILES[result.profile_id].get("contract",false) else ("TRAINING COMPLETE" if result["profile_id"] == "training" else "PARK READY"))
+   heading.text = "HOME GAME PREPARED" if ShiftSession.PROFILES[result.profile_id].get("club",false) else ("CONTRACT COMPLETE" if ShiftSession.PROFILES[result.profile_id].get("contract",false) else ("TRAINING COMPLETE" if result["profile_id"] == "training" else "PARK READY"))
   else:
    heading.text = "TIME’S UP" if result["reason"] == "time_up" else "SHIFT ENDED"
   description.text = "%s · Last shift result · Active time %s" % [result["title"],ShiftSession.clock_text(result["elapsed_seconds"])]
@@ -445,6 +445,7 @@ func attach_club(club: ClubDirector) -> void:
  controls_button.get_parent().add_child(club_button)
  controls_button.get_parent().move_child(club_button,0)
  club_screen = ScrollContainer.new()
+ club_screen.follow_focus = true
  club_screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  modal.add_child(club_screen)
  var center := CenterContainer.new()

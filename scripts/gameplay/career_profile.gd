@@ -221,7 +221,7 @@ func host_game(id: String) -> Dictionary:
  if not commit(candidate):
   return {"status":"error","message":error}
  var receipt: Dictionary = club.last.duplicate(true)
- return {"status":"hosted","receipt":receipt,"message":"Home game %d: %d attended · +%d fans · %d cr net club income" % [receipt.game,receipt.attendance,receipt.fans_gained,receipt.net]}
+ return {"status":"hosted","receipt":receipt,"message":"Home game %d: %d attended · +%d fans · %d cr net club income" % [receipt.game,receipt.attendance,receipt.fans_gained,receipt.net+int(receipt.get("priority_bonus",0))]}
 
 func purchase_stadium(id: String) -> bool:
  if not healthy or not club_started() or not ClubProgress.project_ready(club,id) or balance < int(ClubProgress.PROJECTS[id].cost):

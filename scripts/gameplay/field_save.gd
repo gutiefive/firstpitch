@@ -281,7 +281,7 @@ func quality_state_ok(data: Dictionary,g: Node) -> bool:
    return false
   if g.infield.valid[i] == 0 and (timer != 0 or data.overwatered[i] != 0 or data.ruts[i] != 0):
    return false
-  if timer > 0 and (data.moisture[i] < float(rules.puddle_threshold) or data.overwatered[i] != 1):
+  if timer > 0 and (data.moisture[i] < float(rules.puddle_threshold) or (data.overwatered[i] != 1 and data.session.profile != "home_rain")):
    return false
   if data.ruts[i] == 1 and data.dirt[i*4] != 255:
    return false
