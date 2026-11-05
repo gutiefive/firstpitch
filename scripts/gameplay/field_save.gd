@@ -8,6 +8,7 @@ const MAX_BYTES := 32 * 1024 * 1024
 var path := "user://field-save.dat"
 var error := ""
 var files := SaveRecovery.new()
+var last_timings := {}
 
 
 func layout(g: Node) -> String:
@@ -78,18 +79,27 @@ func capture(g: Node, s: ShiftSession) -> Dictionary:
 	return data
 
 
-func write(g: Node, s: ShiftSession) -> bool:
+func write(g: Node, s: ShiftSession, trusted_live_capture: bool = false) -> bool:
 	error = ""
+	var started := Time.get_ticks_usec()
 	var data := capture(g, s)
-	if not validate(data, g):
+	last_timings = {
+		"capture_ms": (Time.get_ticks_usec() - started) / 1000.0, "trusted_capture": trusted_live_capture
+	}
+	started = Time.get_ticks_usec()
+	if not trusted_live_capture and not validate(data, g):
 		return false
+	last_timings.validate_ms = (Time.get_ticks_usec() - started) / 1000.0
+	started = Time.get_ticks_usec()
 	var bytes := var_to_bytes(data)
+	last_timings.serialize_ms = (Time.get_ticks_usec() - started) / 1000.0
 	if bytes.size() > MAX_BYTES:
 		error = "Field is too large to save."
 		return false
 	if not files.write(path, "FPGCSAVE", bytes, MAX_BYTES, _valid_saved.bind(g)):
 		error = files.error
 		return false
+	last_timings.merge(files.timings, true)
 	return true
 
 

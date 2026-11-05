@@ -111,7 +111,7 @@ func write_now() -> bool:
 		return false
 	game.shift.collect_progress()
 	var started := Time.get_ticks_usec()
-	var ok := store.write(game, game.shift.session)
+	var ok := store.write(game, game.shift.session, true)
 	last_ms = (Time.get_ticks_usec() - started) / 1000.0
 	since_write = 0
 	pending = false

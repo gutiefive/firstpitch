@@ -1,0 +1,132 @@
+{
+  "before": {
+    "fast": false,
+    "samples": [
+      {
+        "capture_ms": 1.07,
+        "decode_ms": 1.479,
+        "io_ms": 2.82900000000001,
+        "serialize_ms": 0.376,
+        "sha256_ms": 10.566,
+        "total_ms": 216.308,
+        "validate_ms": 99.656,
+        "validation_ms": 100.142
+      },
+      {
+        "capture_ms": 1.09,
+        "decode_ms": 0.932,
+        "io_ms": 2.03399999999999,
+        "serialize_ms": 0.362,
+        "sha256_ms": 10.614,
+        "total_ms": 219.331,
+        "validate_ms": 100.118,
+        "validation_ms": 104.01
+      },
+      {
+        "capture_ms": 1.04,
+        "decode_ms": 0.943,
+        "io_ms": 1.979,
+        "serialize_ms": 0.402,
+        "sha256_ms": 11.56,
+        "total_ms": 221.319,
+        "validate_ms": 102.979,
+        "validation_ms": 102.2
+      },
+      {
+        "capture_ms": 1.207,
+        "decode_ms": 0.944,
+        "io_ms": 1.908,
+        "serialize_ms": 0.349,
+        "sha256_ms": 10.407,
+        "total_ms": 219.113,
+        "validate_ms": 103.0,
+        "validation_ms": 101.117
+      },
+      {
+        "capture_ms": 1.05,
+        "decode_ms": 1.107,
+        "io_ms": 1.98500000000001,
+        "serialize_ms": 0.364,
+        "sha256_ms": 10.698,
+        "total_ms": 216.233,
+        "validate_ms": 101.283,
+        "validation_ms": 99.565
+      },
+      {
+        "capture_ms": 1.092,
+        "decode_ms": 0.924,
+        "io_ms": 1.9,
+        "serialize_ms": 0.363,
+        "sha256_ms": 10.514,
+        "total_ms": 216.429,
+        "validate_ms": 101.394,
+        "validation_ms": 100.042
+      }
+    ]
+  },
+  "after": {
+    "fast": true,
+    "samples": [
+      {
+        "capture_ms": 0.978,
+        "decode_ms": 0.0,
+        "io_ms": 2.213,
+        "serialize_ms": 0.283,
+        "sha256_ms": 11.966,
+        "total_ms": 15.551,
+        "validate_ms": 0.0,
+        "validation_ms": 0.0
+      },
+      {
+        "capture_ms": 1.096,
+        "decode_ms": 0.0,
+        "io_ms": 1.214,
+        "serialize_ms": 0.334,
+        "sha256_ms": 11.291,
+        "total_ms": 14.044,
+        "validate_ms": 0.0,
+        "validation_ms": 0.0
+      },
+      {
+        "capture_ms": 0.999,
+        "decode_ms": 0.0,
+        "io_ms": 1.343,
+        "serialize_ms": 0.328,
+        "sha256_ms": 10.888,
+        "total_ms": 13.67,
+        "validate_ms": 0.001,
+        "validation_ms": 0.0
+      },
+      {
+        "capture_ms": 1.017,
+        "decode_ms": 0.0,
+        "io_ms": 1.167,
+        "serialize_ms": 0.293,
+        "sha256_ms": 11.659,
+        "total_ms": 14.252,
+        "validate_ms": 0.0,
+        "validation_ms": 0.0
+      },
+      {
+        "capture_ms": 0.962,
+        "decode_ms": 0.0,
+        "io_ms": 1.316,
+        "serialize_ms": 0.382,
+        "sha256_ms": 12.078,
+        "total_ms": 14.885,
+        "validate_ms": 0.0,
+        "validation_ms": 0.0
+      },
+      {
+        "capture_ms": 1.027,
+        "decode_ms": 0.0,
+        "io_ms": 1.425,
+        "serialize_ms": 0.301,
+        "sha256_ms": 12.546,
+        "total_ms": 15.427,
+        "validate_ms": 0.0,
+        "validation_ms": 0.0
+      }
+    ]
+  }
+}
