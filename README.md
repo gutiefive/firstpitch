@@ -113,7 +113,7 @@ Open **Tab → Start club story** to accept the job. A new club begins with **48
 
 The stadium visibly grows and batched spectators show the last hosted crowd. Story, budget, supporters, construction and tool ownership persist together in the career file. Construction parks the crew without clearing field work. Starting home prep ends a running practice guide; Replay tutorial remains available.
 
-**This first story slice uses simulated home-game summaries**, not playable baseball innings, win/loss simulation or an animated match. Volunteers complete routine field work only after your paid attempt ends, so their work creates no extra coverage pay. Prices, checklist length and growth rates need human balance testing.
+**Hosted games use condensed staged innings and summaries**, rather than playable baseball or persistent league standings. Volunteers complete routine field work only after your paid attempt ends, so their work creates no extra coverage pay. Prices, checklist length and growth rates need human balance testing.
 
 [Clubhouse story](docs/screenshots/club-story.png) · [Starter park](docs/screenshots/club-starter.png) · [Expanded covered park](docs/screenshots/club-grown-stadium.png) · [Supporters](docs/screenshots/club-supporters.png)
 
@@ -429,7 +429,7 @@ Tests: `test_game_day.gd` (rules, ledger and replay) and `test_game_day_gameplay
 
 The starter hose and drag are a little more forgiving: **0.65 application rate** and a **2.4 m mat**. The mower remains 1.8 m. Purchased equipment still reaches 1.0 watering rate, 3.5 m drag and 3.0 m mower width. Existing prices, payouts and manager rules are unchanged. A deterministic progression audit compares tools-first and seats-first strategies; see [balance review](docs/BALANCE_REVIEW.md) for its assumptions and purchase dates.
 
-After hosting, a **3.2-second gates-opening view** shows the park and plays a crowd cheer/gate cue before revealing the recap. **Enter / A / click** continues; **Esc / B** skips. The world and shift clock stay paused. Skipping does not alter earnings or start the next date. Failed or duplicate hosting and career reloads do not replay the presentation.
+After hosting, a **47-second matchday sequence** shows arrivals, concourse life, staged innings and town story beats, with crowd and gate audio, before revealing the recap. **Enter / A / click** continues; **Esc / B** skips. The world and shift clock stay paused. Skipping does not alter earnings or start the next date. Failed or duplicate hosting and career reloads do not replay the presentation.
 
 When you return to the postgame park, spectators murmur and occasionally react. Built concession stands have localized counter sounds. Paid prep hides spectators and fades their audio out. Crowd/concession sounds and cheers use the existing **Ambience** control; the gate cue uses **Effects**, and Master/mute controls both. Sounds are original synthetic prototype clips.
 
@@ -455,3 +455,15 @@ Workshop and contract purchases use cards. The field HUD uses a compact task/pro
 Purchase cards now show savings meters and explain each lock: missing credits, supporters, rank, earlier buildings, or an unfinished shift. Available equipment previews your remaining balance; completed purchases show an installed state and a confirmation. Postgame summaries highlight gate profit, manager bonus and new supporters, with the full settled earnings available under **Show earnings breakdown**.
 
 Operations groups crew training, full-park prep and the manual field checkpoint into separate cards with clear durations and field-reset behavior. **Controls & camera** puts sensitivity first, identifies the active device, and separates movement/menu bindings from equipment/field bindings. Audio uses individual channel cards with descriptions, larger slider targets and mint volume tracks.
+
+## A living matchday
+
+Hosting now starts a skippable **47-second matchday sequence**: gates and arrivals, concourse activity, a condensed nine-inning game, then town story beats before returning to Results. Enter/A/click continues to the recap; Esc/B skips. The covered menu cannot receive that input.
+
+A capped group of **up to 28 moving supporters** walks authored routes around the ticket booth and public concourse. Built concessions add queue destinations, serving workers, warm counter lights and local signage. Supporters swing their arms and legs; workers make serving gestures. They continue moving when you return to explore the park, freeze in ordinary paused menus, and clear from the active prep view. These walkers represent crowd activity alongside the existing seated crowd; they are not a one-agent-per-ticket attendance count and do not block tool/player physics.
+
+The condensed game shows fielders, a batter swinging, a pitched/batted ball and a runner circling the bases. Innings and a deterministic score advance on the matchday cameras and purchased scoreboards. This is staged baseball action, not a physics-driven baseball engine or a persistent league-results system. It adds no payouts and never changes the settled prep wages, gate income, manager bonuses or fan growth.
+
+Mara, Eli the season-ticket regular and Leni in concessions react to your field work and stadium investment. All six stadium upgrades gain local identity signs; concession upgrades add workers and lighting. Eli appears along the concourse, and the latest town lines remain readable under **Clubhouse → Season → Around the ballpark**. Relaunch restores the park from your career without replaying the matchday presentation.
+
+[Arrivals](docs/screenshots/alive-arrival.png) · [Condensed game](docs/screenshots/alive-game.png) · [Concession activity](docs/screenshots/alive-concessions.png) · [Town story beat](docs/screenshots/alive-stories.png)

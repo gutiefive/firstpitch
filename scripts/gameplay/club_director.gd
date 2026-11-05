@@ -6,6 +6,7 @@ var message := ""
 var life: StadiumLife
 var opening: OpeningGates
 var ownership := {}
+var matchday: MatchdayPark
 func _ready() -> void:
  world = ClubStadium.new()
  world.game = game
@@ -13,6 +14,9 @@ func _ready() -> void:
  life = StadiumLife.new()
  life.game = game
  add_child(life)
+ matchday = MatchdayPark.new()
+ matchday.game = game
+ add_child(matchday)
  opening = OpeningGates.new()
  opening.game = game
  add_child(opening)
@@ -31,6 +35,7 @@ func refresh_spectators() -> void:
 func sync() -> void:
  var career: CareerProfile = game.shift.career
  world.sync(career.club)
+ matchday.sync(career.club)
  refresh_spectators()
  ownership = ClubOwnership.review(career)
  game.hud.park_label.text = "OWLS · %d fans · %d seats" % [career.club.fans,career.club.capacity] if career.club_started() else "CEDAR GROVE / MORNING PREP"

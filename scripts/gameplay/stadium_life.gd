@@ -31,13 +31,14 @@ func _ready() -> void:
  add_child(reaction)
 func _process(delta: float) -> void:
  var state: Dictionary = game.shift.career.club
- var allowed: bool = state.active and not state.last.is_empty() and game.shift.session.phase == ShiftSession.Phase.PRACTICE and not get_tree().paused
+ var presenting: bool = game.club.opening != null and game.club.opening.active
+ var allowed: bool = state.active and not state.last.is_empty() and game.shift.session.phase == ShiftSession.Phase.PRACTICE and (not get_tree().paused or presenting)
  targets.crowd = allowed
  targets.snacks = allowed and "snack_shack" in state.buildings
  targets.grill = allowed and "grill_stand" in state.buildings
  for id in loops:
   var player: AudioStreamPlayer3D = loops[id]
-  player.stream_paused = get_tree().paused
+  player.stream_paused = get_tree().paused and not presenting
   var db := -14.0
   if id == "crowd" and allowed:
    db = -20+10*clampf(float(state.last.attendance)/state.capacity,0,1)
@@ -46,7 +47,7 @@ func _process(delta: float) -> void:
    player.play()
   elif not targets[id] and player.volume_db <= -59:
    player.stop()
- reaction.stream_paused = get_tree().paused
+ reaction.stream_paused = get_tree().paused and not presenting
  if allowed:
   reaction_time += delta
   if reaction_time >= 18:

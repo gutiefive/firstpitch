@@ -38,3 +38,5 @@
 - Progression/payoff pass: eased starter hose/drag, reproducible purchase-route balance audit, skippable opening-gates presentation, crowd/concession audio and six-date ownership reviews with frozen next-season goals.
 
 - Modern UI pass: persistent destination rail; shared navy/mint theme and original icons; Matchday/Stadium/Results/Season Clubhouse sections; card-based equipment and contracts; clearer live HUD; native mouse/controller navigation and responsive 1024/1280/1600-width checks.
+
+- Living matchday first slice: moving representative supporters, public concourse and concession routes, animated staff, upgrade identity signs and warm counter lights, 47-second skippable arrivals/game/story sequence, nine-inning staged baseball action, live upgraded scoreboards, and progress-sensitive Mara/Eli/Leni story lines.

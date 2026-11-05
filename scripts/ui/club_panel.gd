@@ -22,6 +22,7 @@ var projects := {}
 var project_status := {}
 var project_savings := {}
 var result_metrics := {}
+var town_voices: Label
 var result_details: Button
 var sections := {}
 var tabs := {}
@@ -137,6 +138,7 @@ func _ready() -> void:
  var season_card := GameUI.card(sections.season,"SEASON PERFORMANCE")
  season_review = text(season_card,"",18)
  ownership_review = text(GameUI.card(sections.season,"MARA'S OWNERSHIP REVIEW"),"",15)
+ town_voices = text(GameUI.card(sections.season,"AROUND THE BALLPARK"),"",14)
  notice = GameUI.label(content,"",13,GameUI.GOLD)
  back_button = button(content,"Back to operations")
  back_button.pressed.connect(func(): back_requested.emit())
@@ -171,6 +173,7 @@ func preferred_focus() -> Control:
 func refresh() -> void:
  var career: CareerProfile = director.game.shift.career
  var state: Dictionary = career.club
+ town_voices.text = "\n\n".join(director.matchday.story_lines) if not director.matchday.story_lines.is_empty() else "The town is waiting for Opening Day. Take the job, prepare the field, and meet the regulars."
  var story := ClubProgress.chapter(state)
  var ready := director.available()
  stats.text = career.rank_title()+"  ·  Shared club funds"
