@@ -21,7 +21,7 @@ func _ready() -> void:
  box.content_margin_bottom = 24
  add_theme_stylebox_override("panel",box)
  var content := VBoxContainer.new()
- content.add_theme_constant_override("separation",18)
+ content.add_theme_constant_override("separation",12)
  add_child(content)
  var title := Label.new()
  title.text = "SOUND SETTINGS"
@@ -32,13 +32,16 @@ func _ready() -> void:
  hint.text = "World and clock stay paused. Changes save automatically."
  content.add_child(hint)
  for key in SoundPreferences.DEFAULTS:
+  var channel := GameUI.card(content)
+  GameUI.label(channel,{"master":"Overall game volume","effects":"Tools, footsteps and interaction feedback","ambience":"Ballpark atmosphere, crowd and concessions"}.get(key,String(key)),12,GameUI.MUTED)
   var row := HBoxContainer.new()
-  content.add_child(row)
+  channel.add_child(row)
   var caption := Label.new()
   caption.text = key.capitalize()
   caption.custom_minimum_size.x = 100
   row.add_child(caption)
   var slider := HSlider.new()
+  slider.custom_minimum_size.y = 28
   slider.min_value = 0
   slider.max_value = 100
   slider.step = 1

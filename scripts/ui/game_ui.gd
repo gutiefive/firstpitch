@@ -56,6 +56,11 @@ static func theme() -> Theme:
  shared.set_stylebox("grabber","VScrollBar",box(Color("3c5967"),0,3))
  shared.set_stylebox("grabber_highlight","VScrollBar",box(Color("5b7d89"),0,3))
  shared.set_stylebox("grabber_pressed","VScrollBar",box(ACCENT,0,3))
+ var slider_track := box(Color("263d49"),3,3)
+ var slider_fill := box(ACCENT,3,3)
+ shared.set_stylebox("slider","HSlider",slider_track)
+ shared.set_stylebox("grabber_area","HSlider",slider_fill)
+ shared.set_stylebox("grabber_area_highlight","HSlider",slider_fill)
  return shared
 static func label(parent: Node,value: String,size: int = 14,color: Color = TEXT) -> Label:
  var node := Label.new()

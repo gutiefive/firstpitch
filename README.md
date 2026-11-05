@@ -453,3 +453,5 @@ Workshop and contract purchases use cards. The field HUD uses a compact task/pro
 [Clubhouse](docs/screenshots/ui-matchday.png) · [Stadium upgrades](docs/screenshots/ui-stadium.png) · [Postgame report](docs/screenshots/ui-results.png) · [Field HUD](docs/screenshots/ui-hud.png)
 
 Purchase cards now show savings meters and explain each lock: missing credits, supporters, rank, earlier buildings, or an unfinished shift. Available equipment previews your remaining balance; completed purchases show an installed state and a confirmation. Postgame summaries highlight gate profit, manager bonus and new supporters, with the full settled earnings available under **Show earnings breakdown**.
+
+Operations groups crew training, full-park prep and the manual field checkpoint into separate cards with clear durations and field-reset behavior. **Controls & camera** puts sensitivity first, identifies the active device, and separates movement/menu bindings from equipment/field bindings. Audio uses individual channel cards with descriptions, larger slider targets and mint volume tracks.

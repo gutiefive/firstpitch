@@ -130,7 +130,7 @@ func _ready() -> void:
  board_content = content
  content.add_theme_constant_override("separation",6)
  card.add_child(content)
- heading = label("SHIFT BOARD",28,GOLD)
+ heading = label("OPERATIONS",28,GOLD)
  content.add_child(heading)
  resume_card = VBoxContainer.new()
  content.add_child(resume_card)
@@ -176,31 +176,33 @@ func _ready() -> void:
  var profiles := HBoxContainer.new()
  profiles.add_theme_constant_override("separation",12)
  content.add_child(profiles)
- training_button = button("Fresh training · 15 min")
- full_button = button("Game-day prep · 30 min")
- training_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
- full_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
- profiles.add_child(training_button)
- profiles.add_child(full_button)
+ var training := GameUI.card(profiles,"PRACTICE YOUR ROUTINE")
+ GameUI.label(training,"Crew training",21)
+ GameUI.label(training,"15 minutes · Fresh field\nMow 25%, drag/chalk/water 50%, repair the mound.",13,GameUI.MUTED)
+ training_button = GameUI.button(training,"Start training")
+ var full := GameUI.card(profiles,"TAKE ON THE WHOLE PARK")
+ GameUI.label(full,"Full-park prep",21)
+ GameUI.label(full,"30 minutes · Game-day wear\nPrepare every task to 100%. Earn credit for partial work.",13,GameUI.MUTED)
+ full_button = GameUI.button(full,"Start full prep")
  training_button.pressed.connect(func(): start_requested.emit("training"))
  full_button.pressed.connect(func(): start_requested.emit("full"))
- content.add_child(label("Training goals: mow 25%, drag/chalk/water 50%, mound 100%.",13,Color("adc7b7")))
- content.add_child(label("Full prep goals: 100% of every job. The board pauses the world and clock.",13,Color("adc7b7")))
  end_button = button("End shift now")
  content.add_child(end_button)
  end_button.pressed.connect(func(): end_requested.emit())
+ var save_card := GameUI.card(content,"MANUAL FIELD SLOT")
+ GameUI.label(save_card,"Keep a field checkpoint",18)
+ GameUI.label(save_card,"One manual slot, separate from autosave. Loading replaces current field work and parks equipment; your career stays saved.",12,GameUI.MUTED)
  var saves := HBoxContainer.new()
- content.add_child(saves)
- save_button = button("Save to manual slot")
- load_button = button("Load manual slot")
+ saves.add_theme_constant_override("separation",8)
+ save_card.add_child(saves)
+ save_button = button("Save checkpoint")
+ load_button = button("Load checkpoint")
  for item in [save_button,load_button]:
   item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   saves.add_child(item)
  save_button.pressed.connect(func(): save_requested.emit())
  load_button.pressed.connect(func(): load_requested.emit())
- content.add_child(label("One slot. Loading replaces current work and parks equipment.",12,GOLD))
- save_message = label("Manual slot is separate from autosave.",12,Color("adc7b7"))
- content.add_child(save_message)
+ save_message = GameUI.label(save_card,"Manual slot is separate from autosave.",12,GameUI.MUTED)
  autosave_footer = label("Autosave ready",12,Color("adc7b7"))
  content.add_child(autosave_footer)
  var menus := HBoxContainer.new()
@@ -353,7 +355,7 @@ func refresh() -> void:
  for i in range(5):
   status_rows[i].visible = active and session.goals()[i] > 0
   status_rows[i].text = "%s %s  %.1f / %.0f%%" % ["✓" if session.goal_met(i) else "·",ShiftSession.JOB_NAMES[i],session.values[i],session.goals()[i]]
- heading.text = "SHIFT BOARD"
+ heading.text = "OPERATIONS"
  description.text = "Free practice. Visit Clubhouse to take the Owls groundskeeper job." if not director.career.club_started() else "Between home games. Clubhouse has your next story objective."
  score_label.visible = active or finished
  score_label.text = ""

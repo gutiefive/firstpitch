@@ -323,3 +323,9 @@ Starter handling can be tuned without touching result reconstruction or ledger e
 Disabled buttons need an adjacent reason because mouse hover and tooltips alone do not serve controller users. Equipment and stadium cards now show dynamic requirements and cash savings; owned upgrades replace that information with an installed/built state. Equipment purchase callbacks refresh menu focus after disabling the purchased button, and place confirmation near the resulting focus destination. Postgame highlights are read from the settled receipt; expanding details retains the original full wage/gate/request breakdown. Headless button helpers must also toggle toggle-mode buttons before emitting their pressed signal.
 
 Progress bars inherit Range, just like interactive sliders. Filtering controller targets by Range made the new savings meters focusable. Navigation now accepts buttons and Slider controls explicitly, and the UI regression checks the final focus and confirmation positions inside the scroll viewport.
+
+### Operations and settings hierarchy
+
+Training and full prep now have their own descriptive cards, with manual checkpoints in a separate section. Keep existing button signals and recovery guards when changing their parents. Grouping controls into two columns frees room for camera sensitivity near the top; bindings remain generated from InputMap and the current input device. Audio channel descriptions explain what each setting changes without exposing engine bus details.
+
+UI tests set the initial root window to 1280×720 explicitly: the headless display does not reliably use the same initial window dimensions as the graphical run. Subsequent viewport-size checks still exercise 1024×768 and 1600×900.

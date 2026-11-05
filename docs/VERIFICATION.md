@@ -333,3 +333,11 @@ Equipment and stadium cards now show savings meters, explicit cash/rank/supporte
 - `test_modern_ui.gd`: **28 checks passed** headlessly and graphically, including native purchase/install and wallet reconciliation, exact lock reasons, postgame metrics, expandable wages and post-purchase focus, alongside the previous mouse/D-pad and three-size layout checks.
 - Existing career gameplay (18), club gameplay (39), game-day gameplay (31), equipment upgrades (30) controller input (34) and autosave (27) passed: **207 distinct checks** across seven suites including modern UI. No script errors or failed assertions remained in the verified logs.
 - Reviewed updated software-rendered Stadium, Workshop, purchase confirmation and Results screenshots. Linux Xorg/Mesa Compatibility verification retains the prior hardware and human playtesting limits. Economy and save formats are unchanged.
+
+## UI refinement: Operations, controls and audio
+
+Operations now separates training, full-park prep and manual field checkpoints into descriptive cards. Controls groups movement/menu and equipment/field bindings, displays the active input device, and places camera sensitivity above the reference. Audio has descriptive channel cards, larger slider targets and shared mint slider tracks.
+
+- Modern UI: **36 checks passed**, with native graphical mouse/controller flows and additional controls/audio fit checks at 1024×768, 1280×720 and 1600×900. The camera slider is visible on entry; bindings still reflect the active InputMap. Headless layout assertions wait for container layout to settle.
+- Controller input (34), shift gameplay (32), field save (28), autosave (27) and audio (27) passed: **184 distinct checks** across six suites including modern UI.
+- Reviewed the actual Operations, Controls and Audio captures, updated under `docs/screenshots/ui-*.png`. Script import and whitespace validation passed. Linux software Compatibility graphics and the prior Windows/physical-pad/Forward+ verification limits still apply. No gameplay, economy or save-format changes.

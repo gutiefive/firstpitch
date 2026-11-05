@@ -49,6 +49,7 @@ func pad(code: JoyButton) -> void:
   await process_frame
  await idle()
 func run() -> void:
+ root.size = Vector2i(1280,720)
  var g = load("res://scenes/main/main.tscn").instantiate()
  g.career_save_path = "user://test-modern-ui-career.dat"
  g.settings_save_path = "user://test-modern-ui-settings.cfg"
@@ -91,6 +92,9 @@ func run() -> void:
  await capture("audio")
  await click(ui.controls_button)
  check(ui.controls_screen.visible and not ui.career_screen.visible,"rail switches directly to Controls")
+ await idle(4)
+ check(ui.controls_panel.device_label.text.contains("KEYBOARD & MOUSE") and ui.controls_panel.rows.spray_water.text.contains(g.binding_text("spray_water")),"grouped controls reflect current device and actual bindings")
+ check(ui.controls_screen.get_global_rect().has_point(ui.controls_panel.sensitivity.get_global_rect().get_center()),"camera sensitivity opens inside the visible controls page")
  await capture("controls")
  await click(ui.home_button)
  check(not ui.controls_screen.visible,"Operations returns from submenu")
@@ -103,6 +107,10 @@ func run() -> void:
  for dimensions in [Vector2i(1024,768),Vector2i(1600,900),Vector2i(1280,720)]:
   root.size = dimensions
   await idle(10)
+  await click(ui.controls_button)
+  check(ui.controls_panel.get_global_rect().end.x <= dimensions.x and ui.controls_screen.get_global_rect().has_point(ui.controls_panel.sensitivity.get_global_rect().get_center()),"controls and camera fit width "+str(dimensions.x))
+  await click(ui.sound_button)
+  check(ui.sound_panel.get_global_rect().end.x <= dimensions.x and ui.sound_screen.get_global_rect().encloses(ui.sound_panel.get_global_rect()),"audio settings fit width "+str(dimensions.x))
   await click(ui.club_button)
   await click(club.tabs.stadium)
   var rail: Rect2 = ui.nav_panel.get_global_rect()
