@@ -3,15 +3,15 @@ extends Node3D
 signal completion_changed(percent: float)
 @export var layout: FieldLayout = preload("res://resources/layouts/cedar_grove.tres")
 var top_height: float:
- get:
-  return layout.mound_height
+	get:
+		return layout.mound_height
 var patch_radius: float:
- get:
-  return layout.mound_patch_radius
+	get:
+		return layout.mound_patch_radius
 @export var hits_required := 3
 var patch_positions: PackedVector2Array:
- get:
-  return layout.mound_patches
+	get:
+		return layout.mound_patches
 var hits := PackedInt32Array()
 var work_done := 0
 var repaired_count := 0
@@ -19,92 +19,106 @@ var total_work := 0
 var materials: Array[ShaderMaterial] = []
 var clumps: Array[Node3D] = []
 
+
 func _ready() -> void:
- position = layout.point3(layout.mound_position)
- hits.resize(patch_positions.size())
- total_work = hits_required*patch_positions.size()
- for index in range(patch_positions.size()):
-  var point := patch_positions[index]
-  var plane := MeshInstance3D.new()
-  plane.name = "WornClayPatch"+str(index+1)
-  var mesh := PlaneMesh.new()
-  mesh.size = Vector2.ONE*patch_radius*2
-  plane.mesh = mesh
-  plane.position = Vector3(point.x,top_height+0.009,point.y)
-  var mat := ShaderMaterial.new()
-  mat.shader = preload("res://shaders/mound_patch.gdshader")
-  mat.set_shader_parameter("dark_color",Color("8b6247").srgb_to_linear())
-  mat.set_shader_parameter("light_color",Color("a37b56").srgb_to_linear())
-  plane.material_override = mat
-  plane.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-  add_child(plane)
-  materials.append(mat)
-  var lumps := Node3D.new()
-  lumps.position = Vector3(point.x,top_height,point.y)
-  add_child(lumps)
-  for i in range(3):
-   var angle := index*1.71+i*2.17
-   var radius := 0.15+0.08*sin(index*2.1+i*3.3)
-   var lump := ParkGeometry.sphere(lumps,Vector3(sin(angle)*radius,0.018,cos(angle)*radius),Vector3(0.12,0.035,0.09),Color("765139"))
-   lump.rotation.y = angle
-  clumps.append(lumps)
+	position = layout.point3(layout.mound_position)
+	hits.resize(patch_positions.size())
+	total_work = hits_required * patch_positions.size()
+	for index in range(patch_positions.size()):
+		var point := patch_positions[index]
+		var plane := MeshInstance3D.new()
+		plane.name = "WornClayPatch" + str(index + 1)
+		var mesh := PlaneMesh.new()
+		mesh.size = Vector2.ONE * patch_radius * 2
+		plane.mesh = mesh
+		plane.position = Vector3(point.x, top_height + 0.009, point.y)
+		var mat := ShaderMaterial.new()
+		mat.shader = preload("res://shaders/mound_patch.gdshader")
+		mat.set_shader_parameter("dark_color", Color("8b6247").srgb_to_linear())
+		mat.set_shader_parameter("light_color", Color("a37b56").srgb_to_linear())
+		plane.material_override = mat
+		plane.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		add_child(plane)
+		materials.append(mat)
+		var lumps := Node3D.new()
+		lumps.position = Vector3(point.x, top_height, point.y)
+		add_child(lumps)
+		for i in range(3):
+			var angle := index * 1.71 + i * 2.17
+			var radius := 0.15 + 0.08 * sin(index * 2.1 + i * 3.3)
+			var lump := ParkGeometry.sphere(
+				lumps,
+				Vector3(sin(angle) * radius, 0.018, cos(angle) * radius),
+				Vector3(0.12, 0.035, 0.09),
+				Color("765139")
+			)
+			lump.rotation.y = angle
+		clumps.append(lumps)
+
 
 func patch_world(index: int) -> Vector3:
- var point := patch_positions[index]
- return to_global(Vector3(point.x,top_height,point.y))
+	var point := patch_positions[index]
+	return to_global(Vector3(point.x, top_height, point.y))
+
 
 func patch_at(point: Vector3) -> int:
- var local := to_local(point)
- var flat := Vector2(local.x,local.z)
- for index in range(patch_positions.size()):
-  if flat.distance_to(patch_positions[index]) <= patch_radius:
-   return index
- return -1
+	var local := to_local(point)
+	var flat := Vector2(local.x, local.z)
+	for index in range(patch_positions.size()):
+		if flat.distance_to(patch_positions[index]) <= patch_radius:
+			return index
+	return -1
+
 
 func apply_tamp(index: int) -> bool:
- if index < 0 or index >= hits.size() or hits[index] >= hits_required:
-  return false
- hits[index] += 1
- work_done += 1
- if hits[index] == hits_required:
-  repaired_count += 1
- var fraction := float(hits[index])/hits_required
- materials[index].set_shader_parameter("compaction",fraction)
- clumps[index].scale.y = maxf(0.01,1-fraction)
- clumps[index].visible = fraction < 1
- completion_changed.emit(percentage())
- return true
+	if index < 0 or index >= hits.size() or hits[index] >= hits_required:
+		return false
+	hits[index] += 1
+	work_done += 1
+	if hits[index] == hits_required:
+		repaired_count += 1
+	var fraction := float(hits[index]) / hits_required
+	materials[index].set_shader_parameter("compaction", fraction)
+	clumps[index].scale.y = maxf(0.01, 1 - fraction)
+	clumps[index].visible = fraction < 1
+	completion_changed.emit(percentage())
+	return true
+
 
 func percentage() -> float:
- return 100.0*work_done/maxi(total_work,1)
+	return 100.0 * work_done / maxi(total_work, 1)
+
 
 func reset_state() -> void:
- hits.fill(0)
- work_done = 0
- repaired_count = 0
- for index in range(hits.size()):
-  materials[index].set_shader_parameter("compaction",0.0)
-  clumps[index].scale.y = 1
-  clumps[index].visible = true
- completion_changed.emit(0)
+	hits.fill(0)
+	work_done = 0
+	repaired_count = 0
+	for index in range(hits.size()):
+		materials[index].set_shader_parameter("compaction", 0.0)
+		clumps[index].scale.y = 1
+		clumps[index].visible = true
+	completion_changed.emit(0)
+
 
 func snapshot_hits() -> PackedInt32Array:
- return hits.duplicate()
+	return hits.duplicate()
+
 
 func replace_hits(values: PackedInt32Array) -> void:
- hits = values.duplicate()
- work_done = 0
- repaired_count = 0
- for index in range(hits.size()):
-  work_done += hits[index]
-  repaired_count += 1 if hits[index] == hits_required else 0
-  var fraction := float(hits[index])/hits_required
-  materials[index].set_shader_parameter("compaction",fraction)
-  clumps[index].scale.y = maxf(0.01,1-fraction)
-  clumps[index].visible = fraction < 1
- completion_changed.emit(percentage())
+	hits = values.duplicate()
+	work_done = 0
+	repaired_count = 0
+	for index in range(hits.size()):
+		work_done += hits[index]
+		repaired_count += 1 if hits[index] == hits_required else 0
+		var fraction := float(hits[index]) / hits_required
+		materials[index].set_shader_parameter("compaction", fraction)
+		clumps[index].scale.y = maxf(0.01, 1 - fraction)
+		clumps[index].visible = fraction < 1
+	completion_changed.emit(percentage())
+
 
 func prepare_all() -> void:
- var values := hits.duplicate()
- values.fill(hits_required)
- replace_hits(values)
+	var values := hits.duplicate()
+	values.fill(hits_required)
+	replace_hits(values)

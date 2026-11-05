@@ -37,307 +37,461 @@ var selected_section := "matchday"
 var metrics := {}
 var project_grid: GridContainer
 var results_title: Label
-func text(parent: Node,value: String,font_size: int = 14) -> Label:
- return GameUI.label(parent,value,font_size)
-func button(parent: Node,value: String) -> Button:
- return GameUI.button(parent,value)
+
+
+func text(parent: Node, value: String, font_size: int = 14) -> Label:
+	return GameUI.label(parent, value, font_size)
+
+
+func button(parent: Node, value: String) -> Button:
+	return GameUI.button(parent, value)
+
+
 func _ready() -> void:
- theme = GameUI.theme()
- GameUI.width(self)
- add_theme_stylebox_override("panel",GameUI.box(GameUI.SURFACE,24))
- var content := VBoxContainer.new()
- content.add_theme_constant_override("separation",12)
- add_child(content)
- GameUI.label(content,"CLUB OPERATIONS  /  CEDAR GROVE",11,GameUI.MUTED)
- text(content,"Owls clubhouse",28)
- stats = GameUI.label(content,"",13,GameUI.MUTED)
- var metrics_row := HBoxContainer.new()
- metrics_row.add_theme_constant_override("separation",12)
- content.add_child(metrics_row)
- for key in ["BUDGET","SUPPORTERS","CAPACITY","HOME DATES"]:
-  var tile := GameUI.card(metrics_row,key)
-  tile.get_parent().add_theme_stylebox_override("panel",GameUI.box(Color("1b2e39"),12))
-  metrics[key] = text(tile,"0",23)
- var navigation := HBoxContainer.new()
- navigation.add_theme_constant_override("separation",8)
- content.add_child(navigation)
- for key in ["matchday","stadium","results","season","town"]:
-  var tab := GameUI.button(navigation,String(key).capitalize())
-  tab.toggle_mode = true
-  tab.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-  tab.pressed.connect(func(): show_section(key); tab.grab_focus())
-  tabs[key] = tab
-  var section := VBoxContainer.new()
-  section.add_theme_constant_override("separation",14)
-  content.add_child(section)
-  sections[key] = section
- var columns := HFlowContainer.new()
- columns.add_theme_constant_override("h_separation",16)
- columns.add_theme_constant_override("v_separation",16)
- sections.matchday.add_child(columns)
- var play := GameUI.card(columns,"NEXT HOME DATE")
- play.custom_minimum_size.x = 360
- schedule = text(play,"",15)
- var actions := GridContainer.new()
- actions.columns = 2
- actions.add_theme_constant_override("h_separation",8)
- actions.add_theme_constant_override("v_separation",8)
- play.add_child(actions)
- join_button = GameUI.button(actions,"Take the job",true)
- prep_button = GameUI.button(actions,"Prepare home game",true)
- host_button = GameUI.button(actions,"Open the gates",true)
- workshop_button = button(actions,"Upgrade equipment")
- for item in [join_button,prep_button,host_button,workshop_button]:
-  item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
- join_button.pressed.connect(director.join)
- prep_button.pressed.connect(director.prepare)
- host_button.pressed.connect(director.host)
- workshop_button.pressed.connect(func(): director.game.shift.overlay.career_button.pressed.emit())
- GameUI.label(play,"Finish the assigned prep, then host to collect gate income. Missing a manager request never blocks hosting.",12,GameUI.MUTED)
- var story := GameUI.card(columns,"FROM THE GENERAL MANAGER")
- story.custom_minimum_size.x = 360
- chapter = text(story,"",20)
- voice = text(story,"",14)
- objective = text(story,"",14)
- objective.modulate = GameUI.ACCENT
- var result_actions := HBoxContainer.new()
- result_actions.add_theme_constant_override("separation",8)
- sections.results.add_child(result_actions)
- recap_continue = GameUI.button(result_actions,"Continue to next date",true)
- recap_continue.size_flags_horizontal = Control.SIZE_EXPAND_FILL
- watch_button = GameUI.button(result_actions,"Watch latest matchday")
- watch_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
- watch_button.pressed.connect(director.watch_last_game)
- walk_button = GameUI.button(result_actions,"Walk the park")
- walk_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
- walk_button.tooltip_text = "Explore a live matchday and help with optional crew jobs."
- walk_button.pressed.connect(func(): director.live.start())
- recap_continue.pressed.connect(func(): show_section("matchday"); prep_button.grab_focus())
- sections.results.add_theme_constant_override("separation",10)
- var earnings := HBoxContainer.new()
- earnings.add_theme_constant_override("separation",10)
- sections.results.add_child(earnings)
- for key in ["GATE PROFIT","MANAGER BONUS","NEW SUPPORTERS"]:
-  var tile := GameUI.card(earnings,key)
-  tile.get_parent().add_theme_stylebox_override("panel",GameUI.box(GameUI.RAISED,12))
-  result_metrics[key] = text(tile,"—",23)
- var result_card := GameUI.card(sections.results)
- result_card.get_parent().add_theme_stylebox_override("panel",GameUI.box(Color("1b2e39"),12))
- results_title = text(result_card,"Your next home game starts here",24)
- match_summary = GameUI.label(result_card,"",13,GameUI.MUTED)
- result_details = GameUI.button(result_card,"Show earnings breakdown")
- result_details.toggle_mode = true
- receipt = text(result_card,"",14)
- receipt.visible = false
- result_details.toggled.connect(func(expanded: bool):
-  receipt.visible = expanded
-  result_details.text = "Hide earnings breakdown" if expanded else "Show earnings breakdown")
- var investment_card := GameUI.card(sections.results,"YOUR NEXT INVESTMENT")
- investment_card.get_parent().add_theme_stylebox_override("panel",GameUI.box(Color("1b2e39"),12))
- investment = text(investment_card,"",14)
- service_text = text(GameUI.card(sections.results,"FAN SATISFACTION & PARK BONUS"),"",14)
- claim_button = GameUI.button(sections.results,"Claim park bonus",true)
- claim_button.tooltip_text = "Settles once for this home date. Replaying cannot replace a claimed review."
- claim_button.pressed.connect(func(): director.live.claim_bonus())
- GameUI.label(sections.stadium,"Build a better night at the ballpark",24)
- GameUI.label(sections.stadium,"Permanent upgrades share your club budget. Requirements and benefits are shown before you buy.",13,GameUI.MUTED)
- project_grid = GridContainer.new()
- project_grid.columns = 3
- project_grid.add_theme_constant_override("h_separation",12)
- project_grid.add_theme_constant_override("v_separation",12)
- sections.stadium.add_child(project_grid)
- for id in ClubProgress.PROJECTS:
-  var card := GameUI.card(project_grid)
-  var item: Dictionary = ClubProgress.PROJECTS[id]
-  text(card,item.title,19)
-  GameUI.label(card,"%d cr  /  %d supporters" % [item.cost,item.fans],13,GameUI.ACCENT)
-  text(card,item.detail,13)
-  project_savings[id] = GameUI.meter(card)
-  project_status[id] = GameUI.label(card,"",12,GameUI.MUTED)
-  var buy := GameUI.button(card,"Build upgrade")
-  buy.pressed.connect(func(): director.build(id))
-  projects[id] = buy
- var season_card := GameUI.card(sections.season,"SEASON PERFORMANCE")
- season_review = text(season_card,"",18)
- ownership_review = text(GameUI.card(sections.season,"MARA'S OWNERSHIP REVIEW"),"",15)
- GameUI.label(sections.town,"Around the ballpark",25)
- GameUI.label(sections.town,"The people behind your home dates. Their updates change with your field work and stadium investment.",13,GameUI.MUTED)
- var speakers := HFlowContainer.new()
- speakers.add_theme_constant_override("h_separation",8)
- speakers.add_theme_constant_override("v_separation",8)
- sections.town.add_child(speakers)
- for speaker in ["All","Mara","Eli","Leni"]:
-  var choose := GameUI.button(speakers,{"All":"Everyone","Mara":"Mara · Manager","Eli":"Eli · Regular fan","Leni":"Leni · Concessions"}[speaker])
-  choose.custom_minimum_size.x = 190 if speaker != "All" else 110
-  choose.toggle_mode = true
-  choose.pressed.connect(func(): show_town_voice(speaker); choose.grab_focus())
-  town_buttons[speaker] = choose
- town_voices = text(GameUI.card(sections.town,"LATEST TOWN UPDATES"),"",15)
- notice = GameUI.label(content,"",13,GameUI.GOLD)
- back_button = button(content,"Back to operations")
- back_button.pressed.connect(func(): back_requested.emit())
- director.game.shift.career.changed.connect(refresh)
- director.game.shift.session.changed.connect(refresh)
- get_viewport().size_changed.connect(fit_layout)
- fit_layout()
- refresh()
- show_section("matchday")
+	theme = GameUI.theme()
+	GameUI.width(self)
+	add_theme_stylebox_override("panel", GameUI.box(GameUI.SURFACE, 24))
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 12)
+	add_child(content)
+	GameUI.label(content, "CLUB OPERATIONS  /  CEDAR GROVE", 11, GameUI.MUTED)
+	text(content, "Owls clubhouse", 28)
+	stats = GameUI.label(content, "", 13, GameUI.MUTED)
+	var metrics_row := HBoxContainer.new()
+	metrics_row.add_theme_constant_override("separation", 12)
+	content.add_child(metrics_row)
+	for key in ["BUDGET", "SUPPORTERS", "CAPACITY", "HOME DATES"]:
+		var tile := GameUI.card(metrics_row, key)
+		tile.get_parent().add_theme_stylebox_override("panel", GameUI.box(Color("1b2e39"), 12))
+		metrics[key] = text(tile, "0", 23)
+	var navigation := HBoxContainer.new()
+	navigation.add_theme_constant_override("separation", 8)
+	content.add_child(navigation)
+	for key in ["matchday", "stadium", "results", "season", "town"]:
+		var tab := GameUI.button(navigation, String(key).capitalize())
+		tab.toggle_mode = true
+		tab.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		tab.pressed.connect(
+			func():
+				show_section(key)
+				tab.grab_focus()
+		)
+		tabs[key] = tab
+		var section := VBoxContainer.new()
+		section.add_theme_constant_override("separation", 14)
+		content.add_child(section)
+		sections[key] = section
+	var columns := HFlowContainer.new()
+	columns.add_theme_constant_override("h_separation", 16)
+	columns.add_theme_constant_override("v_separation", 16)
+	sections.matchday.add_child(columns)
+	var play := GameUI.card(columns, "NEXT HOME DATE")
+	play.custom_minimum_size.x = 360
+	schedule = text(play, "", 15)
+	var actions := GridContainer.new()
+	actions.columns = 2
+	actions.add_theme_constant_override("h_separation", 8)
+	actions.add_theme_constant_override("v_separation", 8)
+	play.add_child(actions)
+	join_button = GameUI.button(actions, "Take the job", true)
+	prep_button = GameUI.button(actions, "Prepare home game", true)
+	host_button = GameUI.button(actions, "Open the gates", true)
+	workshop_button = button(actions, "Upgrade equipment")
+	for item in [join_button, prep_button, host_button, workshop_button]:
+		item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	join_button.pressed.connect(director.join)
+	prep_button.pressed.connect(director.prepare)
+	host_button.pressed.connect(director.host)
+	workshop_button.pressed.connect(func(): director.game.shift.overlay.career_button.pressed.emit())
+	GameUI.label(
+		play,
+		(
+			"Finish the assigned prep, then host to collect gate income. Missing a manager request "
+			+ "never blocks hosting."
+		),
+		12,
+		GameUI.MUTED
+	)
+	var story := GameUI.card(columns, "FROM THE GENERAL MANAGER")
+	story.custom_minimum_size.x = 360
+	chapter = text(story, "", 20)
+	voice = text(story, "", 14)
+	objective = text(story, "", 14)
+	objective.modulate = GameUI.ACCENT
+	var result_actions := HBoxContainer.new()
+	result_actions.add_theme_constant_override("separation", 8)
+	sections.results.add_child(result_actions)
+	recap_continue = GameUI.button(result_actions, "Continue to next date", true)
+	recap_continue.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	watch_button = GameUI.button(result_actions, "Watch latest matchday")
+	watch_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	watch_button.pressed.connect(director.watch_last_game)
+	walk_button = GameUI.button(result_actions, "Walk the park")
+	walk_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	walk_button.tooltip_text = "Explore a live matchday and help with optional crew jobs."
+	walk_button.pressed.connect(func(): director.live.start())
+	recap_continue.pressed.connect(
+		func():
+			show_section("matchday")
+			prep_button.grab_focus()
+	)
+	sections.results.add_theme_constant_override("separation", 10)
+	var earnings := HBoxContainer.new()
+	earnings.add_theme_constant_override("separation", 10)
+	sections.results.add_child(earnings)
+	for key in ["GATE PROFIT", "MANAGER BONUS", "NEW SUPPORTERS"]:
+		var tile := GameUI.card(earnings, key)
+		tile.get_parent().add_theme_stylebox_override("panel", GameUI.box(GameUI.RAISED, 12))
+		result_metrics[key] = text(tile, "—", 23)
+	var result_card := GameUI.card(sections.results)
+	result_card.get_parent().add_theme_stylebox_override("panel", GameUI.box(Color("1b2e39"), 12))
+	results_title = text(result_card, "Your next home game starts here", 24)
+	match_summary = GameUI.label(result_card, "", 13, GameUI.MUTED)
+	result_details = GameUI.button(result_card, "Show earnings breakdown")
+	result_details.toggle_mode = true
+	receipt = text(result_card, "", 14)
+	receipt.visible = false
+	result_details.toggled.connect(
+		func(expanded: bool):
+			receipt.visible = expanded
+			result_details.text = "Hide earnings breakdown" if expanded else "Show earnings breakdown"
+	)
+	var investment_card := GameUI.card(sections.results, "YOUR NEXT INVESTMENT")
+	investment_card.get_parent().add_theme_stylebox_override("panel", GameUI.box(Color("1b2e39"), 12))
+	investment = text(investment_card, "", 14)
+	service_text = text(GameUI.card(sections.results, "FAN SATISFACTION & PARK BONUS"), "", 14)
+	claim_button = GameUI.button(sections.results, "Claim park bonus", true)
+	claim_button.tooltip_text = "Settles once for this home date. Replaying cannot replace a claimed review."
+	claim_button.pressed.connect(func(): director.live.claim_bonus())
+	GameUI.label(sections.stadium, "Build a better night at the ballpark", 24)
+	GameUI.label(
+		sections.stadium,
+		"Permanent upgrades share your club budget. Requirements and benefits are shown before you buy.",
+		13,
+		GameUI.MUTED
+	)
+	project_grid = GridContainer.new()
+	project_grid.columns = 3
+	project_grid.add_theme_constant_override("h_separation", 12)
+	project_grid.add_theme_constant_override("v_separation", 12)
+	sections.stadium.add_child(project_grid)
+	for id in ClubProgress.PROJECTS:
+		var card := GameUI.card(project_grid)
+		var item: Dictionary = ClubProgress.PROJECTS[id]
+		text(card, item.title, 19)
+		GameUI.label(card, "%d cr  /  %d supporters" % [item.cost, item.fans], 13, GameUI.ACCENT)
+		text(card, item.detail, 13)
+		project_savings[id] = GameUI.meter(card)
+		project_status[id] = GameUI.label(card, "", 12, GameUI.MUTED)
+		var buy := GameUI.button(card, "Build upgrade")
+		buy.pressed.connect(func(): director.build(id))
+		projects[id] = buy
+	var season_card := GameUI.card(sections.season, "SEASON PERFORMANCE")
+	season_review = text(season_card, "", 18)
+	ownership_review = text(GameUI.card(sections.season, "MARA'S OWNERSHIP REVIEW"), "", 15)
+	GameUI.label(sections.town, "Around the ballpark", 25)
+	GameUI.label(
+		sections.town,
+		(
+			"The people behind your home dates. Their updates change with your field work and "
+			+ "stadium investment."
+		),
+		13,
+		GameUI.MUTED
+	)
+	var speakers := HFlowContainer.new()
+	speakers.add_theme_constant_override("h_separation", 8)
+	speakers.add_theme_constant_override("v_separation", 8)
+	sections.town.add_child(speakers)
+	for speaker in ["All", "Mara", "Eli", "Leni"]:
+		var choose := GameUI.button(
+			speakers,
+			{
+				"All": "Everyone",
+				"Mara": "Mara · Manager",
+				"Eli": "Eli · Regular fan",
+				"Leni": "Leni · Concessions"
+			}[speaker]
+		)
+		choose.custom_minimum_size.x = 190 if speaker != "All" else 110
+		choose.toggle_mode = true
+		choose.pressed.connect(
+			func():
+				show_town_voice(speaker)
+				choose.grab_focus()
+		)
+		town_buttons[speaker] = choose
+	town_voices = text(GameUI.card(sections.town, "LATEST TOWN UPDATES"), "", 15)
+	notice = GameUI.label(content, "", 13, GameUI.GOLD)
+	back_button = button(content, "Back to operations")
+	back_button.pressed.connect(func(): back_requested.emit())
+	director.game.shift.career.changed.connect(refresh)
+	director.game.shift.session.changed.connect(refresh)
+	get_viewport().size_changed.connect(fit_layout)
+	fit_layout()
+	refresh()
+	show_section("matchday")
+
+
 func fit_layout() -> void:
- GameUI.width(self)
- project_grid.columns = 2 if get_viewport_rect().size.x < 1200 else 3
+	GameUI.width(self)
+	project_grid.columns = 2 if get_viewport_rect().size.x < 1200 else 3
+
+
 func show_section(key: String) -> void:
- selected_section = key
- for id in sections:
-  sections[id].visible = id == key
-  tabs[id].set_pressed_no_signal(id == key)
- if is_inside_tree() and director.game.shift.overlay.club_screen.visible:
-  director.game.shift.overlay.focus_current()
-  if key == "results":
-   reveal_claim()
+	selected_section = key
+	for id in sections:
+		sections[id].visible = id == key
+		tabs[id].set_pressed_no_signal(id == key)
+	if is_inside_tree() and director.game.shift.overlay.club_screen.visible:
+		director.game.shift.overlay.focus_current()
+		if key == "results":
+			reveal_claim()
+
+
 func preferred_focus() -> Control:
- if selected_section == "results" and not claim_button.disabled:
-  return claim_button
- if selected_section == "results" and recap_continue.visible:
-  return recap_continue
- if selected_section == "matchday":
-  for candidate in [join_button,host_button,prep_button,workshop_button]:
-   if candidate.visible and not candidate.disabled:
-    return candidate
- if selected_section == "stadium":
-  for candidate in projects.values():
-   if not candidate.disabled:
-    return candidate
- return tabs[selected_section]
+	if selected_section == "results" and not claim_button.disabled:
+		return claim_button
+	if selected_section == "results" and recap_continue.visible:
+		return recap_continue
+	if selected_section == "matchday":
+		for candidate in [join_button, host_button, prep_button, workshop_button]:
+			if candidate.visible and not candidate.disabled:
+				return candidate
+	if selected_section == "stadium":
+		for candidate in projects.values():
+			if not candidate.disabled:
+				return candidate
+	return tabs[selected_section]
+
+
 func refresh() -> void:
- var career: CareerProfile = director.game.shift.career
- var state: Dictionary = career.club
- show_town_voice(town_filter)
- var report := director.live.service_report()
- service_text.text = ParkSatisfaction.text(report)
- var collected: bool = career.club.services.has(career.latest_host_id())
- if not report.is_empty():
-  service_text.text += "\nSaved to your club record." if collected else "\nClaim to save this review before the next home date."
- claim_button.disabled = report.is_empty() or collected or not director.available() or not String(career.club.pending).is_empty()
- claim_button.text = "Park bonus collected" if collected else ("Claim %d cr · +%d supporters" % [report.bonus,report.fans] if not report.is_empty() else "Finish a live visit for a park review")
- watch_button.disabled = not director.can_watch()
- walk_button.disabled = not director.can_watch()
- watch_button.tooltip_text = "Rewatch without changing your earnings." if not watch_button.disabled else "Host a game and finish current work to watch again."
- if not state.last.is_empty():
-  var score := MatchdayPark.score_for(int(state.games))
-  match_summary.text = "Owls %d · %s %d · Condensed nine-inning game" % [score.x,ClubSchedule.fixture(int(state.games)-1).opponent,score.y]
- else:
-  match_summary.text = "Host your first home date to see its matchday summary."
- var story := ClubProgress.chapter(state)
- var project_available := director.available()
- stats.text = career.rank_title()+"  ·  Shared club funds"
- metrics.BUDGET.text = "%d cr" % career.balance
- metrics.SUPPORTERS.text = str(state.fans)
- metrics.CAPACITY.text = str(state.capacity)
- metrics["HOME DATES"].text = str(state.games)
- results_title.text = "Home date %d complete" % state.games if not state.last.is_empty() else "Your first home game"
- chapter.text = story.title
- voice.text = story.voice
- if state.active and state.games == 0 and not career.data.upgrades.is_empty():
-  voice.text = "Mara: Your equipment gives us a head start. You cover priority prep and the volunteers finish routine passes. Let's bring the town back to this park."
- objective.text = story.goal
- schedule.visible = true
- season_review.visible = true
- if not state.active:
-  schedule.text = "A little club. A town to win back.\nStart with borrowed tools, earn your first gate, and choose how to reinvest."
-  season_review.text = "Your first home season begins when you take the job."
- if state.active:
-  var date := ClubSchedule.fixture(state.games)
-  var upcoming := GameDay.profile(state.games)
-  var session: ShiftSession = director.game.shift.session
-  if session.phase == ShiftSession.Phase.ACTIVE and ShiftSession.PROFILES[session.profile_id].get("club",false):
-   upcoming = session.profile_id
-  for record in career.data.records:
-   if record.id == state.pending:
-    upcoming = record.result.profile_id
-    break
-  prep_button.text = "Prepare · %d min" % (int(ShiftSession.PROFILES[upcoming].duration)/60)
-  schedule.text = ClubSchedule.title(state.games)
-  if upcoming == "home_game":
-   schedule.text += "\nSeason target: score %d+ in %d minutes." % [date.target,date.minutes]
-  schedule.text += "\n"+GameDay.info(upcoming).title+"\n"+GameDay.request_text(upcoming)
-  var review := ClubSchedule.report(career)
-  season_review.text = "Season %d review · %d / 6 hosted · %d prep targets met · %.1f average score" % [review.season,review.played,review.targets,review.average]
-  if review.played > 0:
-   season_review.text += "\nLast date: "+("Mara's prep target met." if review.last_met else "Prep target missed; the game still went ahead. Try again next date.")
-  if review.played == 6:
-   season_review.text += "\nHome season complete! Your supporters, stadium and tools carry into the next season."
+	var career: CareerProfile = director.game.shift.career
+	var state: Dictionary = career.club
+	show_town_voice(town_filter)
+	var report := director.live.service_report()
+	service_text.text = ParkSatisfaction.text(report)
+	var collected: bool = career.club.services.has(career.latest_host_id())
+	if not report.is_empty():
+		service_text.text += (
+			"\nSaved to your club record."
+			if collected
+			else "\nClaim to save this review before the next home date."
+		)
+	claim_button.disabled = (
+		report.is_empty()
+		or collected
+		or not director.available()
+		or not String(career.club.pending).is_empty()
+	)
+	claim_button.text = (
+		"Park bonus collected"
+		if collected
+		else (
+			"Claim %d cr · +%d supporters" % [report.bonus, report.fans]
+			if not report.is_empty()
+			else "Finish a live visit for a park review"
+		)
+	)
+	watch_button.disabled = not director.can_watch()
+	walk_button.disabled = not director.can_watch()
+	watch_button.tooltip_text = (
+		"Rewatch without changing your earnings."
+		if not watch_button.disabled
+		else "Host a game and finish current work to watch again."
+	)
+	if not state.last.is_empty():
+		var score := MatchdayPark.score_for(int(state.games))
+		match_summary.text = (
+			"Owls %d · %s %d · Condensed nine-inning game"
+			% [score.x, ClubSchedule.fixture(int(state.games) - 1).opponent, score.y]
+		)
+	else:
+		match_summary.text = "Host your first home date to see its matchday summary."
+	var story := ClubProgress.chapter(state)
+	var project_available := director.available()
+	stats.text = career.rank_title() + "  ·  Shared club funds"
+	metrics.BUDGET.text = "%d cr" % career.balance
+	metrics.SUPPORTERS.text = str(state.fans)
+	metrics.CAPACITY.text = str(state.capacity)
+	metrics["HOME DATES"].text = str(state.games)
+	results_title.text = (
+		"Home date %d complete" % state.games if not state.last.is_empty() else "Your first home game"
+	)
+	chapter.text = story.title
+	voice.text = story.voice
+	if state.active and state.games == 0 and not career.data.upgrades.is_empty():
+		voice.text = (
+			"Mara: Your equipment gives us a head start. You cover priority prep and the volunteers "
+			+ "finish routine passes. Let's bring the town back to this park."
+		)
+	objective.text = story.goal
+	schedule.visible = true
+	season_review.visible = true
+	if not state.active:
+		schedule.text = (
+			"A little club. A town to win back.\nStart with borrowed tools, earn your first gate, "
+			+ "and choose how to reinvest."
+		)
+		season_review.text = "Your first home season begins when you take the job."
+	if state.active:
+		var date := ClubSchedule.fixture(state.games)
+		var upcoming := GameDay.profile(state.games)
+		var session: ShiftSession = director.game.shift.session
+		if (
+			session.phase == ShiftSession.Phase.ACTIVE
+			and ShiftSession.PROFILES[session.profile_id].get("club", false)
+		):
+			upcoming = session.profile_id
+		for record in career.data.records:
+			if record.id == state.pending:
+				upcoming = record.result.profile_id
+				break
+		prep_button.text = "Prepare · %d min" % (int(ShiftSession.PROFILES[upcoming].duration) / 60)
+		schedule.text = ClubSchedule.title(state.games)
+		if upcoming == "home_game":
+			schedule.text += "\nSeason target: score %d+ in %d minutes." % [date.target, date.minutes]
+		schedule.text += "\n" + GameDay.info(upcoming).title + "\n" + GameDay.request_text(upcoming)
+		var review := ClubSchedule.report(career)
+		season_review.text = (
+			"Season %d review · %d / 6 hosted · %d prep targets met · %.1f average score"
+			% [review.season, review.played, review.targets, review.average]
+		)
+		if review.played > 0:
+			season_review.text += (
+				"\nLast date: "
+				+ (
+					"Mara's prep target met."
+					if review.last_met
+					else "Prep target missed; the game still went ahead. Try again next date."
+				)
+			)
+		if review.played == 6:
+			season_review.text += "\nHome season complete! Your supporters, stadium and tools carry into the next season."
 
- join_button.visible = not state.active
- join_button.disabled = not project_available or not career.healthy
- prep_button.visible = state.active
- host_button.visible = state.active
- prep_button.disabled = not project_available or not career.healthy or not String(state.pending).is_empty()
- host_button.disabled = not project_available or not career.healthy or String(state.pending).is_empty()
- for id in projects:
-  projects[id].text = "Built" if id in state.buildings else ("Build · %d cr" % ClubProgress.PROJECTS[id].cost)
-  projects[id].disabled = not project_available or not career.healthy or not state.active or not ClubProgress.project_ready(state,id) or career.balance < int(ClubProgress.PROJECTS[id].cost)
-  var item: Dictionary = ClubProgress.PROJECTS[id]
-  project_savings[id].value = minf(100,100.0*career.balance/int(item.cost))
-  project_savings[id].visible = id not in state.buildings
-  var requirements := PackedStringArray()
-  if not state.active:
-   requirements.append("Take the Owls job first")
-  if state.fans < int(item.fans):
-   requirements.append("%d more supporters" % (int(item.fans)-int(state.fans)))
-  for dependency in item.requires:
-   if dependency not in state.buildings:
-    requirements.append("Build "+String(ClubProgress.PROJECTS[dependency].title))
-  if career.balance < int(item.cost):
-   requirements.append("Save %d more cr" % (int(item.cost)-career.balance))
-  if not project_available:
-   requirements.append("End the park visit first" if director.live.active else "Finish your current shift first")
-  if not career.healthy:
-   requirements.append("Reload your career first")
-  project_status[id].text = "Built · benefits active" if id in state.buildings else (GameUI.funding(career.balance,int(item.cost)) if requirements.is_empty() else " · ".join(requirements))
-  project_status[id].add_theme_color_override("font_color",GameUI.ACCENT if id in state.buildings or not projects[id].disabled else GameUI.GOLD)
-  projects[id].tooltip_text = item.title+"\n"+project_status[id].text
- result_metrics["GATE PROFIT"].text = "%d cr" % int(state.last.net) if not state.last.is_empty() else "—"
- result_metrics["MANAGER BONUS"].text = "%d cr" % int(state.last.get("priority_bonus",0)) if not state.last.is_empty() else "—"
- result_metrics["NEW SUPPORTERS"].text = "+%d" % int(state.last.fans_gained) if not state.last.is_empty() else "—"
+	join_button.visible = not state.active
+	join_button.disabled = not project_available or not career.healthy
+	prep_button.visible = state.active
+	host_button.visible = state.active
+	prep_button.disabled = not project_available or not career.healthy or not String(state.pending).is_empty()
+	host_button.disabled = not project_available or not career.healthy or String(state.pending).is_empty()
+	for id in projects:
+		projects[id].text = (
+			"Built" if id in state.buildings else ("Build · %d cr" % ClubProgress.PROJECTS[id].cost)
+		)
+		projects[id].disabled = (
+			not project_available
+			or not career.healthy
+			or not state.active
+			or not ClubProgress.project_ready(state, id)
+			or career.balance < int(ClubProgress.PROJECTS[id].cost)
+		)
+		var item: Dictionary = ClubProgress.PROJECTS[id]
+		project_savings[id].value = minf(100, 100.0 * career.balance / int(item.cost))
+		project_savings[id].visible = id not in state.buildings
+		var requirements := PackedStringArray()
+		if not state.active:
+			requirements.append("Take the Owls job first")
+		if state.fans < int(item.fans):
+			requirements.append("%d more supporters" % (int(item.fans) - int(state.fans)))
+		for dependency in item.requires:
+			if dependency not in state.buildings:
+				requirements.append("Build " + String(ClubProgress.PROJECTS[dependency].title))
+		if career.balance < int(item.cost):
+			requirements.append("Save %d more cr" % (int(item.cost) - career.balance))
+		if not project_available:
+			requirements.append(
+				"End the park visit first" if director.live.active else "Finish your current shift first"
+			)
+		if not career.healthy:
+			requirements.append("Reload your career first")
+		project_status[id].text = (
+			"Built · benefits active"
+			if id in state.buildings
+			else (
+				GameUI.funding(career.balance, int(item.cost))
+				if requirements.is_empty()
+				else " · ".join(requirements)
+			)
+		)
+		project_status[id].add_theme_color_override(
+			"font_color", GameUI.ACCENT if id in state.buildings or not projects[id].disabled else GameUI.GOLD
+		)
+		projects[id].tooltip_text = item.title + "\n" + project_status[id].text
+	result_metrics["GATE PROFIT"].text = "%d cr" % int(state.last.net) if not state.last.is_empty() else "—"
+	result_metrics["MANAGER BONUS"].text = (
+		"%d cr" % int(state.last.get("priority_bonus", 0)) if not state.last.is_empty() else "—"
+	)
+	result_metrics["NEW SUPPORTERS"].text = (
+		"+%d" % int(state.last.fans_gained) if not state.last.is_empty() else "—"
+	)
 
- receipt.text = "Next checklist: "+GameDay.checklist(GameDay.profile(state.games))+". Up to 160 cr prep pay, plus gate income and eligible manager bonus."
- if not state.last.is_empty():
-  receipt.text = GameDay.recap(career)
- investment.text = GameDay.investment_text(career) if state.active else ""
- ownership_review.visible = true
- ownership_review.text = director.ownership.get("text","Complete your first six hosted home dates to receive Mara’s ownership review and a concrete objective for next season.")
- recap_continue.visible = state.active and not state.last.is_empty() and project_available and String(state.pending).is_empty()
- if not String(state.pending).is_empty():
-  for record in career.data.records:
-   if record.id == state.pending:
-    var preview := ClubProgress.forecast(state,record.result)
-    receipt.text += "\nReady to host: %d expected attendance · %d cr net at current facilities" % [preview.attendance,preview.net]
-    receipt.text += " · manager bonus %d cr" % int(preview.get("priority_bonus",0))
-    break
- notice.text = career.error if not career.error.is_empty() else director.message
+	receipt.text = (
+		"Next checklist: "
+		+ GameDay.checklist(GameDay.profile(state.games))
+		+ ". Up to 160 cr prep pay, plus gate income and eligible manager bonus."
+	)
+	if not state.last.is_empty():
+		receipt.text = GameDay.recap(career)
+	investment.text = GameDay.investment_text(career) if state.active else ""
+	ownership_review.visible = true
+	ownership_review.text = director.ownership.get(
+		"text",
+		(
+			"Complete your first six hosted home dates to receive Mara’s ownership review and a "
+			+ "concrete objective for next season."
+		)
+	)
+	recap_continue.visible = (
+		state.active and not state.last.is_empty() and project_available and String(state.pending).is_empty()
+	)
+	if not String(state.pending).is_empty():
+		for record in career.data.records:
+			if record.id == state.pending:
+				var preview := ClubProgress.forecast(state, record.result)
+				receipt.text += (
+					"\nReady to host: %d expected attendance · %d cr net at current facilities"
+					% [preview.attendance, preview.net]
+				)
+				receipt.text += " · manager bonus %d cr" % int(preview.get("priority_bonus", 0))
+				break
+	notice.text = career.error if not career.error.is_empty() else director.message
+
 
 func scroll_to_recap() -> void:
- show_section("results")
- await get_tree().process_frame
- await get_tree().process_frame
- if is_inside_tree() and director.game.shift.overlay.club_screen.visible:
-  if not claim_button.disabled:
-   director.game.shift.overlay.club_screen.ensure_control_visible(claim_button)
-  else:
-   director.game.shift.overlay.club_screen.scroll_vertical = 0
+	show_section("results")
+	await get_tree().process_frame
+	await get_tree().process_frame
+	if is_inside_tree() and director.game.shift.overlay.club_screen.visible:
+		if not claim_button.disabled:
+			director.game.shift.overlay.club_screen.ensure_control_visible(claim_button)
+		else:
+			director.game.shift.overlay.club_screen.scroll_vertical = 0
+
 
 func show_town_voice(speaker: String) -> void:
- town_filter = speaker
- var lines := PackedStringArray()
- for line in director.matchday.story_lines:
-  if speaker == "All" or line.begins_with(speaker):
-   lines.append(line)
- town_voices.text = "\n\n".join(lines) if not lines.is_empty() else "The town is waiting for Opening Day. Take the job and prepare the field to meet the regulars."
- for key in town_buttons:
-  town_buttons[key].set_pressed_no_signal(key == speaker)
+	town_filter = speaker
+	var lines := PackedStringArray()
+	for line in director.matchday.story_lines:
+		if speaker == "All" or line.begins_with(speaker):
+			lines.append(line)
+	town_voices.text = (
+		"\n\n".join(lines)
+		if not lines.is_empty()
+		else "The town is waiting for Opening Day. Take the job and prepare the field to meet the regulars."
+	)
+	for key in town_buttons:
+		town_buttons[key].set_pressed_no_signal(key == speaker)
+
 
 func reveal_claim() -> void:
- await get_tree().process_frame
- await get_tree().process_frame
- if is_inside_tree() and selected_section == "results" and director.game.shift.overlay.club_screen.visible and not claim_button.disabled and get_viewport().gui_get_focus_owner() == claim_button:
-  director.game.shift.overlay.club_screen.ensure_control_visible(claim_button)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	if (
+		is_inside_tree()
+		and selected_section == "results"
+		and director.game.shift.overlay.club_screen.visible
+		and not claim_button.disabled
+		and get_viewport().gui_get_focus_owner() == claim_button
+	):
+		director.game.shift.overlay.club_screen.ensure_control_visible(claim_button)

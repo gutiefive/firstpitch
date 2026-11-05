@@ -1,133 +1,278 @@
 extends SceneTree
 var checks := 0
 var failures := 0
-func check(ok: bool,message: String) -> void:
- checks += 1
- if ok:
-  print("PASS: ",message)
- else:
-  failures += 1
-  push_error(message)
+
+
+func check(ok: bool, message: String) -> void:
+	checks += 1
+	if ok:
+		print("PASS: ", message)
+	else:
+		failures += 1
+		push_error(message)
+
+
 func _initialize() -> void:
- call_deferred("run")
+	call_deferred("run")
+
+
 func run() -> void:
- var s := ShiftSession.new()
- check(s.start("quick_mow") and s.jobs_required() == 1 and s.jobs_completed() == 0,"mowing contract starts with one unfinished goal")
- s.set_progress([0,100,100,100,100],[false,true,true,true,true])
- check(s.score() == 0 and s.jobs_completed() == 0,"unrequested jobs cannot earn contract points")
- s.set_progress([5,100,100,100,100],[false,true,true,true,true])
- check(s.score() == 50,"half the mowing quota earns half the contract score")
- s.set_progress([10,0,0,0,0],[false,false,false,false,false])
- s.advance(600)
- check(s.get_result().reason == "completed" and s.get_result().jobs_completed == 1 and s.get_result().score == 100,"requested mowing quota completes on the deadline without other jobs")
- check(CareerProfile.payout(s.get_result()) == 100 and CareerProfile.valid_result(s.get_result()),"mowing contract result validates and pays 100 credits")
- s.start("mound_callout")
- s.set_progress([100,100,100,100,100],[true,true,true,true,false])
- check(s.jobs_completed() == 0 and s.score() == 99.9,"mound contract requires exact accepted work even at rounded full coverage")
- s.set_progress([0,0,0,0,50],[false,false,false,false,false])
- s.end_early()
- check(s.get_result().score == 50 and CareerProfile.payout(s.get_result()) == 12,"partial mound work rounds credit pay down without bonus")
- s.start("infield_turnaround")
- s.set_progress([100,25,100,0,100],[true,false,true,false,true])
- check(s.jobs_required() == 2 and s.jobs_completed() == 1 and s.score() == 50,"infield contract weights drag and water equally")
- s.set_progress([0,25,0,25,0],[false,false,false,false,false])
- s.advance(1)
- check(s.get_result().reason == "completed" and CareerProfile.payout(s.get_result()) == 150,"both infield quotas earn the contract completion bonus")
- s.start("quick_mow")
- s.set_progress([0,100,100,100,100],[false,true,true,true,true])
- s.advance(600)
- check(s.get_result().reason == "time_up" and s.get_result().score == 0,"unrelated full work cannot avoid a contract timeout")
- s.free()
- var g = load("res://scenes/main/main.tscn").instantiate()
- g.career_save_path = "user://test-contract-career.dat"
- g.tutorial_enabled = false
- g.autosave_enabled = false
- DirAccess.remove_absolute(g.career_save_path)
- root.add_child(g)
- for i in range(5):
-  await physics_frame
- g.grass.paint(Vector3(0,0,-60),Vector3.FORWARD)
- var cut: int = g.grass.cut_count
- check(not g.shift.start_shift("doubleheader") and g.grass.cut_count == cut,"Crew Lead contract is locked without changing field work")
- check(not g.shift.start_shift("infield_turnaround") and g.grass.cut_count == cut,"locked contract cannot reset practiced field work")
- g.shift.open_board()
- g.shift.overlay.contracts_button.pressed.emit()
- check(paused and g.shift.overlay.contracts_screen.visible and g.shift.overlay.contracts_panel.buttons.infield_turnaround.disabled,"contract board pauses and displays the rank lock")
- g.shift.overlay.contracts_panel.buttons.mound_callout.pressed.emit()
- check(not paused and g.shift.session.profile_id == "mound_callout" and g.selected_task == 4,"contract start resumes with the requested task selected")
- check(g.grass.cut_count == 0 and not g.shift.overlay.contracts_screen.visible,"fresh contract clears practice and closes its menu")
- g.shift.open_board()
- g.shift.overlay.contracts_button.pressed.emit()
- check(g.shift.overlay.contracts_panel.buttons.quick_mow.disabled and g.shift.overlay.contracts_panel.buttons.mound_callout.disabled,"active attempt blocks all replacement contracts")
- check(not g.shift.start_shift("quick_mow") and g.shift.session.profile_id == "mound_callout","direct replacement guard preserves active contract")
- for i in range(3):
-  g.mound.apply_tamp(0)
- g.shift.collect_progress()
- g.shift.save_store.path = "user://test-contract-field.dat"
- check(g.shift.save_store.write(g,g.shift.session),"active contract can be saved to the field slot")
- var saved: Dictionary = g.shift.save_store.read(g)
- var id: String = g.shift.session.attempt_id
- g.shift.end_shift()
- var partial_pay: int = g.shift.career.balance
- check(partial_pay == 4 and g.shift.session.get_result().score == 16.7,"one repaired patch earns proportional contract pay")
- check(g.shift.save_store.restore(g,g.shift,saved) and g.shift.session.attempt_id == id and g.shift.session.jobs_required() == 1,"field restore preserves contract goals and attempt identity")
- g.shift.end_shift()
- check(g.shift.career.balance == partial_pay,"reloaded partial contract cannot pay twice")
- g.shift.close_board()
- g.shift.start_shift("mound_callout")
- for index in range(g.mound.hits.size()):
-  for hit in range(g.mound.hits_required):
-   g.mound.apply_tamp(index)
- g.shift.collect_progress()
- g.shift.session.advance(0)
- check(g.shift.session.phase == ShiftSession.Phase.FINISHED and g.shift.career.balance == partial_pay+40,"all real mound model impacts automatically finish and pay the focused contract")
- check(g.shift.overlay.heading.text == "CONTRACT COMPLETE" and not g.hud.objective_label.text.begins_with("PARK READY"),"contract completion never claims whole-park readiness")
- check(g.shift.overlay.board_rows[4].visible and not g.shift.overlay.board_rows[0].visible and "1 of 1 goal" in g.shift.overlay.score_label.text,"results show only the requested goal with the correct total")
- check(g.shift.career.best.mound_callout == 100,"contract personal best is tracked independently")
- g.mound.reset_state()
- g.shift.collect_progress()
- g.shift.overlay.refresh()
- check("1 of 1 goal" in g.shift.overlay.score_label.text and "100.0%" in g.shift.overlay.board_rows[4].text,"later practice cannot change frozen contract result counts")
- var seed := ShiftSession.new()
- seed.start("full")
- seed.set_progress([100,100,100,100,100],[true,true,true,true,true])
- seed.advance(1)
- g.shift.career.claim(seed.attempt_id,seed.get_result())
- seed.free()
- seed = ShiftSession.new()
- seed.start("training")
- seed.set_progress([25,50,50,50,100],[false,false,false,false,true])
- seed.advance(1)
- g.shift.career.claim(seed.attempt_id,seed.get_result())
- seed.free()
- check(g.shift.career.earned >= 500 and not g.shift.overlay.contracts_panel.buttons.infield_turnaround.disabled,"lifetime earnings unlock the infield contract")
- check(g.shift.career.purchase("wide_deck") and g.shift.career.balance < 500 and not g.shift.overlay.contracts_panel.buttons.infield_turnaround.disabled,"spending credits cannot relock an earned contract")
- check(g.shift.start_shift("infield_turnaround") and g.selected_task == 1,"unlocked contract starts with dirt objective selected")
- check(not g.shift.overlay.status_rows[0].visible and g.shift.overlay.status_rows[1].visible and g.shift.overlay.status_rows[3].visible,"active checklist shows just the two infield jobs")
- g.shift.open_board()
- g.shift.end_shift()
- for n in range(3):
-  seed = ShiftSession.new()
-  seed.start("full")
-  seed.set_progress([100,100,100,100,100],[true,true,true,true,true])
-  seed.advance(1)
-  g.shift.career.claim(seed.attempt_id,seed.get_result())
-  seed.free()
- check(g.shift.career.rank_title() == "Crew Lead" and not g.shift.overlay.contracts_panel.buttons.doubleheader.disabled,"Crew Lead earnings unlock doubleheader turnaround")
- check(g.shift.start_shift("doubleheader") and g.shift.session.duration_seconds == 480 and g.shift.session.jobs_required() == 4,"doubleheader starts eight-minute four-job game-day attempt")
- check(g.shift.session.start_mode == "game_day" and g.shift.session.starting_counts[1] == g.infield.prepared_count,"doubleheader records its heavily worn starting baseline")
- var saved_double: Dictionary = g.shift.save_store.capture(g,g.shift.session)
- check(g.shift.save_store.restore(g,g.shift,saved_double) and g.shift.session.profile_id == "doubleheader","doubleheader restores without replacing its repair baseline")
- g.shift.session.set_progress([0,75,100,75,100],[false,false,true,false,true])
- g.shift.session.set_quality([1,0.75,0.7,0.75,1])
- g.shift.session.finish("completed")
- check(CareerProfile.valid_result(g.shift.session.get_result()) and CareerProfile.payout(g.shift.session.get_result()) == 260,"doubleheader pays quality-adjusted score plus completion bonus")
- g.shift.career.load_profile()
- check(g.shift.career.best.mound_callout == 100 and g.shift.career.earned >= 500,"career reload preserves contract records and unlock progress")
- g.shift.close_board()
- g.queue_free()
- await create_timer(0.15).timeout
- DirAccess.remove_absolute("user://test-contract-career.dat")
- DirAccess.remove_absolute("user://test-contract-field.dat")
- print("Contracts: ",checks," checks; ",failures," failures")
- quit(1 if failures else 0)
+	var s := ShiftSession.new()
+	check(
+		s.start("quick_mow") and s.jobs_required() == 1 and s.jobs_completed() == 0,
+		"mowing contract starts with one unfinished goal"
+	)
+	s.set_progress([0, 100, 100, 100, 100], [false, true, true, true, true])
+	check(s.score() == 0 and s.jobs_completed() == 0, "unrequested jobs cannot earn contract points")
+	s.set_progress([5, 100, 100, 100, 100], [false, true, true, true, true])
+	check(s.score() == 50, "half the mowing quota earns half the contract score")
+	s.set_progress([10, 0, 0, 0, 0], [false, false, false, false, false])
+	s.advance(600)
+	check(
+		(
+			s.get_result().reason == "completed"
+			and s.get_result().jobs_completed == 1
+			and s.get_result().score == 100
+		),
+		"requested mowing quota completes on the deadline without other jobs"
+	)
+	check(
+		CareerProfile.payout(s.get_result()) == 100 and CareerProfile.valid_result(s.get_result()),
+		"mowing contract result validates and pays 100 credits"
+	)
+	s.start("mound_callout")
+	s.set_progress([100, 100, 100, 100, 100], [true, true, true, true, false])
+	check(
+		s.jobs_completed() == 0 and s.score() == 99.9,
+		"mound contract requires exact accepted work even at rounded full coverage"
+	)
+	s.set_progress([0, 0, 0, 0, 50], [false, false, false, false, false])
+	s.end_early()
+	check(
+		s.get_result().score == 50 and CareerProfile.payout(s.get_result()) == 12,
+		"partial mound work rounds credit pay down without bonus"
+	)
+	s.start("infield_turnaround")
+	s.set_progress([100, 25, 100, 0, 100], [true, false, true, false, true])
+	check(
+		s.jobs_required() == 2 and s.jobs_completed() == 1 and s.score() == 50,
+		"infield contract weights drag and water equally"
+	)
+	s.set_progress([0, 25, 0, 25, 0], [false, false, false, false, false])
+	s.advance(1)
+	check(
+		s.get_result().reason == "completed" and CareerProfile.payout(s.get_result()) == 150,
+		"both infield quotas earn the contract completion bonus"
+	)
+	s.start("quick_mow")
+	s.set_progress([0, 100, 100, 100, 100], [false, true, true, true, true])
+	s.advance(600)
+	check(
+		s.get_result().reason == "time_up" and s.get_result().score == 0,
+		"unrelated full work cannot avoid a contract timeout"
+	)
+	s.free()
+	var g = load("res://scenes/main/main.tscn").instantiate()
+	g.career_save_path = "user://test-contract-career.dat"
+	g.tutorial_enabled = false
+	g.autosave_enabled = false
+	DirAccess.remove_absolute(g.career_save_path)
+	root.add_child(g)
+	for i in range(5):
+		await physics_frame
+	g.grass.paint(Vector3(0, 0, -60), Vector3.FORWARD)
+	var cut: int = g.grass.cut_count
+	check(
+		not g.shift.start_shift("doubleheader") and g.grass.cut_count == cut,
+		"Crew Lead contract is locked without changing field work"
+	)
+	check(
+		not g.shift.start_shift("infield_turnaround") and g.grass.cut_count == cut,
+		"locked contract cannot reset practiced field work"
+	)
+	g.shift.open_board()
+	g.shift.overlay.contracts_button.pressed.emit()
+	check(
+		(
+			paused
+			and g.shift.overlay.contracts_screen.visible
+			and g.shift.overlay.contracts_panel.buttons.infield_turnaround.disabled
+		),
+		"contract board pauses and displays the rank lock"
+	)
+	g.shift.overlay.contracts_panel.buttons.mound_callout.pressed.emit()
+	check(
+		not paused and g.shift.session.profile_id == "mound_callout" and g.selected_task == 4,
+		"contract start resumes with the requested task selected"
+	)
+	check(
+		g.grass.cut_count == 0 and not g.shift.overlay.contracts_screen.visible,
+		"fresh contract clears practice and closes its menu"
+	)
+	g.shift.open_board()
+	g.shift.overlay.contracts_button.pressed.emit()
+	check(
+		(
+			g.shift.overlay.contracts_panel.buttons.quick_mow.disabled
+			and g.shift.overlay.contracts_panel.buttons.mound_callout.disabled
+		),
+		"active attempt blocks all replacement contracts"
+	)
+	check(
+		not g.shift.start_shift("quick_mow") and g.shift.session.profile_id == "mound_callout",
+		"direct replacement guard preserves active contract"
+	)
+	for i in range(3):
+		g.mound.apply_tamp(0)
+	g.shift.collect_progress()
+	g.shift.save_store.path = "user://test-contract-field.dat"
+	check(g.shift.save_store.write(g, g.shift.session), "active contract can be saved to the field slot")
+	var saved: Dictionary = g.shift.save_store.read(g)
+	var id: String = g.shift.session.attempt_id
+	g.shift.end_shift()
+	var partial_pay: int = g.shift.career.balance
+	check(
+		partial_pay == 4 and g.shift.session.get_result().score == 16.7,
+		"one repaired patch earns proportional contract pay"
+	)
+	check(
+		(
+			g.shift.save_store.restore(g, g.shift, saved)
+			and g.shift.session.attempt_id == id
+			and g.shift.session.jobs_required() == 1
+		),
+		"field restore preserves contract goals and attempt identity"
+	)
+	g.shift.end_shift()
+	check(g.shift.career.balance == partial_pay, "reloaded partial contract cannot pay twice")
+	g.shift.close_board()
+	g.shift.start_shift("mound_callout")
+	for index in range(g.mound.hits.size()):
+		for hit in range(g.mound.hits_required):
+			g.mound.apply_tamp(index)
+	g.shift.collect_progress()
+	g.shift.session.advance(0)
+	check(
+		g.shift.session.phase == ShiftSession.Phase.FINISHED and g.shift.career.balance == partial_pay + 40,
+		"all real mound model impacts automatically finish and pay the focused contract"
+	)
+	check(
+		(
+			g.shift.overlay.heading.text == "CONTRACT COMPLETE"
+			and not g.hud.objective_label.text.begins_with("PARK READY")
+		),
+		"contract completion never claims whole-park readiness"
+	)
+	check(
+		(
+			g.shift.overlay.board_rows[4].visible
+			and not g.shift.overlay.board_rows[0].visible
+			and "1 of 1 goal" in g.shift.overlay.score_label.text
+		),
+		"results show only the requested goal with the correct total"
+	)
+	check(g.shift.career.best.mound_callout == 100, "contract personal best is tracked independently")
+	g.mound.reset_state()
+	g.shift.collect_progress()
+	g.shift.overlay.refresh()
+	check(
+		"1 of 1 goal" in g.shift.overlay.score_label.text and "100.0%" in g.shift.overlay.board_rows[4].text,
+		"later practice cannot change frozen contract result counts"
+	)
+	var seed := ShiftSession.new()
+	seed.start("full")
+	seed.set_progress([100, 100, 100, 100, 100], [true, true, true, true, true])
+	seed.advance(1)
+	g.shift.career.claim(seed.attempt_id, seed.get_result())
+	seed.free()
+	seed = ShiftSession.new()
+	seed.start("training")
+	seed.set_progress([25, 50, 50, 50, 100], [false, false, false, false, true])
+	seed.advance(1)
+	g.shift.career.claim(seed.attempt_id, seed.get_result())
+	seed.free()
+	check(
+		(
+			g.shift.career.earned >= 500
+			and not g.shift.overlay.contracts_panel.buttons.infield_turnaround.disabled
+		),
+		"lifetime earnings unlock the infield contract"
+	)
+	check(
+		(
+			g.shift.career.purchase("wide_deck")
+			and g.shift.career.balance < 500
+			and not g.shift.overlay.contracts_panel.buttons.infield_turnaround.disabled
+		),
+		"spending credits cannot relock an earned contract"
+	)
+	check(
+		g.shift.start_shift("infield_turnaround") and g.selected_task == 1,
+		"unlocked contract starts with dirt objective selected"
+	)
+	check(
+		(
+			not g.shift.overlay.status_rows[0].visible
+			and g.shift.overlay.status_rows[1].visible
+			and g.shift.overlay.status_rows[3].visible
+		),
+		"active checklist shows just the two infield jobs"
+	)
+	g.shift.open_board()
+	g.shift.end_shift()
+	for n in range(3):
+		seed = ShiftSession.new()
+		seed.start("full")
+		seed.set_progress([100, 100, 100, 100, 100], [true, true, true, true, true])
+		seed.advance(1)
+		g.shift.career.claim(seed.attempt_id, seed.get_result())
+		seed.free()
+	check(
+		(
+			g.shift.career.rank_title() == "Crew Lead"
+			and not g.shift.overlay.contracts_panel.buttons.doubleheader.disabled
+		),
+		"Crew Lead earnings unlock doubleheader turnaround"
+	)
+	check(
+		(
+			g.shift.start_shift("doubleheader")
+			and g.shift.session.duration_seconds == 480
+			and g.shift.session.jobs_required() == 4
+		),
+		"doubleheader starts eight-minute four-job game-day attempt"
+	)
+	check(
+		(
+			g.shift.session.start_mode == "game_day"
+			and g.shift.session.starting_counts[1] == g.infield.prepared_count
+		),
+		"doubleheader records its heavily worn starting baseline"
+	)
+	var saved_double: Dictionary = g.shift.save_store.capture(g, g.shift.session)
+	check(
+		g.shift.save_store.restore(g, g.shift, saved_double) and g.shift.session.profile_id == "doubleheader",
+		"doubleheader restores without replacing its repair baseline"
+	)
+	g.shift.session.set_progress([0, 75, 100, 75, 100], [false, false, true, false, true])
+	g.shift.session.set_quality([1, 0.75, 0.7, 0.75, 1])
+	g.shift.session.finish("completed")
+	check(
+		(
+			CareerProfile.valid_result(g.shift.session.get_result())
+			and CareerProfile.payout(g.shift.session.get_result()) == 260
+		),
+		"doubleheader pays quality-adjusted score plus completion bonus"
+	)
+	g.shift.career.load_profile()
+	check(
+		g.shift.career.best.mound_callout == 100 and g.shift.career.earned >= 500,
+		"career reload preserves contract records and unlock progress"
+	)
+	g.shift.close_board()
+	g.queue_free()
+	await create_timer(0.15).timeout
+	DirAccess.remove_absolute("user://test-contract-career.dat")
+	DirAccess.remove_absolute("user://test-contract-field.dat")
+	print("Contracts: ", checks, " checks; ", failures, " failures")
+	quit(1 if failures else 0)
