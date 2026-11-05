@@ -59,7 +59,7 @@ func run() -> void:
 	var point := Vector3(10, 0, -10)
 	g.moisture.spray_at(point, 5)
 	g.shift.collect_progress()
-	check(g.shift.session.job_quality[3] < 1, "overwatering independently reduces water quality")
+	check(g.shift.session.job_quality[CrewJob.WATER] < 1, "overwatering independently reduces water quality")
 	check(
 		g.moisture.puddle_at(point) and g.moisture.overwatered_count > 0,
 		"soaking creates timed puddles and overwatering history"
@@ -78,7 +78,7 @@ func run() -> void:
 		"wet nonpuddled dragging earns coverage but leaves ruts"
 	)
 	g.shift.collect_progress()
-	check(g.shift.session.job_quality[1] < 1, "ruts reduce dirt quality")
+	check(g.shift.session.job_quality[CrewJob.DRAG] < 1, "ruts reduce dirt quality")
 	var store := FieldSave.new()
 	var rut_save := store.capture(g, g.shift.session)
 	check(
@@ -91,7 +91,7 @@ func run() -> void:
 	g.chalk.paint_segment(Vector3(10, 0, -14), Vector3(12, 0, -14))
 	check(g.chalk.offguide_metres > 1.9, "off-guide visible chalk records wasted metres")
 	g.shift.collect_progress()
-	check(g.shift.session.job_quality[2] < 1, "off-guide metres reduce chalk quality")
+	check(g.shift.session.job_quality[CrewJob.CHALK] < 1, "off-guide metres reduce chalk quality")
 	g.grass.paint(Vector3(0, 0, -60), Vector3.FORWARD)
 	g.shift.collect_progress()
 	check(

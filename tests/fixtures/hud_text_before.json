@@ -1,0 +1,476 @@
+[
+ {
+  "config": {
+   "name": "walking"
+  },
+  "device": "keyboard",
+  "mode": "ON FOOT  /  MOWER EQUIPPED",
+  "prompt": "W / A / S / D walk  •  Shift sprint  •  Space jump  •  Find equipment beside the workshop"
+ },
+ {
+  "config": {
+   "job": 2,
+   "name": "stowed chalk"
+  },
+  "device": "keyboard",
+  "mode": "ON FOOT  /  CHALK MARKER PARKED",
+  "prompt": "W / A / S / D walk  •  Shift sprint  •  Space jump  •  Find equipment beside the workshop"
+ },
+ {
+  "config": {
+   "job": 3,
+   "name": "stowed hose"
+  },
+  "device": "keyboard",
+  "mode": "ON FOOT  /  HOSE STOWED",
+  "prompt": "W / A / S / D walk  •  Shift sprint  •  Space jump  •  Find equipment beside the workshop"
+ },
+ {
+  "config": {
+   "job": 4,
+   "name": "stowed tamper"
+  },
+  "device": "keyboard",
+  "mode": "ON FOOT  /  TAMPER STOWED",
+  "prompt": "W / A / S / D walk  •  Shift sprint  •  Space jump  •  Find equipment beside the workshop"
+ },
+ {
+  "config": {
+   "drag": true,
+   "name": "drag on foot"
+  },
+  "device": "keyboard",
+  "mode": "ON FOOT  /  DRAG EQUIPPED",
+  "prompt": "W / A / S / D walk  •  Shift sprint  •  Space jump  •  Find equipment beside the workshop"
+ },
+ {
+  "config": {
+   "drive": true,
+   "name": "mowing"
+  },
+  "device": "keyboard",
+  "mode": "MOWING  /  DECK ENGAGED",
+  "prompt": "W / A / S / D drive  •  Space brake  •  E exit"
+ },
+ {
+  "config": {
+   "drive": true,
+   "name": "mowing moving",
+   "speed": 2.0
+  },
+  "device": "keyboard",
+  "mode": "MOWING  /  DECK ENGAGED",
+  "prompt": "W / A / S / D drive  •  Space brake  •  Stop to exit"
+ },
+ {
+  "config": {
+   "drag": true,
+   "drive": true,
+   "name": "drag raised"
+  },
+  "device": "keyboard",
+  "mode": "DRAGGING  /  RAISED",
+  "prompt": "W / A / S / D drive  •  Stop + R lower drag  •  Space brake  •  E exit when stopped"
+ },
+ {
+  "config": {
+   "drag": true,
+   "drive": true,
+   "lowered": true,
+   "name": "drag lowered"
+  },
+  "device": "keyboard",
+  "mode": "DRAGGING  /  LOWERED",
+  "prompt": "W / A / S / D drive  •  R raise drag  •  Space brake  •  E exit"
+ },
+ {
+  "config": {
+   "drag": true,
+   "drive": true,
+   "lowered": true,
+   "name": "drag wet",
+   "speed": 2.0,
+   "wet": true
+  },
+  "device": "keyboard",
+  "mode": "DRAGGING WET DIRT — RUTS",
+  "prompt": "W / A / S / D drive  •  R raise drag  •  Space brake  •  Stop to exit"
+ },
+ {
+  "config": {
+   "blocked": true,
+   "drag": true,
+   "drive": true,
+   "lowered": true,
+   "name": "drag puddle",
+   "speed": 2.0
+  },
+  "device": "keyboard",
+  "mode": "PUDDLES — WAIT BEFORE DRAGGING",
+  "prompt": "W / A / S / D drive  •  R raise drag  •  Space brake  •  Stop to exit"
+ },
+ {
+  "config": {
+   "drag": true,
+   "drive": true,
+   "lowered": true,
+   "name": "drag reverse",
+   "speed": -2.0
+  },
+  "device": "keyboard",
+  "mode": "DRAGGING  /  REVERSE — NO PREPARATION",
+  "prompt": "W / A / S / D drive  •  R raise drag  •  Space brake  •  Stop to exit"
+ },
+ {
+  "config": {
+   "chalk": true,
+   "name": "chalk closed"
+  },
+  "device": "keyboard",
+  "mode": "CHALKING  /  GATE CLOSED",
+  "prompt": "W / A / S / D push / steer  •  R chalk gate  •  Space brake  •  E leave marker"
+ },
+ {
+  "config": {
+   "chalk": true,
+   "gate": true,
+   "name": "chalk open"
+  },
+  "device": "keyboard",
+  "mode": "CHALKING  /  GATE OPEN",
+  "prompt": "W / A / S / D push / steer  •  R chalk gate  •  Space brake  •  E leave marker"
+ },
+ {
+  "config": {
+   "chalk": true,
+   "gate": true,
+   "name": "chalk offguide",
+   "offguide": true
+  },
+  "device": "keyboard",
+  "mode": "CHALKING  /  OFF GUIDE — NO LINE CREDIT",
+  "prompt": "W / A / S / D push / steer  •  R chalk gate  •  Space brake  •  E leave marker"
+ },
+ {
+  "config": {
+   "chalk": true,
+   "gate": true,
+   "guide": true,
+   "name": "chalk guide moving",
+   "speed": 2.0
+  },
+  "device": "keyboard",
+  "mode": "CHALKING  /  GATE OPEN / GUIDE WHEEL",
+  "prompt": "W / A / S / D push / steer  •  R chalk gate  •  Space brake  •  Stop to leave marker"
+ },
+ {
+  "config": {
+   "name": "watering",
+   "water": true
+  },
+  "device": "keyboard",
+  "mode": "WATERING  /  READY",
+  "prompt": "W / A / S / D walk  •  Aim with mouse  •  Hold LMB to water  •  F stow hose  •  Escape cursor"
+ },
+ {
+  "config": {
+   "name": "puddle watering",
+   "puddle": true,
+   "water": true
+  },
+  "device": "keyboard",
+  "mode": "OVERWATERING — LET PUDDLE DRY",
+  "prompt": "W / A / S / D walk  •  Aim with mouse  •  Hold LMB to water  •  F stow hose  •  Escape cursor"
+ },
+ {
+  "config": {
+   "name": "tamping",
+   "tamp": true
+  },
+  "device": "keyboard",
+  "mode": "MOUND REPAIR  /  READY",
+  "prompt": "W / A / S / D walk  •  Aim worn clay  •  Stop + press LMB to tamp  •  G stow tamper"
+ },
+ {
+  "config": {
+   "name": "near marker",
+   "near": "marker"
+  },
+  "device": "keyboard",
+  "mode": "ON FOOT  /  MOWER EQUIPPED",
+  "prompt": "E use chalk marker  •  Follow the dashed gold foul-line guides"
+ },
+ {
+  "config": {
+   "name": "near tractor away",
+   "near": "tractor"
+  },
+  "device": "keyboard",
+  "mode": "ON FOOT  /  MOWER EQUIPPED",
+  "prompt": "E enter tractor  •  Return to tool bay to swap equipment"
+ },
+ {
+  "config": {
+   "name": "near tractor bay",
+   "near": "bay"
+  },
+  "device": "keyboard",
+  "mode": "ON FOOT  /  MOWER EQUIPPED",
+  "prompt": "E enter tractor  •  Q swap mower / drag"
+ },
+ {
+  "config": {
+   "name": "near tamper",
+   "near": "tamper"
+  },
+  "device": "keyboard",
+  "mode": "ON FOOT  /  MOWER EQUIPPED",
+  "prompt": "G take tamper  •  Repair worn clay patches on the pitcher’s mound"
+ },
+ {
+  "config": {
+   "name": "near hose",
+   "near": "hose"
+  },
+  "device": "keyboard",
+  "mode": "ON FOOT  /  MOWER EQUIPPED",
+  "prompt": "F take hose  •  Water the workable infield dirt"
+ },
+ {
+  "config": {
+   "name": "walking"
+  },
+  "device": "pad",
+  "mode": "ON FOOT  /  MOWER EQUIPPED",
+  "prompt": "Left stick walk  •  LS sprint  •  A jump  •  Find equipment beside the workshop"
+ },
+ {
+  "config": {
+   "job": 2,
+   "name": "stowed chalk"
+  },
+  "device": "pad",
+  "mode": "ON FOOT  /  CHALK MARKER PARKED",
+  "prompt": "Left stick walk  •  LS sprint  •  A jump  •  Find equipment beside the workshop"
+ },
+ {
+  "config": {
+   "job": 3,
+   "name": "stowed hose"
+  },
+  "device": "pad",
+  "mode": "ON FOOT  /  HOSE STOWED",
+  "prompt": "Left stick walk  •  LS sprint  •  A jump  •  Find equipment beside the workshop"
+ },
+ {
+  "config": {
+   "job": 4,
+   "name": "stowed tamper"
+  },
+  "device": "pad",
+  "mode": "ON FOOT  /  TAMPER STOWED",
+  "prompt": "Left stick walk  •  LS sprint  •  A jump  •  Find equipment beside the workshop"
+ },
+ {
+  "config": {
+   "drag": true,
+   "name": "drag on foot"
+  },
+  "device": "pad",
+  "mode": "ON FOOT  /  DRAG EQUIPPED",
+  "prompt": "Left stick walk  •  LS sprint  •  A jump  •  Find equipment beside the workshop"
+ },
+ {
+  "config": {
+   "drive": true,
+   "name": "mowing"
+  },
+  "device": "pad",
+  "mode": "MOWING  /  DECK ENGAGED",
+  "prompt": "Left stick drive  •  A brake  •  X exit"
+ },
+ {
+  "config": {
+   "drive": true,
+   "name": "mowing moving",
+   "speed": 2.0
+  },
+  "device": "pad",
+  "mode": "MOWING  /  DECK ENGAGED",
+  "prompt": "Left stick drive  •  A brake  •  Stop to exit"
+ },
+ {
+  "config": {
+   "drag": true,
+   "drive": true,
+   "name": "drag raised"
+  },
+  "device": "pad",
+  "mode": "DRAGGING  /  RAISED",
+  "prompt": "Left stick drive  •  Stop + B lower drag  •  A brake  •  X exit when stopped"
+ },
+ {
+  "config": {
+   "drag": true,
+   "drive": true,
+   "lowered": true,
+   "name": "drag lowered"
+  },
+  "device": "pad",
+  "mode": "DRAGGING  /  LOWERED",
+  "prompt": "Left stick drive  •  B raise drag  •  A brake  •  X exit"
+ },
+ {
+  "config": {
+   "drag": true,
+   "drive": true,
+   "lowered": true,
+   "name": "drag wet",
+   "speed": 2.0,
+   "wet": true
+  },
+  "device": "pad",
+  "mode": "DRAGGING WET DIRT — RUTS",
+  "prompt": "Left stick drive  •  B raise drag  •  A brake  •  Stop to exit"
+ },
+ {
+  "config": {
+   "blocked": true,
+   "drag": true,
+   "drive": true,
+   "lowered": true,
+   "name": "drag puddle",
+   "speed": 2.0
+  },
+  "device": "pad",
+  "mode": "PUDDLES — WAIT BEFORE DRAGGING",
+  "prompt": "Left stick drive  •  B raise drag  •  A brake  •  Stop to exit"
+ },
+ {
+  "config": {
+   "drag": true,
+   "drive": true,
+   "lowered": true,
+   "name": "drag reverse",
+   "speed": -2.0
+  },
+  "device": "pad",
+  "mode": "DRAGGING  /  REVERSE — NO PREPARATION",
+  "prompt": "Left stick drive  •  B raise drag  •  A brake  •  Stop to exit"
+ },
+ {
+  "config": {
+   "chalk": true,
+   "name": "chalk closed"
+  },
+  "device": "pad",
+  "mode": "CHALKING  /  GATE CLOSED",
+  "prompt": "Left stick push / steer  •  B chalk gate  •  A brake  •  X leave marker"
+ },
+ {
+  "config": {
+   "chalk": true,
+   "gate": true,
+   "name": "chalk open"
+  },
+  "device": "pad",
+  "mode": "CHALKING  /  GATE OPEN",
+  "prompt": "Left stick push / steer  •  B chalk gate  •  A brake  •  X leave marker"
+ },
+ {
+  "config": {
+   "chalk": true,
+   "gate": true,
+   "name": "chalk offguide",
+   "offguide": true
+  },
+  "device": "pad",
+  "mode": "CHALKING  /  OFF GUIDE — NO LINE CREDIT",
+  "prompt": "Left stick push / steer  •  B chalk gate  •  A brake  •  X leave marker"
+ },
+ {
+  "config": {
+   "chalk": true,
+   "gate": true,
+   "guide": true,
+   "name": "chalk guide moving",
+   "speed": 2.0
+  },
+  "device": "pad",
+  "mode": "CHALKING  /  GATE OPEN / GUIDE WHEEL",
+  "prompt": "Left stick push / steer  •  B chalk gate  •  A brake  •  Stop to leave marker"
+ },
+ {
+  "config": {
+   "name": "watering",
+   "water": true
+  },
+  "device": "pad",
+  "mode": "WATERING  /  READY",
+  "prompt": "Left stick walk  •  Aim with right stick  •  Hold RT to water  •  LB stow hose  •  Back cursor"
+ },
+ {
+  "config": {
+   "name": "puddle watering",
+   "puddle": true,
+   "water": true
+  },
+  "device": "pad",
+  "mode": "OVERWATERING — LET PUDDLE DRY",
+  "prompt": "Left stick walk  •  Aim with right stick  •  Hold RT to water  •  LB stow hose  •  Back cursor"
+ },
+ {
+  "config": {
+   "name": "tamping",
+   "tamp": true
+  },
+  "device": "pad",
+  "mode": "MOUND REPAIR  /  READY",
+  "prompt": "Left stick walk  •  Aim worn clay  •  Stop + press RT to tamp  •  RB stow tamper"
+ },
+ {
+  "config": {
+   "name": "near marker",
+   "near": "marker"
+  },
+  "device": "pad",
+  "mode": "ON FOOT  /  MOWER EQUIPPED",
+  "prompt": "X use chalk marker  •  Follow the dashed gold foul-line guides"
+ },
+ {
+  "config": {
+   "name": "near tractor away",
+   "near": "tractor"
+  },
+  "device": "pad",
+  "mode": "ON FOOT  /  MOWER EQUIPPED",
+  "prompt": "X enter tractor  •  Return to tool bay to swap equipment"
+ },
+ {
+  "config": {
+   "name": "near tractor bay",
+   "near": "bay"
+  },
+  "device": "pad",
+  "mode": "ON FOOT  /  MOWER EQUIPPED",
+  "prompt": "X enter tractor  •  Y swap mower / drag"
+ },
+ {
+  "config": {
+   "name": "near tamper",
+   "near": "tamper"
+  },
+  "device": "pad",
+  "mode": "ON FOOT  /  MOWER EQUIPPED",
+  "prompt": "RB take tamper  •  Repair worn clay patches on the pitcher’s mound"
+ },
+ {
+  "config": {
+   "name": "near hose",
+   "near": "hose"
+  },
+  "device": "pad",
+  "mode": "ON FOOT  /  MOWER EQUIPPED",
+  "prompt": "LB take hose  •  Water the workable infield dirt"
+ }
+]

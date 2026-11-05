@@ -102,7 +102,7 @@ func run() -> void:
 	)
 	g.shift.overlay.contracts_panel.buttons.mound_callout.pressed.emit()
 	check(
-		not paused and g.shift.session.profile_id == "mound_callout" and g.selected_task == 4,
+		not paused and g.shift.session.profile_id == "mound_callout" and g.selected_task == CrewJob.MOUND,
 		"contract start resumes with the requested task selected"
 	)
 	check(
@@ -207,7 +207,7 @@ func run() -> void:
 		"spending credits cannot relock an earned contract"
 	)
 	check(
-		g.shift.start_shift("infield_turnaround") and g.selected_task == 1,
+		g.shift.start_shift("infield_turnaround") and g.selected_task == CrewJob.DRAG,
 		"unlocked contract starts with dirt objective selected"
 	)
 	check(
@@ -245,7 +245,7 @@ func run() -> void:
 	check(
 		(
 			g.shift.session.start_mode == "game_day"
-			and g.shift.session.starting_counts[1] == g.infield.prepared_count
+			and g.shift.session.starting_counts[CrewJob.DRAG] == g.infield.prepared_count
 		),
 		"doubleheader records its heavily worn starting baseline"
 	)

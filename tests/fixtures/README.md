@@ -17,3 +17,7 @@ The migration uses those original arrays to reject work outside the v1 masks.
 The resource test decompresses the original slot to an isolated `user://` path,
 loads it through FieldSave, and checks preservation and v2 round-tripping.
 Do not regenerate these fixtures from the refactored implementation.
+
+## HUD text reference
+
+`hud_text_before.json` records 24 tool/proximity states on keyboard and controller (48 pairs of exact mode/prompt strings), captured from the original `game.gd` text logic before Task 5. `hud_cases.gd` reproduces those states. Keep these expected strings independent of the extracted helper; changing them requires an explicit UI wording change. The numeric job indices in the JSON are frozen serialized values 0–4.

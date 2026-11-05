@@ -59,7 +59,7 @@ func batch(mesh: Mesh, count: int) -> MultiMeshInstance3D:
 
 func available_jobs() -> Array:
 	var jobs := []
-	for i in range(5):
+	for i in CrewJob.ALL:
 		if game.shift.session.phase != ShiftSession.Phase.ACTIVE or game.shift.session.goals()[i] > 0:
 			jobs.append(i)
 	return jobs
@@ -84,11 +84,11 @@ func refresh_selection() -> void:
 	if selected == game.selected_task:
 		return
 	selected = game.selected_task
-	game.grass.set_inspection(enabled and selected == 0)
+	game.grass.set_inspection(enabled and selected == CrewJob.MOW)
 	game.infield.surface_material.set_shader_parameter("inspection_job", selected if enabled else -1)
-	game.chalk.guides.visible = not (enabled and selected == 2)
-	chalk_markers.visible = enabled and selected == 2
-	mound_markers.visible = enabled and selected == 4
+	game.chalk.guides.visible = not (enabled and selected == CrewJob.CHALK)
+	chalk_markers.visible = enabled and selected == CrewJob.CHALK
+	mound_markers.visible = enabled and selected == CrewJob.MOUND
 	game.hud.inspection_panel.visible = enabled
 	if enabled:
 		refresh()
@@ -109,13 +109,13 @@ func _process(delta: float) -> void:
 
 func refresh() -> void:
 	missing_markers = 0
-	if selected == 2 or selected == 4:
-		var poses: Array[Transform3D] = chalk_poses if selected == 2 else mound_poses
-		var node := chalk_markers if selected == 2 else mound_markers
+	if selected == CrewJob.CHALK or selected == CrewJob.MOUND:
+		var poses: Array[Transform3D] = chalk_poses if selected == CrewJob.CHALK else mound_poses
+		var node := chalk_markers if selected == CrewJob.CHALK else mound_markers
 		for i in range(poses.size()):
 			var missing: bool = (
 				game.chalk.valid[i] == 1 and game.chalk.covered[i] == 0
-				if selected == 2
+				if selected == CrewJob.CHALK
 				else game.mound.hits[i] < game.mound.hits_required
 			)
 			node.multimesh.set_instance_transform(
@@ -144,7 +144,7 @@ func refresh_labels() -> void:
 	var units := ["grass cells", "dirt cells", "chalk sections", "dirt cells", "mound impacts"]
 	game.hud.inspection_title.text = "INSPECT · " + ShiftSession.JOB_NAMES[selected]
 	game.hud.inspection_legend.text = "%s\n%d %s left" % [descriptions[selected], remaining, units[selected]]
-	if selected == 1:
+	if selected == CrewJob.DRAG:
 		game.hud.inspection_legend.text += " · %d rutted" % game.infield.rut_count
 	game.hud.inspection_controls.text = (
 		"%s / %s Job · %s Exit inspection"

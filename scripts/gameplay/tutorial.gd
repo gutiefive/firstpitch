@@ -155,17 +155,17 @@ func step_complete() -> bool:
 				< 4
 			)
 		1:
-			return entered_tractor and game.grass.cut_count > int(baseline[0])
+			return entered_tractor and game.grass.cut_count > int(baseline[CrewJob.MOW])
 		2:
 			return (
 				game.driving
 				and game.mower.active_tool == RidingMower.WorkTool.DRAG
-				and game.infield.prepared_count > int(baseline[1])
+				and game.infield.prepared_count > int(baseline[CrewJob.DRAG])
 			)
 		3:
-			return game.pushing_chalk and game.chalk.covered_count > int(baseline[2])
+			return game.pushing_chalk and game.chalk.covered_count > int(baseline[CrewJob.CHALK])
 		4:
-			return game.watering.equipped and game.moisture.wet_count > int(baseline[3])
+			return game.watering.equipped and game.moisture.wet_count > int(baseline[CrewJob.WATER])
 		5:
 			return game.tamper.equipped and game.mound.repaired_count > repaired_before
 		6:

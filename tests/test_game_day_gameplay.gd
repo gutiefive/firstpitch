@@ -91,7 +91,7 @@ func run() -> void:
 	)
 	check(g.club.prepare() and g.shift.session.profile_id == "home_hot", "second date starts hot-day prep")
 	check(
-		g.shift.session.goals()[3] == 90 and g.moisture.wet_count == 0,
+		g.shift.session.goals()[CrewJob.WATER] == 90 and g.moisture.wet_count == 0,
 		"hot afternoon starts dry and requires more watering"
 	)
 	for i in range(3):
@@ -127,7 +127,7 @@ func run() -> void:
 	check(g.club.prepare() and g.shift.session.profile_id == "home_rain", "third date starts rain recovery")
 	check(
 		(
-			g.shift.session.goals()[3] == 0
+			g.shift.session.goals()[CrewJob.WATER] == 0
 			and g.moisture.active_puddles.size() > 0
 			and g.moisture.overwatered_count == 0
 		),
@@ -169,7 +169,7 @@ func run() -> void:
 		"fourth date has doubleheader wear and shorter clock"
 	)
 	check(
-		g.shift.session.goals()[1] == 75 and g.shift.session.goals()[4] == 100,
+		g.shift.session.goals()[CrewJob.DRAG] == 75 and g.shift.session.goals()[CrewJob.MOUND] == 100,
 		"doubleheader emphasizes dirt and mound repairs"
 	)
 	check(not g.club.prepare() and not g.club.host(), "active conditions retain start and host guards")

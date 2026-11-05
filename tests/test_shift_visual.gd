@@ -142,7 +142,7 @@ func run() -> void:
 	await idle_frames(5)
 	if (
 		paused
-		or game.mound.work_done != game.shift.session.starting_counts[4]
+		or game.mound.work_done != game.shift.session.starting_counts[CrewJob.MOUND]
 		or game.grass.cut_count != 0
 		or game.shift.session.profile_id != "full"
 	):

@@ -90,7 +90,7 @@ func collect_progress() -> void:
 	var current := counts()
 	var sizes := totals()
 	var complete := []
-	for i in range(5):
+	for i in CrewJob.ALL:
 		complete.append(sizes[i] > 0 and current[i] == sizes[i])
 	session.set_counts(current, complete)
 	if not session.quality_enabled:
@@ -98,14 +98,16 @@ func collect_progress() -> void:
 		return
 	var rules := ShiftSession.quality_rules(session.profile_id)
 	var qualities := [1.0, 1.0, 1.0, 1.0, 1.0]
-	var dragged := maxi(1, int(current[1]) - session.starting_counts[1])
-	var watered := maxi(1, int(current[3]) - session.starting_counts[3])
-	qualities[1] = maxf(
+	var dragged := maxi(1, int(current[CrewJob.DRAG]) - session.starting_counts[CrewJob.DRAG])
+	var watered := maxi(1, int(current[CrewJob.WATER]) - session.starting_counts[CrewJob.WATER])
+	qualities[CrewJob.DRAG] = maxf(
 		float(rules.minimum),
 		1 - clampf(float(game.infield.rut_count) / dragged, 0, 1) * float(rules.rut_penalty)
 	)
-	qualities[2] = maxf(float(rules.minimum), 1 - game.chalk.offguide_metres * float(rules.chalk_per_metre))
-	qualities[3] = maxf(
+	qualities[CrewJob.CHALK] = maxf(
+		float(rules.minimum), 1 - game.chalk.offguide_metres * float(rules.chalk_per_metre)
+	)
+	qualities[CrewJob.WATER] = maxf(
 		float(rules.minimum),
 		1 - clampf(float(game.moisture.overwatered_count) / watered, 0, 1) * float(rules.water_penalty)
 	)
@@ -277,7 +279,7 @@ func reset_equipment() -> void:
 		Input.action_release(action)
 	if game.audio != null:
 		game.audio.reset_tools()
-	game.selected_task = 0
+	game.selected_task = CrewJob.MOW
 
 
 func reset_field() -> void:

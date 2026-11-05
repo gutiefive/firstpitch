@@ -180,7 +180,7 @@ static func wear_rules(profile: String = "training") -> Dictionary:
 func configure_work(starting: Array, totals: Array, mode: String = "fresh", wear_seed_value: int = 0) -> bool:
 	if starting.size() != 5 or totals.size() != 5 or mode not in ["fresh", "game_day"]:
 		return false
-	for i in range(5):
+	for i in CrewJob.ALL:
 		if (
 			typeof(starting[i]) != TYPE_INT
 			or typeof(totals[i]) != TYPE_INT
@@ -199,7 +199,7 @@ func set_counts(current: Array, complete: Array) -> bool:
 	if current.size() != 5:
 		return false
 	var progress := []
-	for i in range(5):
+	for i in CrewJob.ALL:
 		var needed := work_totals[i] - starting_counts[i]
 		progress.append(
 			(
@@ -218,7 +218,7 @@ func set_quality(qualities: Array, bonus: float = 0) -> bool:
 	for q in qualities:
 		if typeof(q) not in [TYPE_INT, TYPE_FLOAT] or not is_finite(float(q)) or q < rules.minimum or q > 1:
 			return false
-	if float(qualities[0]) != 1 or float(qualities[4]) != 1:
+	if float(qualities[CrewJob.MOW]) != 1 or float(qualities[CrewJob.MOUND]) != 1:
 		return false
 	var different := Array(job_quality) != qualities or mowing_bonus != bonus
 	job_quality = PackedFloat64Array(qualities)
@@ -232,10 +232,10 @@ func quality_multiplier() -> float:
 	if not quality_enabled:
 		return 1
 	var total := 0.0
-	for i in range(5):
+	for i in CrewJob.ALL:
 		if goals()[i] > 0:
 			total += job_quality[i]
-	if goals()[0] > 0:
+	if goals()[CrewJob.MOW] > 0:
 		total += mowing_bonus
 	return clampf(total / maxi(1, jobs_required()), quality_rules(profile_id).minimum, 1)
 

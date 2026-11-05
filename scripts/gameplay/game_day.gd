@@ -111,7 +111,7 @@ static func apply_conditions(game: Node, profile_id: String) -> void:
 static func checklist(profile_id: String) -> String:
 	var p: Dictionary = ShiftSession.PROFILES[profile_id]
 	var parts := PackedStringArray()
-	for i in range(5):
+	for i in CrewJob.ALL:
 		if p.goals[i] > 0:
 			parts.append("%s %d%%" % [ShiftSession.JOB_NAMES[i], p.goals[i]])
 	return ", ".join(parts)

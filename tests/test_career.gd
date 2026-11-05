@@ -16,7 +16,7 @@ func result(profile: String, values: Array, reason: String = "ended_early") -> D
 	var session := ShiftSession.new()
 	session.start(profile)
 	session.set_progress(
-		values, [values[0] >= 100, values[1] >= 100, values[2] >= 100, values[3] >= 100, values[4] >= 100]
+		values, [values[CrewJob.MOW] >= 100, values[CrewJob.DRAG] >= 100, values[CrewJob.CHALK] >= 100, values[CrewJob.WATER] >= 100, values[CrewJob.MOUND] >= 100]
 	)
 	session.elapsed_seconds = 30
 	session.remaining_seconds = session.duration_seconds - 30

@@ -21,7 +21,8 @@ var chalk: ChalkSystem
 var chalk_marker: ChalkMarker
 var chalk_marker_sign: Label3D
 var pushing_chalk := false
-var selected_task := 0
+var selected_task := CrewJob.MOW
+var binding_format := {}
 var moisture: DirtMoisture
 var watering: WateringTool
 var mound: MoundSurface
@@ -252,7 +253,7 @@ func interact() -> void:
 		player.set_seated(true)
 		chalk_marker.set_occupied(true)
 		pushing_chalk = true
-		selected_task = 2
+		selected_task = CrewJob.CHALK
 		update_progress(0)
 	elif player.global_position.distance_to(mower.global_position) < 3.5:
 		watering.set_equipped(false)
@@ -260,7 +261,7 @@ func interact() -> void:
 		player.set_seated(true)
 		mower.set_occupied(true)
 		driving = true
-		selected_task = 1 if mower.active_tool == RidingMower.WorkTool.DRAG else 0
+		selected_task = CrewJob.DRAG if mower.active_tool == RidingMower.WorkTool.DRAG else CrewJob.MOW
 		update_progress(0)
 
 
@@ -286,14 +287,14 @@ func swap_work_tool() -> bool:
 
 func on_watering_changed(equipped: bool) -> void:
 	if equipped:
-		selected_task = 3
+		selected_task = CrewJob.WATER
 		tamper.set_equipped(false)
 	update_progress(0)
 
 
 func on_tamper_changed(equipped: bool) -> void:
 	if equipped:
-		selected_task = 4
+		selected_task = CrewJob.MOUND
 		watering.set_equipped(false)
 	update_progress(0)
 
@@ -306,7 +307,7 @@ func refresh_mound_detail() -> void:
 
 
 func on_tool_changed(_tool: int) -> void:
-	selected_task = 1 if mower.active_tool == RidingMower.WorkTool.DRAG else 0
+	selected_task = CrewJob.DRAG if mower.active_tool == RidingMower.WorkTool.DRAG else CrewJob.MOW
 	tool_bay.show_equipped_drag(mower.active_tool == RidingMower.WorkTool.DRAG)
 	update_progress(0)
 
@@ -325,18 +326,15 @@ func _process(delta: float) -> void:
 	pivot.global_position = pivot.global_position.lerp(target, 1 - exp(-7 * delta))
 	pivot.rotation = Vector3(pitch, yaw, 0)
 	boom.spring_length = lerpf(boom.spring_length, camera_distance, 1 - exp(-8 * delta))
-	var dragging := mower.active_tool == RidingMower.WorkTool.DRAG
 	hud.reticle.visible = watering.equipped or tamper.equipped
+	var text_state := hud_text_state()
+	mode_label.text = HUDText.mode_text(text_state)
 	if tamper.equipped:
-		mode_label.text = "MOUND REPAIR  /  " + tamper.feedback
 		hud.reticle.modulate = Color("dfb862")
 		if tamper.target_index >= 0 and mound.hits[tamper.target_index] >= mound.hits_required:
 			hud.reticle.modulate = Color("83c4cf")
 		refresh_mound_detail()
 	elif watering.equipped:
-		mode_label.text = "WATERING  /  " + watering.feedback
-		if watering.target_valid and moisture.puddle_at(watering.target):
-			mode_label.text = "OVERWATERING — LET PUDDLE DRY"
 		hud.reticle.modulate = Color("c3b996")
 		if watering.target_valid and moisture.is_workable(watering.target):
 			hud.reticle.modulate = (
@@ -344,112 +342,35 @@ func _process(delta: float) -> void:
 				if moisture.moisture_at(watering.target) >= moisture.target_moisture
 				else Color("e1bb67")
 			)
-	elif pushing_chalk:
-		mode_label.text = "CHALKING  /  " + ("GATE OPEN" if chalk_marker.gate_open else "GATE CLOSED")
-		if (
-			chalk_marker.gate_open
-			and chalk.distance_to_guide(chalk_marker.nozzle.global_position) > chalk.chalk_width * 0.5
-		):
-			mode_label.text = "CHALKING  /  OFF GUIDE — NO LINE CREDIT"
-		if chalk_marker.guide_active:
-			mode_label.text += " / GUIDE WHEEL"
-	elif not driving:
-		mode_label.text = (
-			"ON FOOT  /  "
-			+ (
-				"TAMPER STOWED"
-				if selected_task == 4
-				else (
-					"HOSE STOWED"
-					if selected_task == 3
-					else (
-						"CHALK MARKER PARKED"
-						if selected_task == 2
-						else ("DRAG EQUIPPED" if dragging else "MOWER EQUIPPED")
-					)
-				)
-			)
-		)
-	elif dragging:
-		mode_label.text = "DRAGGING  /  " + ("LOWERED" if mower.drag.lowered else "RAISED")
-		if mower.drag.lowered and mower.speed > 0.15 and infield.wet_dragging:
-			mode_label.text = "DRAGGING WET DIRT — RUTS"
-		elif mower.drag.lowered and mower.speed > 0.15 and infield.blocked_puddles:
-			mode_label.text = "PUDDLES — WAIT BEFORE DRAGGING"
-		elif mower.drag.lowered and mower.speed < -0.15:
-			mode_label.text = "DRAGGING  /  REVERSE — NO PREPARATION"
-	else:
-		mode_label.text = "MOWING  /  DECK ENGAGED"
-	if tamper.equipped:
-		prompt.text = "{move} walk  •  Aim worn clay  •  Stop + press {tamp} to tamp  •  {mound} stow tamper"
-	elif watering.equipped:
-		prompt.text = (
-			"{move} walk  •  Aim with {look}  •  Hold {spray} to water  •  {water} stow hose  •  "
-			+ "{cursor} cursor"
-		)
-	elif pushing_chalk:
-		prompt.text = (
-			"{move} push / steer  •  {lift} chalk gate  •  {brake} brake  •  "
-			+ ("{interact} leave marker" if chalk_marker.can_exit() else "Stop to leave marker")
-		)
-	elif driving and dragging:
-		if mower.drag.lowered:
-			prompt.text = (
-				"{move} drive  •  {lift} raise drag  •  {brake} brake  •  "
-				+ ("{interact} exit" if mower.can_exit() else "Stop to exit")
-			)
-		else:
-			prompt.text = "{move} drive  •  Stop + {lift} lower drag  •  {brake} brake  •  {interact} exit when stopped"
-	elif driving:
-		prompt.text = (
-			"{move} drive  •  {brake} brake  •  {interact} exit"
-			if mower.can_exit()
-			else "{move} drive  •  {brake} brake  •  Stop to exit"
-		)
-	elif near_chalk_marker():
-		prompt.text = "{interact} use chalk marker  •  Follow the dashed gold foul-line guides"
-	elif player.global_position.distance_to(mower.global_position) < 3.5:
-		prompt.text = (
-			"{interact} enter tractor  •  {swap} swap mower / drag"
-			if tool_bay.contains(mower.global_position)
-			else "{interact} enter tractor  •  Return to tool bay to swap equipment"
-		)
-	elif player.global_position.distance_to(tamper.rack_position) <= tamper.pickup_distance:
-		prompt.text = "{mound} take tamper  •  Repair worn clay patches on the pitcher’s mound"
-	elif player.global_position.distance_to(watering.station_position) <= watering.pickup_distance:
-		prompt.text = "{water} take hose  •  Water the workable infield dirt"
-	else:
-		prompt.text = "{move} walk  •  {sprint} sprint  •  {jump} jump  •  Find equipment beside the workshop"
+	prompt.text = HUDText.prompt_text(text_state).format(binding_format)
 
-	prompt.text = prompt.text.format(
-		{
-			"move": binding_text("move"),
-			"sprint": binding_text("sprint"),
-			"brake": binding_text("brake"),
-			"jump": binding_text("jump"),
-			"tamp": binding_text("tamp_mound"),
-			"spray": binding_text("spray_water"),
-			"cursor": binding_text("cursor_menu"),
-			"interact": binding_text("interact"),
-			"swap": binding_text("swap_tool"),
-			"lift": binding_text("lift_drag"),
-			"water": binding_text("water_tool"),
-			"mound": binding_text("mound_tool"),
-			"look": "right stick" if input_device.last_input_device == "pad" else "mouse"
-		}
-	)
-	hud.reminder.text = (
-		"%s  Shift board / pause\n%s  Camera   %s  Cursor / back"
-		% [
-			binding_text("shift_board"),
-			"Right stick" if input_device.last_input_device == "pad" else "Mouse / scroll",
-			binding_text("cursor_menu")
-		]
-	)
-	hud.reminder.text += (
-		"\n%s Inspect field · %s / %s Jobs"
-		% [binding_text("inspect_field"), binding_text("previous_job"), binding_text("next_job")]
-	)
+
+func hud_text_state() -> Dictionary:
+	return {
+		"tamping": tamper.equipped,
+		"tamp_feedback": tamper.feedback,
+		"watering": watering.equipped,
+		"water_feedback": watering.feedback,
+		"puddle": watering.target_valid and moisture.puddle_at(watering.target),
+		"chalking": pushing_chalk,
+		"gate_open": chalk_marker.gate_open,
+		"off_guide": chalk.distance_to_guide(chalk_marker.nozzle.global_position) > chalk.chalk_width * 0.5,
+		"guide_active": chalk_marker.guide_active,
+		"driving": driving,
+		"dragging": mower.active_tool == RidingMower.WorkTool.DRAG,
+		"job": selected_task,
+		"lowered": mower.drag.lowered,
+		"speed": mower.speed,
+		"wet": infield.wet_dragging,
+		"blocked": infield.blocked_puddles,
+		"marker_exit": chalk_marker.can_exit(),
+		"mower_exit": mower.can_exit(),
+		"near_marker": near_chalk_marker(),
+		"near_mower": player.global_position.distance_to(mower.global_position) < 3.5,
+		"at_bay": tool_bay.contains(mower.global_position),
+		"near_tamper": player.global_position.distance_to(tamper.rack_position) <= tamper.pickup_distance,
+		"near_hose": player.global_position.distance_to(watering.station_position) <= watering.pickup_distance
+	}
 
 
 func create_hud() -> void:
@@ -491,13 +412,13 @@ func update_progress(_value: float) -> void:
 		"MOW %.0f%% / DRAG %.0f%% / CHALK %.0f%%\nWATER %.0f%% / MOUND %.0f%%"
 		% [mowing, dirt, lining, water, repairs]
 	)
-	if selected_task == 4:
+	if selected_task == CrewJob.MOUND:
 		refresh_mound_detail()
-	elif selected_task == 2:
+	elif selected_task == CrewJob.CHALK:
 		hud.detail_label.text = (
 			"LEFT %.1f%%  /  RIGHT %.1f%%" % [chalk.line_percentage(0), chalk.line_percentage(1)]
 		)
-	elif selected_task == 3:
+	elif selected_task == CrewJob.WATER:
 		hud.detail_label.text = (
 			"Hold to soak · %.0f m hose / %.0f m spray" % [watering.hose_reach, watering.spray_reach]
 		)
@@ -512,11 +433,44 @@ func update_progress(_value: float) -> void:
 	percent_label.text = "%.2f%%" % minf(value, 99.99)
 	if completed[selected_task]:
 		percent_label.text = "COMPLETE"
-	if completed[0] and completed[1] and completed[2] and completed[3] and completed[4]:
+	if (
+		completed[CrewJob.MOW]
+		and completed[CrewJob.DRAG]
+		and completed[CrewJob.CHALK]
+		and completed[CrewJob.WATER]
+		and completed[CrewJob.MOUND]
+	):
 		hud.objective_label.text = "PARK READY — All five tasks complete"
 
 
 func refresh_bindings() -> void:
+	binding_format = ({
+		"move": binding_text("move"),
+		"sprint": binding_text("sprint"),
+		"brake": binding_text("brake"),
+		"jump": binding_text("jump"),
+		"tamp": binding_text("tamp_mound"),
+		"spray": binding_text("spray_water"),
+		"cursor": binding_text("cursor_menu"),
+		"interact": binding_text("interact"),
+		"swap": binding_text("swap_tool"),
+		"lift": binding_text("lift_drag"),
+		"water": binding_text("water_tool"),
+		"mound": binding_text("mound_tool"),
+		"look": "right stick" if input_device.last_input_device == "pad" else "mouse"
+	})
+	hud.reminder.text = (
+		"%s  Shift board / pause\n%s  Camera   %s  Cursor / back"
+		% [
+			binding_text("shift_board"),
+			"Right stick" if input_device.last_input_device == "pad" else "Mouse / scroll",
+			binding_text("cursor_menu")
+		]
+	)
+	hud.reminder.text += (
+		"\n%s Inspect field · %s / %s Jobs"
+		% [binding_text("inspect_field"), binding_text("previous_job"), binding_text("next_job")]
+	)
 	chalk_marker_sign.text = (
 		"CHALK MARKER\n%s USE / %s GATE" % [binding_text("interact"), binding_text("lift_drag")]
 	)

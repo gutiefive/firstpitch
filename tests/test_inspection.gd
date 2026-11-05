@@ -63,7 +63,10 @@ func run() -> void:
 	)
 	await key(KEY_BRACKETRIGHT)
 	check(
-		g.selected_task == 1 and g.infield.surface_material.get_shader_parameter("inspection_job") == 1,
+		(
+			g.selected_task == CrewJob.DRAG
+			and g.infield.surface_material.get_shader_parameter("inspection_job") == CrewJob.DRAG
+		),
 		"next-job key selects dirt inspection"
 	)
 	check(
@@ -73,7 +76,7 @@ func run() -> void:
 	await key(KEY_BRACKETRIGHT)
 	check(
 		(
-			g.selected_task == 2
+			g.selected_task == CrewJob.CHALK
 			and inspection.chalk_markers.visible
 			and inspection.missing_markers == g.chalk.valid_count
 		),
@@ -95,7 +98,10 @@ func run() -> void:
 	)
 	await key(KEY_BRACKETRIGHT)
 	check(
-		g.selected_task == 3 and g.infield.surface_material.get_shader_parameter("inspection_job") == 3,
+		(
+			g.selected_task == CrewJob.WATER
+			and g.infield.surface_material.get_shader_parameter("inspection_job") == CrewJob.WATER
+		),
 		"water inspection selects the moisture overlay"
 	)
 	check(
@@ -140,7 +146,11 @@ func run() -> void:
 	)
 	await key(KEY_BRACKETRIGHT)
 	check(
-		g.selected_task == 4 and inspection.missing_markers == 6 and inspection.mound_markers.visible,
+		(
+			g.selected_task == CrewJob.MOUND
+			and inspection.missing_markers == 6
+			and inspection.mound_markers.visible
+		),
 		"mound inspection shows all six unfinished patches"
 	)
 	g.mound.apply_tamp(0)
@@ -158,9 +168,9 @@ func run() -> void:
 		"unchanged inspection performs no repeated marker rebuilds"
 	)
 	await key(KEY_BRACKETRIGHT)
-	check(g.selected_task == 0, "job cycling wraps to mowing")
+	check(g.selected_task == CrewJob.MOW, "job cycling wraps to mowing")
 	await key(KEY_BRACKETLEFT)
-	check(g.selected_task == 4, "previous-job key wraps backwards")
+	check(g.selected_task == CrewJob.MOUND, "previous-job key wraps backwards")
 	await pad(JOY_BUTTON_RIGHT_STICK)
 	check(
 		(
@@ -173,7 +183,7 @@ func run() -> void:
 	)
 	await pad(JOY_BUTTON_DPAD_LEFT)
 	check(
-		g.selected_task == 3 and g.input_device.last_input_device == "pad",
+		g.selected_task == CrewJob.WATER and g.input_device.last_input_device == "pad",
 		"pad D-pad cycles jobs through normal event routing"
 	)
 	await pad(JOY_BUTTON_RIGHT_STICK)
@@ -203,7 +213,7 @@ func run() -> void:
 	inspection.set_enabled(true)
 	await pad(JOY_BUTTON_DPAD_RIGHT)
 	check(
-		g.selected_task == 4 and inspection.available_jobs() == [4],
+		g.selected_task == CrewJob.MOUND and inspection.available_jobs() == [CrewJob.MOUND],
 		"paid job cycling includes only requested contract work"
 	)
 	g.shift.open_board()

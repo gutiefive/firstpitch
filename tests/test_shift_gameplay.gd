@@ -114,7 +114,7 @@ func run() -> void:
 	game.grass.paint(Vector3(0, 0, -60), Vector3.FORWARD)
 	await frames(15)
 	check(
-		game.shift.session.values[0] > 0 and game.shift.session.score() > 0,
+		game.shift.session.values[CrewJob.MOW] > 0 and game.shift.session.score() > 0,
 		"actual cut cells feed shift score"
 	)
 	check(game.shift.session.remaining_seconds < 900, "active shift clock advances")
@@ -199,7 +199,7 @@ func run() -> void:
 	check(
 		(
 			game.shift.session.start_mode == "game_day"
-			and game.shift.session.starting_counts[1] == game.infield.prepared_count
+			and game.shift.session.starting_counts[CrewJob.DRAG] == game.infield.prepared_count
 			and not game.tamper.equipped
 		),
 		"game day records worn practice baseline and parks held tools"

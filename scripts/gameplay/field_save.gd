@@ -379,7 +379,7 @@ func work_ok(data: Dictionary, g: Node) -> bool:
 		or data.work_totals != PackedInt64Array(g.shift.totals())
 	):
 		return false
-	for i in range(5):
+	for i in CrewJob.ALL:
 		if (
 			data.starting_counts[i] < 0
 			or data.starting_counts[i] > data.work_totals[i]
