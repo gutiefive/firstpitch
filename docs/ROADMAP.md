@@ -44,3 +44,5 @@
 - Matchday viewing UI: pause/play, double speed, chapter skipping, clear chapter/time badge, safe explicit Results action, guarded latest-matchday replay, matching final score in Results, and a speaker-filtered Town tab.
 
 - Playable live matchday: on-foot visits share time with broadcast; representative fans reserve seats, visit concessions, react and depart; optional held spill cleanup, breadcrumb-followed regular escort and carried concession delivery; service HUD and safe visit teardown.
+
+- Fan-experience loop: scored satisfaction reviews, once-only modest credit/supporter rewards in career v3, immutable visit facility snapshots, rotating litter/rush/directions events, queue relief, articulated supporter knees/reactions, PA captions/chimes, and evening-fixture skies/floodlights with safe restoration.

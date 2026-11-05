@@ -488,8 +488,23 @@ Three optional crew jobs give you reasons to explore:
 - **Help Eli:** interact near the regular, then lead him along public paths to his marked section. He follows the route you walk.
 - **Deliver concession supplies:** unlocked by a snack shack or grill. Collect the marked crate, carry it to the counter, and interact again to deliver it.
 
-Jobs show progress, completion checks and character thanks, followed by a service summary in Results. They are session-only activities with no additional credits, supporters or persistent quest ledger. Visiting, replaying and completing jobs never re-settle a hosted game. Paid prep, construction, manual checkpoint actions and tutorial replay are blocked until the visit ends; equipment is stowed. Ordinary paused menus freeze the visit, and ending it restores normal HUD, crowd and game controls. Relaunch returns to the saved career/field rather than resuming optional jobs.
+Jobs show progress, completion checks and character thanks, followed by a service summary in Results. Individual jobs remain session-only and do not pay separately. Their results contribute to the once-per-home-date fan satisfaction bonus described below; only a claimed review is persisted. Visiting, replaying and completing jobs never re-settle the original gate or prep pay. Paid prep, construction, manual checkpoint actions and tutorial replay are blocked until the visit ends; equipment is stowed. Ordinary paused menus freeze the visit, and ending it restores normal HUD, crowd and game controls. Relaunch returns to the saved career/field rather than resuming optional jobs.
 
 This remains a staged baseball simulation and a bounded representative crowd, not a full baseball engine or general-purpose NPC navigation system. Section-to-seat handoffs are decorative; movement uses authored paths and soft yielding without NPC physics colliders.
 
 [Live cleanup](docs/screenshots/live-cleanup.png) · [Watching from the stands](docs/screenshots/live-seating.png) · [Concession delivery](docs/screenshots/live-jobs.png) · [After the final](docs/screenshots/live-final.png)
+
+
+## Fan satisfaction, events and evening games
+
+Live visits now have a **0–100 fan satisfaction score and 1–5-star review**. The breakdown combines a 35-point welcome baseline, the recorded prep result, seating comfort, amenities, completed crew work, and average queue pressure. The HUD previews the score while you work. Complete the game and spend at least **30 seconds on foot**, then review the result in **Clubhouse → Results**.
+
+Use **Claim park bonus** to settle the displayed reward once per hosted date: up to **25 cr and 3 repeat supporters**, with rewards starting at 60 satisfaction. More supporters increase demand for later games. Original prep wages, gate earnings and manager bonuses stay intact. Replays cannot pay twice or replace an already claimed review. The visit's facilities are frozen in its review, so buying an upgrade afterward cannot change a pending or saved rating. Claim before starting another home date or quitting; unclaimed visit reports are transient. This is separate from Mara's six-date ownership review.
+
+At roughly **2:10** into a live visit, one event appears: concourse litter, a concession rush when a stand exists, or a visiting family needing directions. Rotation follows the hosted date and available facilities. Hold interact while stopped for cleanup or rush service; speak to the family to give directions. Handling the rush shortens later queue service waits. Each event contributes to the review, alongside the existing cleanup, escort and delivery jobs.
+
+Supporters now bend their knees while walking and sitting, turn their heads while seated, and clap or raise their arms for home scoring. PA **captions and a chime** mark arrivals, first pitch, home scoring, the stretch and the final. Rivalry-night and under-the-lights fixtures use a dusk sky, warmer sunlight and field floodlights. Daytime lighting is restored after the presentation/visit; announcements use the existing Ambience volume control. These are contextual captions, not recorded voice acting.
+
+Existing career versions 1 and 2 load normally. The first claimed park bonus writes **career version 3**, which records once-only service rewards; older builds do not read career v3. Manual field/autosave format remains version 3. Failed bonus saves keep the previous file and budget, and the claim can be retried.
+
+[Park review and bonus](docs/screenshots/satisfaction-preview.png) · [Evening field](docs/screenshots/satisfaction-evening.png) · [Concession rush](docs/screenshots/satisfaction-rush.png) · [Seated supporters](docs/screenshots/satisfaction-fans.png)

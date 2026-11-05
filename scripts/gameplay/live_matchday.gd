@@ -17,6 +17,14 @@ var hint: Label
 var feedback := "Explore the concourse, watch the game, or help the crew."
 var carrying := false
 var parcel: Node3D
+var on_foot_time := 0.0
+var queue_seconds := 0.0
+var event_spawned := false
+var pending_input := {}
+var pending_host := ""
+var satisfaction: Label
+var announcement: Label
+var visit_buildings := PackedStringArray()
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
  hud = CanvasLayer.new()
@@ -44,7 +52,9 @@ func _ready() -> void:
   button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
  broadcast.pressed.connect(show_broadcast)
  leave.pressed.connect(end_visit)
- GameUI.label(content,"E / X: help nearby · Tab: pause\nEsc: mouse cursor · Optional jobs pay no extra credits.",11,GameUI.MUTED)
+ satisfaction = GameUI.label(content,"",12,GameUI.ACCENT)
+ announcement = GameUI.label(content,"",12,GameUI.GOLD)
+ GameUI.label(content,"E / X: help nearby · Tab: pause\nFinish the game and spend 30s on foot for a park review.",11,GameUI.MUTED)
  hud.visible = false
 func start(at: float = 0) -> bool:
  if active:
@@ -52,6 +62,10 @@ func start(at: float = 0) -> bool:
   return true
  if not game.club.can_watch():
   return false
+ visit_buildings = game.shift.career.club.buildings.duplicate()
+ on_foot_time = 0
+ queue_seconds = 0
+ event_spawned = false
  active = true
  viewing = false
  visit_time = clampf(at/OpeningGates.DURATION*LENGTH,0,LENGTH)
@@ -59,6 +73,7 @@ func start(at: float = 0) -> bool:
  game.shift.reset_equipment()
  game.player.position = Vector3(4,0.1,25)
  game.pivot.global_position = game.player.position+Vector3.UP*1.5
+ game.club.atmosphere.begin(int(game.shift.career.club.games))
  game.club.matchday.begin(game.shift.career.club.last)
  game.club.world.reserve_seats(game.club.matchday.agents.size())
  game.club.matchday.begin_routines()
@@ -92,6 +107,14 @@ func show_broadcast() -> void:
 func end_visit(show_results: bool = true) -> void:
  if not active:
   return
+ if visit_time >= FINAL and on_foot_time >= 30:
+  pending_host = game.shift.career.latest_host_id()
+  var done := PackedStringArray()
+  for job in jobs:
+   if job.state == "done":
+    done.append(job.id)
+  pending_input = {"seconds":mini(3600,int(on_foot_time)),"queue":mini(mini(3600,int(on_foot_time)),int(queue_seconds)),"completed":done,"buildings":visit_buildings.duplicate()}
+ game.club.atmosphere.end()
  var completed := 0
  for job in jobs:
   completed += int(job.state == "done")
@@ -132,17 +155,19 @@ func add_job(id: String,label: String,point: Vector3,duration: float) -> void:
  var marker := Node3D.new()
  marker.position = point
  job_root.add_child(marker)
- if id == "spill":
+ if id in ["spill","litter"]:
   G.sphere(marker,Vector3(0,0.02,0),Vector3(1.5,0.03,0.85),Color("715640"))
   for x in [-0.35,0,0.4]:
    var cup := G.cylinder(marker,Vector3(x,0.07,0),0.07,0.14,Color("e0d0a1"))
    cup.rotation.z = 1.2
+ elif id == "lost":
+  game.club.matchday.person(marker,Color("829eaa"),1)
  elif id == "supply":
   G.box(marker,Vector3(0,0.3,0),Vector3(0.65,0.6,0.45),Color("a18b62"))
  var sign := G.label(marker,label,Vector3(0,2.3,0),24)
  sign.pixel_size = 0.008
  sign.billboard = BaseMaterial3D.BILLBOARD_ENABLED
- jobs.append({"id":id,"title":label,"point":point,"progress":0.0,"duration":duration,"state":"available","marker":marker})
+ jobs.append({"id":id,"title":label,"point":point,"progress":0.0,"duration":duration,"state":"available","marker":marker,"label":sign})
 func near_job() -> int:
  for i in range(jobs.size()):
   if jobs[i].state in ["available","carrying"] and game.player.position.distance_to(jobs[i].point) < 2:
@@ -175,22 +200,29 @@ func interact_job() -> void:
   job.point = Vector3(-7,0.05,14.4)
   job.marker.position = job.point
   feedback = "Eli: Lead the way! Walk with him to the marked section behind the stands."
- elif job.id == "spill":
+ elif job.id == "lost":
+  finish_job(job,"Visitor: Found it! Thanks for pointing our family toward the right section.")
+ elif job.id in ["spill","litter","rush"]:
   feedback = "Hold %s while standing beside the spill to clean it." % game.binding_text("interact")
  refresh_hud()
 func finish_job(job: Dictionary,message: String) -> void:
  job.state = "done"
- job.marker.visible = false
+ if job.id == "lost":
+  job.label.visible = false
+ else:
+  job.marker.visible = false
  feedback = message
 func advance_jobs(delta: float) -> void:
  for job in jobs:
   if job.state == "done":
+   if job.id == "lost":
+    job.marker.position = job.marker.position.move_toward(Vector3(7,0.05,24),delta)
    continue
   var distance: float = game.player.position.distance_to(job.point)
-  if job.id == "spill" and Input.is_action_pressed("interact") and distance < 2 and Vector2(game.player.velocity.x,game.player.velocity.z).length() < 0.5:
+  if job.id in ["spill","litter","rush"] and Input.is_action_pressed("interact") and distance < 2 and Vector2(game.player.velocity.x,game.player.velocity.z).length() < 0.5:
    job.progress += delta
    if job.progress >= job.duration:
-    finish_job(job,"Crew: The walkway is clear. That's one less thing for families to worry about.")
+    finish_job(job,"Leni: Rush handled. The line is moving again." if job.id == "rush" else "Crew: The walkway is clear. Thanks for looking after the families.")
   if job.state == "escorting":
    var regular: Node3D = game.club.matchday.regular
    var trail: PackedVector3Array = job.trail
@@ -222,6 +254,13 @@ func _process(delta: float) -> void:
  if get_tree().paused:
   return
  visit_time += delta
+ on_foot_time += delta
+ var queued := 0
+ for fan in game.club.matchday.agents:
+  queued += int(fan.state == "queue")
+ queue_seconds += delta*queued/maxi(1,game.club.matchday.agents.size())
+ if visit_time >= 130 and visit_time < FINAL and not event_spawned:
+  spawn_event()
  game.club.world.show_static_crowd(visit_time < FINAL+30)
  game.club.matchday.set_time(minf(47,visit_time/LENGTH*47))
  # Live-game visitors stay behind the field; they can use stands and public paths.
@@ -240,8 +279,11 @@ func refresh_hud() -> void:
  for job in jobs:
   lines.append(("✓ " if job.state == "done" else "· ")+String(job.title)+(" · %.0f%%" % (job.progress/job.duration*100) if job.duration > 0 and job.progress > 0 and job.state != "done" else ""))
  tasks.text = "OPTIONAL CREW JOBS\n"+"\n".join(lines)
+ var preview := ParkSatisfaction.evaluate(game.shift.career.club,{"seconds":maxi(30,mini(3600,int(on_foot_time))),"queue":mini(mini(3600,int(on_foot_time)),int(queue_seconds)),"completed":completed_jobs(),"buildings":visit_buildings})
+ satisfaction.text = "Fan satisfaction: %d / 100 · %d / 5 stars" % [preview.rating,preview.stars] if not preview.is_empty() else "Park review available after the final."
+ announcement.text = "PA · "+game.club.atmosphere.caption
  var nearby := near_job()
- hint.text = ("Hold %s · %s" if jobs[nearby].id == "spill" else "Press %s · %s") % [game.binding_text("interact"),jobs[nearby].title] if nearby >= 0 else feedback
+ hint.text = ("Hold %s · %s" if jobs[nearby].id in ["spill","litter","rush"] else "Press %s · %s") % [game.binding_text("interact"),jobs[nearby].title] if nearby >= 0 else feedback
 func _input(event: InputEvent) -> void:
  if not active or viewing or get_tree().paused or (event is InputEventKey and event.echo):
   return
@@ -254,3 +296,41 @@ func _input(event: InputEvent) -> void:
  elif event.is_action_pressed("interact"):
   interact_job()
   get_viewport().set_input_as_handled()
+
+func completed_jobs() -> PackedStringArray:
+ var done := PackedStringArray()
+ for job in jobs:
+  if job.state == "done":
+   done.append(job.id)
+ return done
+func spawn_event() -> void:
+ event_spawned = true
+ var id := ParkSatisfaction.event_for(int(game.shift.career.club.games),visit_buildings)
+ if id == "litter":
+  add_job(id,"Clear the concourse litter",Vector3(-13,0.06,24),3)
+ elif id == "rush":
+  add_job(id,"Help serve the concession rush",Vector3(30,0.05,16) if "snack_shack" in game.shift.career.club.buildings else Vector3(-31,0.05,15),3)
+ else:
+  add_job(id,"Give a visiting family directions",Vector3(13,0.05,24),0)
+ feedback = "MATCHDAY EVENT · "+String(jobs[-1].title)
+ game.club.atmosphere.announce(feedback)
+func queue_relief() -> bool:
+ for job in jobs:
+  if job.id == "rush" and job.state == "done":
+   return true
+ return false
+func service_report() -> Dictionary:
+ var career: CareerProfile = game.shift.career
+ var id := career.latest_host_id()
+ if career.club.services.has(id):
+  return career.club.services[id]
+ return ParkSatisfaction.evaluate(career.club,pending_input) if pending_host == id else {}
+func claim_bonus() -> bool:
+ if active or not game.club.available() or pending_host != game.shift.career.latest_host_id():
+  return false
+ var ok: bool = game.shift.career.claim_service(pending_host,pending_input)
+ if ok:
+  pending_input = {}
+  game.club.message = "Mara: A good night at the park brings people back. Park bonus settled."
+ game.club.sync()
+ return ok

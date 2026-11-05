@@ -28,6 +28,8 @@ var town_buttons := {}
 var watch_button: Button
 var walk_button: Button
 var match_summary: Label
+var service_text: Label
+var claim_button: Button
 var result_details: Button
 var sections := {}
 var tabs := {}
@@ -133,6 +135,10 @@ func _ready() -> void:
  var investment_card := GameUI.card(sections.results,"YOUR NEXT INVESTMENT")
  investment_card.get_parent().add_theme_stylebox_override("panel",GameUI.box(Color("1b2e39"),12))
  investment = text(investment_card,"",14)
+ service_text = text(GameUI.card(sections.results,"FAN SATISFACTION & PARK BONUS"),"",14)
+ claim_button = GameUI.button(sections.results,"Claim park bonus",true)
+ claim_button.tooltip_text = "Settles once for this home date. Replaying cannot replace a claimed review."
+ claim_button.pressed.connect(func(): director.live.claim_bonus())
  GameUI.label(sections.stadium,"Build a better night at the ballpark",24)
  GameUI.label(sections.stadium,"Permanent upgrades share your club budget. Requirements and benefits are shown before you buy.",13,GameUI.MUTED)
  project_grid = GridContainer.new()
@@ -186,7 +192,11 @@ func show_section(key: String) -> void:
   tabs[id].set_pressed_no_signal(id == key)
  if is_inside_tree() and director.game.shift.overlay.club_screen.visible:
   director.game.shift.overlay.focus_current()
+  if key == "results":
+   reveal_claim()
 func preferred_focus() -> Control:
+ if selected_section == "results" and not claim_button.disabled:
+  return claim_button
  if selected_section == "results" and recap_continue.visible:
   return recap_continue
  if selected_section == "matchday":
@@ -202,6 +212,13 @@ func refresh() -> void:
  var career: CareerProfile = director.game.shift.career
  var state: Dictionary = career.club
  show_town_voice(town_filter)
+ var report := director.live.service_report()
+ service_text.text = ParkSatisfaction.text(report)
+ var collected: bool = career.club.services.has(career.latest_host_id())
+ if not report.is_empty():
+  service_text.text += "\nSaved to your club record." if collected else "\nClaim to save this review before the next home date."
+ claim_button.disabled = report.is_empty() or collected or not director.available() or not String(career.club.pending).is_empty()
+ claim_button.text = "Park bonus collected" if collected else ("Claim %d cr · +%d supporters" % [report.bonus,report.fans] if not report.is_empty() else "Finish a live visit for a park review")
  watch_button.disabled = not director.can_watch()
  walk_button.disabled = not director.can_watch()
  watch_button.tooltip_text = "Rewatch without changing your earnings." if not watch_button.disabled else "Host a game and finish current work to watch again."
@@ -304,7 +321,10 @@ func scroll_to_recap() -> void:
  await get_tree().process_frame
  await get_tree().process_frame
  if is_inside_tree() and director.game.shift.overlay.club_screen.visible:
-  director.game.shift.overlay.club_screen.scroll_vertical = 0
+  if not claim_button.disabled:
+   director.game.shift.overlay.club_screen.ensure_control_visible(claim_button)
+  else:
+   director.game.shift.overlay.club_screen.scroll_vertical = 0
 
 func show_town_voice(speaker: String) -> void:
  town_filter = speaker
@@ -315,3 +335,9 @@ func show_town_voice(speaker: String) -> void:
  town_voices.text = "\n\n".join(lines) if not lines.is_empty() else "The town is waiting for Opening Day. Take the job and prepare the field to meet the regulars."
  for key in town_buttons:
   town_buttons[key].set_pressed_no_signal(key == speaker)
+
+func reveal_claim() -> void:
+ await get_tree().process_frame
+ await get_tree().process_frame
+ if is_inside_tree() and selected_section == "results" and director.game.shift.overlay.club_screen.visible and not claim_button.disabled and get_viewport().gui_get_focus_owner() == claim_button:
+  director.game.shift.overlay.club_screen.ensure_control_visible(claim_button)

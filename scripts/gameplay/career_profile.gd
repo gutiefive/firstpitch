@@ -34,7 +34,7 @@ static func payout(result: Dictionary) -> int:
  return floori(float(result.score)*float(profile.pay_rate))+(int(profile.bonus) if result.reason == "completed" else 0)
 
 func validate(value: Variant) -> bool:
- if not value is Dictionary or not value.has_all(["version","records","upgrades"]) or typeof(value.version) != TYPE_INT or value.version not in [1,2]:
+ if not value is Dictionary or not value.has_all(["version","records","upgrades"]) or typeof(value.version) != TYPE_INT or value.version not in [1,2,3]:
   return false
  if not value.records is Array or value.records.size()>MAX_RECORDS or not value.upgrades is PackedStringArray:
   return false
@@ -54,10 +54,14 @@ func validate(value: Variant) -> bool:
   costs += int(UPGRADES[id].cost)
  var income := 0
  var stadium_cost := 0
- if value.version == 2:
+ if value.version in [2,3]:
   var state := ClubProgress.replay(value.get("club"),value.records,value.upgrades)
   if state.is_empty():
    return false
+  if value.version == 2:
+   for event in value.club.events:
+    if event.type == "service":
+     return false
   income = state.income
   stadium_cost = state.spent
  elif value.has("club"):
@@ -191,7 +195,7 @@ func next_rank_text() -> String:
  return "%d cr lifetime earnings to %s" % [int(RANKS[index+1][0])-earned,RANKS[index+1][1]] if index < RANKS.size()-1 else "Top crew rank reached"
 
 func club_started() -> bool:
- return data.version == 2
+ return data.version in [2,3]
 
 func start_club() -> bool:
  if not healthy or club_started():
@@ -228,4 +232,19 @@ func purchase_stadium(id: String) -> bool:
   return false
  var candidate := data.duplicate(true)
  candidate.club.events.append({"type":"build","id":id,"records":data.records.size(),"tools":data.upgrades.size()})
+ return commit(candidate)
+
+func latest_host_id() -> String:
+ var id := ""
+ if club_started():
+  for event in data.club.events:
+   if event.type == "game":
+    id = event.id
+ return id
+func claim_service(id: String,input: Dictionary) -> bool:
+ if not healthy or not club_started() or id != latest_host_id() or club.services.has(id) or not String(club.pending).is_empty() or ParkSatisfaction.evaluate(club,input).is_empty():
+  return false
+ var candidate := data.duplicate(true)
+ candidate.version = 3
+ candidate.club.events.append({"type":"service","id":id,"records":data.records.size(),"tools":data.upgrades.size(),"input":input.duplicate(true)})
  return commit(candidate)

@@ -9,6 +9,7 @@ var camera: Camera3D
 var heading: Label
 var detail: Label
 var moment: Label
+var pa_caption: Label
 var timeline: ProgressBar
 var playback_paused := false
 var playback_speed := 1.0
@@ -81,6 +82,7 @@ func _ready() -> void:
  detail.mouse_filter = Control.MOUSE_FILTER_IGNORE
  stack.add_child(detail)
  moment = GameUI.label(stack,"",14,GameUI.TEXT)
+ pa_caption = GameUI.label(stack,"",12,GameUI.MUTED)
  timeline = GameUI.meter(stack)
  timeline.theme = GameUI.theme()
  controls = HFlowContainer.new()
@@ -133,14 +135,16 @@ func set_gate_fraction(value: float) -> void:
  for i in range(gates.size()):
   gates[i].rotation.y = (-1 if i == 0 else 1)*PI*0.5*value
 func present(receipt: Dictionary) -> void:
- elapsed = 0
+ game.club.atmosphere.begin(int(receipt.game))
+ elapsed = game.club.live.visit_time/LiveMatchday.LENGTH*DURATION if game.club.live != null and game.club.live.active else 0.0
  playback_paused = false
  playback_speed = 1
  cheer.stream_paused = false
  latch.stream_paused = false
  pause_button.text = "Pause · Space / X"
  speed_button.text = "Speed 1× · Y"
- game.club.matchday.begin(receipt)
+ if game.club.live == null or not game.club.live.active:
+  game.club.matchday.begin(receipt)
  active = true
  visible = true
  presentations += 1
@@ -150,7 +154,7 @@ func present(receipt: Dictionary) -> void:
  set_gate_fraction(0)
  cheer.play()
  latch.play()
- update_view(0)
+ update_view(elapsed/DURATION)
 func update_view(fraction: float) -> void:
  var seconds := fraction*DURATION
  var park: MatchdayPark = game.club.matchday
@@ -180,6 +184,7 @@ func update_view(fraction: float) -> void:
   moment.text = park.story_lines[index]
  chapter_label.text = "MATCHDAY  /  "+{"arrivals":"1 OF 4 · ARRIVALS","concourse":"2 OF 4 · AROUND THE PARK","game":"3 OF 4 · THE GAME","stories":"4 OF 4 · TOWN VOICES"}[park.stage]
  clock_label.text = "%s / 0:47  ·  %s" % [ShiftSession.clock_text(seconds),"PAUSED" if playback_paused else "%d× speed" % int(playback_speed)]
+ pa_caption.text = "PA · "+game.club.atmosphere.caption
  timeline.value = fraction*100
  set_gate_fraction(1-pow(1-minf(1,seconds/3),3))
 func _process(delta: float) -> void:
@@ -220,6 +225,7 @@ func _input(event: InputEvent) -> void:
 func finish() -> void:
  if game.club.live != null and game.club.live.active and game.club.live.viewing:
   game.club.live.end_visit(false)
+ game.club.atmosphere.end()
  active = false
  playback_paused = false
  cheer.stream_paused = false

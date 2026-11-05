@@ -8,6 +8,7 @@ var opening: OpeningGates
 var ownership := {}
 var matchday: MatchdayPark
 var live: LiveMatchday
+var atmosphere: MatchdayAtmosphere
 func _ready() -> void:
  world = ClubStadium.new()
  world.game = game
@@ -21,6 +22,9 @@ func _ready() -> void:
  opening = OpeningGates.new()
  opening.game = game
  add_child(opening)
+ atmosphere = MatchdayAtmosphere.new()
+ atmosphere.game = game
+ add_child(atmosphere)
  live = LiveMatchday.new()
  live.game = game
  add_child(live)

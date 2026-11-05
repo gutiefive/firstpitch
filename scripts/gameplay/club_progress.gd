@@ -15,7 +15,7 @@ const PROJECTS := {
  "video_board":{"title":"Owls video board","cost":2600,"fans":320,"requires":["scoreboard","grandstand"],"seats":0,"fan_bonus":6,"ticket_bonus":1,"food":0,"detail":"Replace the electronic board with a video screen: another +1 cr per ticket and +6 fans per game."}
 }
 static func initial() -> Dictionary:
- return {"active":false,"fans":START_FANS,"capacity":START_CAPACITY,"games":0,"income":0,"spent":0,"buildings":PackedStringArray(),"hosted":{},"last":{},"pending":"","record_start":0}
+ return {"active":false,"fans":START_FANS,"capacity":START_CAPACITY,"games":0,"income":0,"spent":0,"buildings":PackedStringArray(),"hosted":{},"last":{},"pending":"","record_start":0,"services":{},"host_buildings":PackedStringArray()}
 static func eligible(result: Dictionary) -> bool:
  return result.get("profile_id") in ["home_game","home_hot","home_rain","home_double"] and result.get("reason") == "completed"
 static func forecast(state: Dictionary,result: Dictionary) -> Dictionary:
@@ -46,7 +46,7 @@ static func project_ready(state: Dictionary,id: String) -> bool:
 static func replay(value: Variant,records: Array,tools: PackedStringArray) -> Dictionary:
  if not value is Dictionary or not value.has_all(["record_start","tool_start","events"]) or value.size() != 3:
   return {}
- if typeof(value.record_start) != TYPE_INT or typeof(value.tool_start) != TYPE_INT or not value.events is Array or value.events.size() > 2000+PROJECTS.size():
+ if typeof(value.record_start) != TYPE_INT or typeof(value.tool_start) != TYPE_INT or not value.events is Array or value.events.size() > 4000+PROJECTS.size():
   return {}
  if value.record_start < 0 or value.record_start > records.size() or value.tool_start < 0 or value.tool_start > tools.size():
   return {}
@@ -66,10 +66,13 @@ static func replay(value: Variant,records: Array,tools: PackedStringArray) -> Di
  var state := initial()
  state.active = true
  state.record_start = value.record_start
+ var last_host := ""
  var previous_records: int = value.record_start
  var previous_tools: int = value.tool_start
  for event in value.events:
-  if not event is Dictionary or not event.has_all(["type","id","records","tools"]) or event.size() != 4 or not event.id is String:
+  if not event is Dictionary or not event.has_all(["type","id","records","tools"]) or not event.id is String:
+   return {}
+  if event.size() != (5 if event.type == "service" else 4):
    return {}
   if typeof(event.records) != TYPE_INT or typeof(event.tools) != TYPE_INT or event.records < previous_records or event.records > records.size() or event.tools < previous_tools or event.tools > tools.size():
    return {}
@@ -85,11 +88,22 @@ static func replay(value: Variant,records: Array,tools: PackedStringArray) -> Di
    if index < value.record_start or index >= event.records or not eligible(records[index].result):
     return {}
    var receipt := forecast(state,records[index].result)
+   state.host_buildings = state.buildings.duplicate()
+   last_host = event.id
    state.games = receipt.game
    state.fans = receipt.fans_after
    state.income += receipt.net+int(receipt.get("priority_bonus",0))
    state.hosted[event.id] = receipt.duplicate(true)
    state.last = receipt
+  elif event.type == "service":
+   if event.id != last_host or state.services.has(event.id):
+    return {}
+   var report := ParkSatisfaction.evaluate(state,event.get("input"))
+   if report.is_empty():
+    return {}
+   state.income += int(report.bonus)
+   state.fans += int(report.fans)
+   state.services[event.id] = report
   elif event.type == "build":
    if not project_ready(state,event.id) or funds < int(PROJECTS[event.id].cost):
     return {}

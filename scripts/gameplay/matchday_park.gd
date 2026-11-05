@@ -55,7 +55,8 @@ func person(parent: Node3D,shirt: Color,index: int) -> Node3D:
  parent.add_child(root)
  var skin: Color = [Color("bd9279"),Color("8e6450"),Color("d2aa87")][posmod(index,3)]
  G.tailored_body(root,Vector3(0,1.08,0),shirt)
- G.sphere(root,Vector3(0,1.62,0),Vector3(0.30,0.36,0.29),skin)
+ var head := G.sphere(root,Vector3(0,1.62,0),Vector3(0.30,0.36,0.29),skin)
+ head.name = "Head"
  G.sphere(root,Vector3(0,1.77,0.02),Vector3(0.34,0.12,0.33),Color("244e53"))
  G.soft_box(root,Vector3(0,1.77,-0.13),Vector3(0.33,0.025,0.21),Color("244e53"))
  for x in [-0.06,0.06]:
@@ -65,13 +66,18 @@ func person(parent: Node3D,shirt: Color,index: int) -> Node3D:
   leg.name = "LegLeft" if side == -1 else "LegRight"
   leg.position = Vector3(side*0.12,0.79,0)
   root.add_child(leg)
-  G.capsule(leg,Vector3(0,-0.31,0),0.085,0.66,Color("45535b"))
-  G.soft_box(leg,Vector3(0,-0.67,-0.05),Vector3(0.19,0.12,0.28),Color("393c39"))
+  G.capsule(leg,Vector3(0,-0.16,0),0.085,0.36,Color("45535b"))
+  var knee := Node3D.new()
+  knee.name = "Knee"
+  knee.position.y = -0.32
+  leg.add_child(knee)
+  G.capsule(knee,Vector3(0,-0.15,0),0.075,0.33,Color("45535b"))
+  G.soft_box(knee,Vector3(0,-0.34,-0.05),Vector3(0.19,0.12,0.28),Color("393c39"))
   var arm := G.capsule(root,Vector3(side*0.27,0.99,0),0.065,0.50,skin)
   arm.name = "ArmLeft" if side == -1 else "ArmRight"
  return root
 func sync(state: Dictionary) -> void:
- var key := str([state.active,state.games,state.buildings])
+ var key := str([state.active,state.games,state.buildings,game.club.world.rebuilds])
  if key == signature:
   return
  signature = key
@@ -185,6 +191,8 @@ func set_time(seconds: float) -> void:
    display.text = "CEDAR GROVE OWLS\n"+score_sign.text
  score_sign.visible = hosted and not game.club.opening.active and stage in ["game","stories"]
  actors.visible = stage == "game"
+ if game.club.atmosphere != null:
+  game.club.atmosphere.observe(self)
  if actors.visible:
   var phase := fposmod(seconds-13,3.0)/3.0
   bat.rotation.z = -0.8
@@ -250,6 +258,8 @@ func advance(delta: float) -> void:
    a.phase += delta*6
    fan.get_node("LegLeft").rotation.x = sin(a.phase)*0.32
    fan.get_node("LegRight").rotation.x = -sin(a.phase)*0.32
+   fan.get_node("LegLeft/Knee").rotation.x = -maxf(0,sin(a.phase))*0.4
+   fan.get_node("LegRight/Knee").rotation.x = -maxf(0,-sin(a.phase))*0.4
    fan.get_node("ArmLeft").rotation.x = -sin(a.phase)*0.22
    fan.get_node("ArmRight").rotation.x = sin(a.phase)*0.22
 
@@ -279,6 +289,8 @@ func begin_routines() -> void:
   a.step = 0
   a.timer = 0.0
   a.last_inning = 0
+  a.last_score = 0
+  a.cheer = 0.0
   a.direction = Vector3.ZERO
   a.blocked = 0.0
 func walk_routine(a: Dictionary,goal: Vector3,delta: float) -> bool:
@@ -310,6 +322,8 @@ func walk_routine(a: Dictionary,goal: Vector3,delta: float) -> bool:
  a.phase += delta*7
  fan.get_node("LegLeft").rotation.x = sin(a.phase)*0.35
  fan.get_node("LegRight").rotation.x = -sin(a.phase)*0.35
+ fan.get_node("LegLeft/Knee").rotation.x = -maxf(0,sin(a.phase))*0.5
+ fan.get_node("LegRight/Knee").rotation.x = -maxf(0,-sin(a.phase))*0.5
  fan.get_node("ArmLeft").rotation.x = -sin(a.phase)*0.22
  fan.get_node("ArmRight").rotation.x = sin(a.phase)*0.22
  return false
@@ -336,8 +350,13 @@ func advance_routines(delta: float) -> void:
    if a.last_inning != inning:
     a.last_inning = inning
     a.timer = 0
-   a.node.get_node("ArmLeft").rotation.x = -1.8 if a.timer < 1.4 else 0
-   a.node.get_node("ArmRight").rotation.x = -1.8 if a.timer < 1.4 else 0
+   if a.last_score != home_runs:
+    a.last_score = home_runs
+    a.cheer = 2.0
+   a.cheer = maxf(0,a.cheer-delta)
+   a.node.get_node("ArmLeft").rotation.x = -1.8+sin(ambient_time*12)*0.15 if a.cheer > 0 or a.timer < 1.4 else 0
+   a.node.get_node("ArmRight").rotation.x = -1.8-sin(ambient_time*12)*0.15 if a.cheer > 0 or a.timer < 1.4 else 0
+   a.node.get_node("Head").rotation.y = sin(ambient_time*0.6+a.index)*0.12
    if a.timer > 18+float(a.index%5)*3 and a.index%3 == 0:
     a.state = "leave_section"
     a.step = a.seat_route.size()-1
@@ -353,7 +372,7 @@ func advance_routines(delta: float) -> void:
     else:
      var served: bool = a.target == 6 and a.route.size() > 8
      a.target += 1
-     a.wait = 5+float(a.index%3) if served else 0.2
+     a.wait = (2 if game.club.live.queue_relief() else 5)+float(a.index%3) if served else 0.2
      a.state = "queue" if served else "concourse"
      if served:
       a.node.rotation.y = PI
@@ -363,8 +382,10 @@ func advance_routines(delta: float) -> void:
     if a.step >= a.seat_route.size():
      a.node.position = a.seat
      a.node.rotation.y = 0
-     a.node.get_node("LegLeft").rotation.x = 0.9
-     a.node.get_node("LegRight").rotation.x = 0.9
+     a.node.get_node("LegLeft").rotation.x = 1.4
+     a.node.get_node("LegRight").rotation.x = 1.4
+     a.node.get_node("LegLeft/Knee").rotation.x = -1.5
+     a.node.get_node("LegRight/Knee").rotation.x = -1.5
      a.state = "seated"
      a.timer = 0
   elif a.state == "leave_section":
