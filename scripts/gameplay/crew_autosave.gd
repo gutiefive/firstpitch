@@ -32,17 +32,24 @@ func paid(id: String) -> bool:
    return true
  return false
 func probe() -> void:
- if not FileAccess.file_exists(store.path):
+ if not SaveRecovery.exists(store.path):
   return
  var data := store.read(game)
  if data.is_empty():
   var bad := store.path.get_basename()+".bad"
-  if FileAccess.file_exists(bad):
-   DirAccess.remove_absolute(bad)
-  var quarantined := DirAccess.rename_absolute(store.path,bad) == OK
+  var quarantined := true
+  for suffix in ["",".tmp",".bak"]:
+   if not FileAccess.file_exists(store.path+suffix):
+    continue
+   if FileAccess.file_exists(bad+suffix):
+    DirAccess.remove_absolute(bad+suffix)
+   quarantined = (DirAccess.rename_absolute(store.path+suffix,bad+suffix) == OK) and quarantined
   notice = "Autosave damaged; started normally."+(" Backup kept as field-autosave.bad." if quarantined else " Could not move damaged backup.")
   game.shift.overlay.autosave_footer.text = notice
   return
+ if not store.error.is_empty():
+  notice = store.error
+  game.shift.overlay.autosave_footer.text = notice
  if data.session.phase == ShiftSession.Phase.ACTIVE or (data.session.phase == ShiftSession.Phase.FINISHED and (not paid(data.session.attempt_id) or game.shift.career.pending_home_game(data.session.attempt_id))):
   candidate = data
   pending = false

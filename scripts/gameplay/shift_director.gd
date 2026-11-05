@@ -236,13 +236,15 @@ func save_field() -> void:
 
 func load_field() -> void:
  var data := save_store.read(game)
+ var recovery_notice := save_store.error
  if data.is_empty() or not save_store.restore(game,self,data):
   overlay.save_message.text = save_store.error
   return
  career_message = "Loaded result. Rewards can be checked from Crew career." if session.phase == ShiftSession.Phase.FINISHED else ""
  mouse_before_board = Input.MOUSE_MODE_CAPTURED
  overlay.refresh()
- overlay.save_message.text = "Loaded. Equipment parked at workshop. Resume when ready."
+ overlay.save_message.text = recovery_notice+" " if not recovery_notice.is_empty() else ""
+ overlay.save_message.text += "Loaded. Equipment parked at workshop. Resume when ready."
 
 func apply_upgrades() -> void:
  var wide := career.owns("wide_deck")

@@ -7,6 +7,7 @@ const V2_CEDAR_HASH := "7b9130bdf3d3ece6fd0bdc711a4028ad8613ebebabf58008a3603857
 const MAX_BYTES := 32*1024*1024
 var path := "user://field-save.dat"
 var error := ""
+var files := SaveRecovery.new()
 
 func layout(g: Node) -> String:
  return digest(var_to_bytes([g.grass.resolution,g.grass.field_origin,g.grass.field_size,g.grass.valid,g.infield.resolution,g.infield.field_origin,g.infield.field_size,g.infield.valid,g.moisture.target_moisture,g.chalk.line_start,g.chalk.line_end,g.chalk.section_length,g.chalk.chalk_width,g.chalk.valid,g.mound.patch_positions,g.mound.hits_required,g.mound.transform,g.mound.top_height,g.mound.patch_radius])).hex_encode()
@@ -25,40 +26,22 @@ func write(g: Node,s: ShiftSession) -> bool:
  if bytes.size() > MAX_BYTES:
   error = "Field is too large to save."
   return false
- var file := FileAccess.open(path+".tmp",FileAccess.WRITE)
- if file == null:
-  error = "Could not open the save file."
-  return false
- file.store_buffer("FPGCSAVE".to_ascii_buffer())
- file.store_buffer(digest(bytes))
- file.store_buffer(bytes)
- file.flush()
- var ok := file.get_error() == OK
- file.close()
- if not ok or DirAccess.rename_absolute(path+".tmp",path) != OK:
-  error = "Could not replace the save. Previous save retained."
+ if not files.write(path,"FPGCSAVE",bytes,MAX_BYTES,_valid_saved.bind(g)):
+  error = files.error
   return false
  return true
 
+func _valid_saved(data: Variant,g: Node) -> bool:
+ return validate(migrate(data,g),g)
+
 func read(g: Node) -> Dictionary:
  error = ""
- var file := FileAccess.open(path,FileAccess.READ)
- if file == null:
-  error = "No readable save found."
+ var loaded := files.load_checked(path,"FPGCSAVE",MAX_BYTES,_valid_saved.bind(g))
+ if loaded.is_empty() or loaded.get("missing",false):
+  error = files.error if not files.error.is_empty() else "No readable save found."
   return {}
- if file.get_length() > MAX_BYTES+40 or file.get_length() < 40:
-  error = "Save is damaged or too large."
-  return {}
- var magic := file.get_buffer(8).get_string_from_ascii()
- var checksum := file.get_buffer(32)
- var bytes := file.get_buffer(file.get_length()-40)
- file.close()
- if magic != "FPGCSAVE" or checksum != digest(bytes):
-  error = "Save is damaged. Current field kept."
-  return {}
- var data: Variant = migrate(bytes_to_var(bytes),g)
- if not validate(data,g):
-  return {}
+ var data := migrate(loaded.value,g)
+ error = files.notice
  return data
 
 func migrate(data: Variant,g: Node) -> Dictionary:

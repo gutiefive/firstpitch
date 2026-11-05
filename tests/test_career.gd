@@ -83,6 +83,8 @@ func run() -> void:
  restored.path = career.path
  check(restored.claim(retry_id,full).status == "awarded" and restored.claim(retry_id,full).status == "recorded" and restored.balance == 560,"failed reward can be retried and then pays exactly once")
  before = restored.data.duplicate(true)
+ # This fixture intentionally damages every available copy.
+ DirAccess.remove_absolute(restored.path+".bak")
  var file := FileAccess.open(restored.path,FileAccess.READ_WRITE)
  file.seek(45)
  file.store_8(255)

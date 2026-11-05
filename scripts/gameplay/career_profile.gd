@@ -11,6 +11,7 @@ const RANKS := [[0,"Rookie"],[500,"Field Hand"],[1500,"Crew Lead"],[3500,"Head G
 const MAX_RECORDS := 2000
 var path := "user://career.dat"
 var data := {"version":1,"records":[],"upgrades":PackedStringArray()}
+var files := SaveRecovery.new()
 var healthy := true
 var error := ""
 var earned := 0
@@ -73,27 +74,20 @@ func validate(value: Variant) -> bool:
 
 func load_profile() -> bool:
  error = ""
- if not FileAccess.file_exists(path):
+ var loaded := files.load_checked(path,"FPCREW01",4*1024*1024-40,validate)
+ if loaded.get("missing",false):
   data = {"version":1,"records":[],"upgrades":PackedStringArray()}
   healthy = true
   rebuild()
   changed.emit()
   return true
- var file := FileAccess.open(path,FileAccess.READ)
- var value: Variant = null
- if file != null and file.get_length() >= 40 and file.get_length() <= 4*1024*1024:
-  var magic := file.get_buffer(8).get_string_from_ascii()
-  var hash := file.get_buffer(32)
-  var bytes := file.get_buffer(file.get_length()-40)
-  if magic == "FPCREW01" and hash == FieldSave.new().digest(bytes):
-   value = bytes_to_var(bytes)
- if file != null:
-  file.close()
- if not validate(value):
+ if loaded.is_empty():
   healthy = false
-  error = "Career file is unreadable or damaged. Existing file kept."
+  error = files.error
   changed.emit()
   return false
+ var value: Dictionary = loaded.value
+ error = files.notice
  data = value.duplicate(true)
  healthy = true
  rebuild()
@@ -111,19 +105,8 @@ func commit(candidate: Dictionary) -> bool:
   error = "Career record is full. No credits changed."
   changed.emit()
   return false
- var file := FileAccess.open(path+".tmp",FileAccess.WRITE)
- if file == null:
-  error = "Career could not be saved. No credits changed; retry from Career."
-  changed.emit()
-  return false
- file.store_buffer("FPCREW01".to_ascii_buffer())
- file.store_buffer(FieldSave.new().digest(bytes))
- file.store_buffer(bytes)
- file.flush()
- var ok := file.get_error() == OK
- file.close()
- if not ok or DirAccess.rename_absolute(path+".tmp",path) != OK:
-  error = "Career could not be saved. No credits changed; retry from Career."
+ if not files.write(path,"FPCREW01",bytes,4*1024*1024-40,validate):
+  error = "Career could not be saved. No credits changed; retry from Career. "+files.error
   changed.emit()
   return false
  data = candidate.duplicate(true)

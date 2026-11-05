@@ -82,6 +82,8 @@ func run() -> void:
  bad = result_save.duplicate(true)
  bad.session.result.score = 100
  check(not store.restore(g,g.shift,bad),"inconsistent result score rejected")
+ # This fixture intentionally damages every available copy.
+ DirAccess.remove_absolute(store.path+".bak")
  var file := FileAccess.open(store.path,FileAccess.READ_WRITE)
  file.seek(45)
  file.store_8(255)
@@ -91,6 +93,8 @@ func run() -> void:
  file.store_buffer(PackedByteArray([0,1,2,3]))
  file.close()
  check(store.read(g).is_empty() and g.shift.session.get_result() == result,"truncated file leaves existing result intact")
+ # Begin independent normal round-trip cases after the damaged-file checks.
+ DirAccess.remove_absolute(store.path)
  g.shift.session.phase = ShiftSession.Phase.PRACTICE
  g.shift.session.elapsed_seconds = 0
  g.shift.session._result.clear()

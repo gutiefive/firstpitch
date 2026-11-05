@@ -118,6 +118,9 @@ func run() -> void:
  check(g.autosave.write_now(),"full-field state autosaves successfully")
  print("FULL_FIELD_AUTOSAVE_MS=",g.autosave.last_ms)
  await dispose(g)
+ # Irrecoverable fixture: no valid redundant autosave may remain.
+ DirAccess.remove_absolute(AUTO+".bak")
+ DirAccess.remove_absolute(AUTO+".tmp")
  file = FileAccess.open(AUTO,FileAccess.WRITE)
  file.store_string("damaged autosave")
  file.close()
