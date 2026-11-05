@@ -26,6 +26,7 @@ var staff_count := 0
 var workers: Array[Node3D] = []
 var ambient_time := 0.0
 var scoreboards: Array[Label3D] = []
+const TEAM_COLORS := {"Mill Creek Foxes":Color("ae633c"),"Riverbend Otters":Color("436e93"),"Pine Ridge Bears":Color("765c80"),"Maple Falls Robins":Color("a74f55")}
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
  identity = Node3D.new()
@@ -36,6 +37,8 @@ func _ready() -> void:
  for p in [Vector3(0,0.35,-18),Vector3(0,0,-1),Vector3(-18,0,-20),Vector3(18,0,-20),Vector3(-10,0,-30),Vector3(10,0,-30),Vector3(-25,0,-49),Vector3(0,0,-58),Vector3(25,0,-49)]:
   var player := person(actors,Color("e0d7bd"),2)
   player.position = p
+  if fielders.is_empty():
+   player.rotation.y = PI
   fielders.append({"node":player,"origin":p})
  var batter := actors.get_child(1) as Node3D
  bat = Node3D.new()
@@ -57,8 +60,10 @@ func person(parent: Node3D,shirt: Color,index: int) -> Node3D:
  G.tailored_body(root,Vector3(0,1.08,0),shirt)
  var head := G.sphere(root,Vector3(0,1.62,0),Vector3(0.30,0.36,0.29),skin)
  head.name = "Head"
- G.sphere(root,Vector3(0,1.77,0.02),Vector3(0.34,0.12,0.33),Color("244e53"))
- G.soft_box(root,Vector3(0,1.77,-0.13),Vector3(0.33,0.025,0.21),Color("244e53"))
+ var cap := G.sphere(root,Vector3(0,1.77,0.02),Vector3(0.34,0.12,0.33),Color("244e53"))
+ cap.name = "Cap"
+ var brim := G.soft_box(root,Vector3(0,1.77,-0.13),Vector3(0.33,0.025,0.21),Color("244e53"))
+ brim.name = "Brim"
  for x in [-0.06,0.06]:
   G.sphere(root,Vector3(x,1.65,-0.14),Vector3.ONE*0.023,Color("282f30"))
  for side in [-1,1]:
@@ -93,11 +98,27 @@ func sync(state: Dictionary) -> void:
  if not state.active:
   return
  fixture = ClubSchedule.fixture(maxi(0,int(state.games)-1))
+ for i in range(fielders.size()):
+  dress(fielders[i].node,"OWLS" if i != 1 else fixture.opponent, i+1)
+ dress(runner,fixture.opponent,12)
  var count := mini(28,maxi(8,int(state.last.get("attendance",0))/3)) if hosted else 0
  var colors := [Color("c09e69"),Color("6f8580"),Color("9d6e5d"),Color("587186"),Color("b9bbaa")]
  for i in range(count):
   var fan := person(self,colors[i%colors.size()],i)
   fan.name = "MovingSupporter%d" % i
+  var cap_color: Color = [Color("28585a"),Color("49596d"),Color("a28a62")][i%3]
+  fan.get_node("Cap").material_override = G.material(cap_color)
+  fan.get_node("Brim").material_override = G.material(cap_color)
+  if i%3 == 0:
+   for y in [1.0,1.12,1.24]:
+    G.box(fan,Vector3(0,y,-0.17),Vector3(0.32,0.025,0.015),Color("d2c5a1"))
+  elif i%3 == 1:
+   for side in [-1,1]:
+    G.soft_box(fan,Vector3(side*0.07,1.25,-0.18),Vector3(0.07,0.26,0.025),Color("28585a"))
+  else:
+   var badge := G.label(fan,"CG",Vector3(0,1.18,-0.18),20)
+   badge.pixel_size = 0.003
+   badge.rotation.y = PI
   fan.scale = Vector3.ONE*(0.80 if i%7 == 0 else 0.95+float(i%3)*0.04)
   var side := -1.0 if i%2 == 0 else 1.0
   # Routes pass either side of the solid ticket booth, then behind the stands.
@@ -173,6 +194,10 @@ func stories(state: Dictionary) -> PackedStringArray:
   lines.append("Mara · Six home dates in the books. Your ownership review is waiting in the Clubhouse.")
  else:
   lines.append("Mara · Next comes "+String(ClubSchedule.fixture(state.games).event)+". Take a breath, then let's get ready.")
+ if int(state.games) >= 3:
+  lines.append("Eli · I recognize more faces every home date. This is turning into our town’s meeting place.")
+ if int(state.games) >= 6:
+  lines.append("Leni · A whole season of opening the shutters together. Thanks for always checking on the crew." if "snack_shack" in state.buildings else "Leni · A whole season together. I’m still saving ideas for our first stand. Thanks for checking on the crew.")
  return lines
 func begin(value: Dictionary) -> void:
  receipt = value.duplicate(true)
@@ -410,3 +435,27 @@ func advance_routines(delta: float) -> void:
    if walk_routine(a,Vector3(lane,0.05,42),delta):
     a.state = "departed"
     a.node.visible = false
+
+func dress(person_root: Node3D,team: String,number: int) -> void:
+ var old := person_root.get_node_or_null("UniformDetails")
+ if old != null:
+  person_root.remove_child(old)
+  old.queue_free()
+ var details := Node3D.new()
+ details.name = "UniformDetails"
+ person_root.add_child(details)
+ var home := team == "OWLS"
+ var color: Color = Color("28585a") if home else TEAM_COLORS.get(team,Color("526873"))
+ person_root.set_meta("team",team)
+ (person_root.get_child(0) as MeshInstance3D).material_override = G.material(Color("e6ddc5") if home else color)
+ person_root.get_node("Cap").material_override = G.material(color)
+ person_root.get_node("Brim").material_override = G.material(color)
+ var nameplate := G.label(details,"OWLS" if home else team.split(" ")[-1].to_upper(),Vector3(0,1.18,-0.18),24)
+ nameplate.rotation.y = PI
+ nameplate.pixel_size = 0.0028
+ nameplate.modulate = color if home else Color("f2e5c9")
+ var jersey := G.label(details,str(number),Vector3(0,1.10,0.18),32)
+ jersey.pixel_size = 0.005
+ jersey.modulate = color if home else Color("f2e5c9")
+ for side in [-1,1]:
+  G.box(details,Vector3(side*0.18,1.08,-0.15),Vector3(0.018,0.43,0.025),color if home else Color("d9cfbb"))

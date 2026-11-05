@@ -8,6 +8,9 @@ var tamping_pose := false
 var tamp_lift := 0.0
 var limbs: Array[Node3D] = []
 var phase := 0.0
+var cleaning_pose := false
+var carrying_pose := false
+var work_phase := 0.0
 var knees: Array[Node3D] = []
 
 func _ready() -> void:
@@ -71,12 +74,23 @@ func _ready() -> void:
 func animate_walk(speed: float,delta: float) -> void:
  if seated_pose:
   return
+ work_phase += delta
  phase += speed*delta*2.2
  for i in range(knees.size()):
   var bend := -maxf(0,sin(phase+i*PI))*0.60*clampf(speed/4.5,0,1)
   knees[i].rotation.x = lerpf(knees[i].rotation.x,bend,1-exp(-14*delta))
  var strength := clampf(speed/4.5,0,1)
  for i in range(limbs.size()):
+  if cleaning_pose and i in [0,2]:
+   limbs[i].rotation.x = 0.8+sin(work_phase*7)*0.28
+   limbs[i].rotation.z = 0.18 if i == 0 else -0.18
+   continue
+  if carrying_pose and i in [0,2]:
+   limbs[i].rotation.x = 1.2
+   limbs[i].rotation.z = -0.25 if i == 0 else 0.25
+   continue
+  if i in [0,2]:
+   limbs[i].rotation.z = 0
   if tamping_pose and i in [0,2]:
    limbs[i].rotation.x = 1.2+tamp_lift*0.4
    continue

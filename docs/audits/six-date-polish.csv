@@ -1,0 +1,7 @@
+date,profile,event,prep_minutes,credits_before,credits_after,participants,satisfaction,park_bonus,purchase
+1,home_game,lost,20,0,64,48,90,20,hose_nozzle
+2,home_hot,lost,20,64,428,70,89,19,none
+3,home_rain,litter,20,428,413,92,88,19,snack_shack
+4,home_double,rush,15,413,438,114,89,19,bleachers
+5,home_hot,lost,20,438,1150,139,93,21,none
+6,home_rain,litter,20,1150,1967,164,92,21,none

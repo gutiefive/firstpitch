@@ -357,3 +357,9 @@ A service reward is a separate append-only career event tied to the latest hoste
 Eligibility requires the final plus 30 on-foot seconds; broadcast time and paused menus do not accrue service time. Claiming is explicit, and its focus must be scrolled into view after Results layout settles. A rating includes its welcome baseline in the visible breakdown so component points reconcile. Queue pressure is an aggregate simulated wait metric, not measured real-world wait time. Event completion and queue relief remain visit state; only the once-claimed review persists.
 
 MatchdayAtmosphere owns an environment snapshot and restores it idempotently after normal finish, skip or live exit. Evening fixtures duplicate the environment before changing sky/fog/ambient light, add four bounded shadow-free floodlights, and preserve the original resource. PA captions/chimes respond to stage/score changes and honor pause and Ambience settings. Supporter rigs add knee joints; seated cheering and head motion animate a bounded representative crowd instead of creating a full skeletal crowd simulation.
+
+## Work poses and season audit
+
+Carry and cleanup need their own CrewVisual flags rather than borrowing the chalk-cart pushing pose. Stationary cleanup uses a time-based work phase, because locomotion phase does not advance at zero speed. Props attach to the rotating visual rig, not the unrotated player body. Release/completion/broadcast/exit clear work state; hiding the source crate avoids duplicate pickup props.
+
+Audit affordability using one continuous saved career and real ledger claims/purchases. The ideal tools-first route cannot afford a date-two concession after buying the opening nozzle. Document that tradeoff instead of silently retuning prices to satisfy the test. Surface/service fixtures validate transitions and money, not human route completion times or entertainment value.

@@ -17,6 +17,7 @@ var hint: Label
 var feedback := "Explore the concourse, watch the game, or help the crew."
 var carrying := false
 var parcel: Node3D
+var broom: Node3D
 var on_foot_time := 0.0
 var queue_seconds := 0.0
 var event_spawned := false
@@ -78,6 +79,14 @@ func start(at: float = 0) -> bool:
  game.club.world.reserve_seats(game.club.matchday.agents.size())
  game.club.matchday.begin_routines()
  create_jobs()
+ broom = Node3D.new()
+ game.player.visual.add_child(broom)
+ broom.position = Vector3(0.22,0,-0.55)
+ G.cylinder(broom,Vector3(0,0.75,0),0.025,1.35,Color("a78a60"))
+ G.box(broom,Vector3(0,0.1,0),Vector3(0.48,0.1,0.15),Color("416c64"))
+ for i in range(10):
+  G.box(broom,Vector3(-0.21+i*0.047,0.025,0),Vector3(0.025,0.09,0.12),Color("c1a56d"))
+ broom.visible = false
  game.shift.close_board()
  Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
  game.hud.visible = false
@@ -97,6 +106,9 @@ func show_broadcast() -> void:
  if not active or viewing:
   return
  viewing = true
+ game.player.visual.cleaning_pose = false
+ if broom != null:
+  broom.visible = false
  hud.visible = false
  game.shift.open_board()
  game.shift.overlay.club_button.pressed.emit()
@@ -123,6 +135,11 @@ func end_visit(show_results: bool = true) -> void:
  viewing = false
  carrying = false
  game.player.visual.pushing_pose = false
+ game.player.visual.carrying_pose = false
+ game.player.visual.cleaning_pose = false
+ if broom != null:
+  broom.queue_free()
+  broom = null
  if job_root != null:
   job_root.queue_free()
   job_root = null
@@ -181,15 +198,23 @@ func interact_job() -> void:
  if job.id == "supply":
   if job.state == "available":
    carrying = true
-   game.player.visual.pushing_pose = true
+   game.player.visual.carrying_pose = true
    job.state = "carrying"
    job.point = Vector3(30,0.05,16) if "snack_shack" in game.shift.career.club.buildings else Vector3(-31,0.05,15)
+   for child in job.marker.get_children():
+    if child is MeshInstance3D:
+     child.visible = false
    job.marker.position = job.point
    parcel = G.box(game.player.visual,Vector3(0,1,-0.45),Vector3(0.55,0.4,0.35),Color("a18b62"))
+   for side in [-1,1]:
+    G.box(parcel,Vector3(side*0.28,0,0),Vector3(0.02,0.09,0.18),Color("4d5b54"))
+   var stamp := G.label(parcel,"OWLS",Vector3(0,0,-0.18),22)
+   stamp.pixel_size = 0.004
+   stamp.rotation.y = PI
    feedback = "Crate collected. Carry it to the marked concession counter."
   else:
    carrying = false
-   game.player.visual.pushing_pose = false
+   game.player.visual.carrying_pose = false
    if parcel != null:
     parcel.queue_free()
     parcel = null
@@ -213,6 +238,9 @@ func finish_job(job: Dictionary,message: String) -> void:
   job.marker.visible = false
  feedback = message
 func advance_jobs(delta: float) -> void:
+ game.player.visual.cleaning_pose = false
+ if broom != null:
+  broom.visible = false
  for job in jobs:
   if job.state == "done":
    if job.id == "lost":
@@ -220,8 +248,15 @@ func advance_jobs(delta: float) -> void:
    continue
   var distance: float = game.player.position.distance_to(job.point)
   if job.id in ["spill","litter","rush"] and Input.is_action_pressed("interact") and distance < 2 and Vector2(game.player.velocity.x,game.player.velocity.z).length() < 0.5:
+   if job.id != "rush":
+    game.player.visual.cleaning_pose = true
+    broom.visible = true
+    broom.rotation.y = sin(game.player.visual.work_phase*7)*0.22
    job.progress += delta
    if job.progress >= job.duration:
+    game.player.visual.cleaning_pose = false
+    if broom != null:
+     broom.visible = false
     finish_job(job,"Leni: Rush handled. The line is moving again." if job.id == "rush" else "Crew: The walkway is clear. Thanks for looking after the families.")
   if job.state == "escorting":
    var regular: Node3D = game.club.matchday.regular

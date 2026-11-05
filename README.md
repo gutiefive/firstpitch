@@ -508,3 +508,13 @@ Supporters now bend their knees while walking and sitting, turn their heads whil
 Existing career versions 1 and 2 load normally. The first claimed park bonus writes **career version 3**, which records once-only service rewards; older builds do not read career v3. Manual field/autosave format remains version 3. Failed bonus saves keep the previous file and budget, and the claim can be retried.
 
 [Park review and bonus](docs/screenshots/satisfaction-preview.png) · [Evening field](docs/screenshots/satisfaction-evening.png) · [Concession rush](docs/screenshots/satisfaction-rush.png) · [Seated supporters](docs/screenshots/satisfaction-fans.png)
+
+## Job feel and season polish
+
+Held cleanup now shows a broom and animated sweeping arms, and stops visibly on release, movement or completion. Supply delivery uses a separate two-arm carry pose, crate handles and an Owls stamp; the pickup prop is hidden while carried. End/abort and broadcast transitions clear the appropriate work pose.
+
+The staged Owls wear cream-and-teal jerseys, caps, piping and numbers. Visiting batters/runners use opponent-specific colors and team lettering. Crowd caps, stripes, scarves and CG shirts vary, while Eli and Leni gain additional midseason/finale lines.
+
+A reproducible [six-date audit](docs/audits/SIX_DATE_POLISH.md) follows the complete ideal-work loop without side-job income: nozzle after Opening Day, snack shack after date three, bleachers after date four. It finishes with 1,967 credits and 189 supporters. These are scripted integration results, not a claim that human prep timing or fun has been validated.
+
+[Sweeping](docs/screenshots/polish-cleaning.png) · [Crate carrying](docs/screenshots/polish-carry.png) · [Owls uniform](docs/screenshots/polish-uniform.png)
