@@ -475,3 +475,21 @@ Matchday viewing now has explicit **Pause/Play**, **1×/2× speed**, **Next mome
 **Results → Watch latest matchday** revisits the latest hosted game without paying it again or changing the career ledger. Replay is available between dates after hosting, with no active/prepared shift or unresolved autosave recovery. The recap shows the same condensed final score as the presentation. **Clubhouse → Town** lets you browse Everyone, Mara, Eli or Leni; these remain contextual updates rather than conversation choices.
 
 [Playback controls](docs/screenshots/watch-playback.png) · [Latest matchday replay](docs/screenshots/watch-results.png) · [Town updates](docs/screenshots/watch-town.png)
+
+## Walk a live matchday
+
+Choose **Walk park · V / RS** during the matchday presentation, or **Results → Walk the park** between home dates. You control the existing third-person player while the game continues. The visit stretches the 47-second broadcast timeline over roughly six minutes, with the final at about five minutes; the HUD shows first-pitch countdown, inning and score. **V / RS** switches to broadcast, and its Walk button returns to the same visit and shared clock. The condensed broadcast can move time forward faster. **Tab** pauses the visit. **B** or the End visit button returns to Results; **Esc** releases/captures the mouse for HUD buttons. Normal movement, jumping and camera controls remain available. The active field is closed to visitors.
+
+Walking supporters now follow a live-visit routine: arrivals, public aisles, concession service where built, reserved seats, short reactions to inning changes, occasional return trips, and departures after the final. Seats occupied by moving supporters are removed from the batched seated crowd, keeping the represented attendance consistent. Soft spacing/yielding reduces queue stacking; fixed public routes guide them around the booth, benches and stands. The remaining batched crowd clears after the final as walkers head for the gates.
+
+Three optional crew jobs give you reasons to explore:
+
+- **Clean spilled drinks:** hold E/X beside the marked spill while stopped for two seconds.
+- **Help Eli:** interact near the regular, then lead him along public paths to his marked section. He follows the route you walk.
+- **Deliver concession supplies:** unlocked by a snack shack or grill. Collect the marked crate, carry it to the counter, and interact again to deliver it.
+
+Jobs show progress, completion checks and character thanks, followed by a service summary in Results. They are session-only activities with no additional credits, supporters or persistent quest ledger. Visiting, replaying and completing jobs never re-settle a hosted game. Paid prep, construction, manual checkpoint actions and tutorial replay are blocked until the visit ends; equipment is stowed. Ordinary paused menus freeze the visit, and ending it restores normal HUD, crowd and game controls. Relaunch returns to the saved career/field rather than resuming optional jobs.
+
+This remains a staged baseball simulation and a bounded representative crowd, not a full baseball engine or general-purpose NPC navigation system. Section-to-seat handoffs are decorative; movement uses authored paths and soft yielding without NPC physics colliders.
+
+[Live cleanup](docs/screenshots/live-cleanup.png) · [Watching from the stands](docs/screenshots/live-seating.png) · [Concession delivery](docs/screenshots/live-jobs.png) · [After the final](docs/screenshots/live-final.png)

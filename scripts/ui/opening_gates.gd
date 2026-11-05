@@ -17,6 +17,7 @@ var pause_button: Button
 var speed_button: Button
 var next_button: Button
 var results_button: Button
+var walk_button: Button
 var chapter_label: Label
 var clock_label: Label
 var gates: Array[Node3D] = []
@@ -91,6 +92,10 @@ func _ready() -> void:
  pause_button = GameUI.button(controls,"Pause · Space / X")
  speed_button = GameUI.button(controls,"Speed 1× · Y")
  next_button = GameUI.button(controls,"Next moment · N / RB")
+ walk_button = GameUI.button(controls,"Walk park · V / RS")
+ walk_button.custom_minimum_size.x = 185
+ walk_button.focus_mode = Control.FOCUS_NONE
+ walk_button.pressed.connect(walk_park)
  results_button = GameUI.button(controls,"Results · Enter / A",true)
  for button in [pause_button,speed_button,next_button,results_button]:
   button.focus_mode = Control.FOCUS_NONE
@@ -192,6 +197,10 @@ func _input(event: InputEvent) -> void:
   return
  if event is InputEventMouse and controls.get_global_rect().has_point(event.position):
   return
+ if (event is InputEventKey and event.pressed and event.physical_keycode == KEY_V) or (event is InputEventJoypadButton and event.pressed and event.button_index == JOY_BUTTON_RIGHT_STICK):
+  walk_park()
+  get_viewport().set_input_as_handled()
+  return
  if (event is InputEventKey and event.pressed and event.physical_keycode == KEY_SPACE) or (event is InputEventJoypadButton and event.pressed and event.button_index == JOY_BUTTON_X):
   toggle_pause()
   get_viewport().set_input_as_handled()
@@ -209,6 +218,8 @@ func _input(event: InputEvent) -> void:
  # The covered recap must not respond to navigation or pointer events underneath.
  get_viewport().set_input_as_handled()
 func finish() -> void:
+ if game.club.live != null and game.club.live.active and game.club.live.viewing:
+  game.club.live.end_visit(false)
  active = false
  playback_paused = false
  cheer.stream_paused = false
@@ -220,6 +231,8 @@ func finish() -> void:
  view.render_target_update_mode = SubViewport.UPDATE_DISABLED
  cheer.stop()
  latch.stop()
+ if game.shift.overlay.modal.visible:
+  game.shift.overlay.focus_current()
 
 func toggle_pause() -> void:
  if not active:
@@ -244,3 +257,14 @@ func next_moment() -> void:
    update_view(elapsed/DURATION)
    return
  finish()
+
+func walk_park() -> void:
+ if not active:
+  return
+ active = false
+ visible = false
+ view.render_target_update_mode = SubViewport.UPDATE_DISABLED
+ cheer.stop()
+ latch.stop()
+ set_gate_fraction(1)
+ game.club.live.start(elapsed)

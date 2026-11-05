@@ -111,6 +111,8 @@ func refresh_labels() -> void:
   game.hud.inspection_legend.text += " · %d rutted" % game.infield.rut_count
  game.hud.inspection_controls.text = "%s / %s Job · %s Exit inspection" % [game.binding_text("previous_job"),game.binding_text("next_job"),game.binding_text("inspect_field")]
 func _unhandled_input(event: InputEvent) -> void:
+ if game.club != null and game.club.live != null and game.club.live.active:
+  return
  if get_tree().paused or (event is InputEventKey and event.echo):
   return
  if event.is_action_pressed("inspect_field"):

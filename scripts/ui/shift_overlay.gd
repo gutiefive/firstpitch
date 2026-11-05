@@ -188,7 +188,11 @@ func _ready() -> void:
  full_button.pressed.connect(func(): start_requested.emit("full"))
  end_button = button("End shift now")
  content.add_child(end_button)
- end_button.pressed.connect(func(): end_requested.emit())
+ end_button.pressed.connect(func():
+  if director.game.club != null and director.game.club.live != null and director.game.club.live.active:
+   director.game.club.live.end_visit()
+  else:
+   end_requested.emit())
  var save_card := GameUI.card(content,"MANUAL FIELD SLOT")
  GameUI.label(save_card,"Keep a field checkpoint",18)
  GameUI.label(save_card,"One manual slot, separate from autosave. Loading replaces current field work and parks equipment; your career stays saved.",12,GameUI.MUTED)
@@ -321,6 +325,7 @@ func _input(event: InputEvent) -> void:
 
 func refresh() -> void:
  var offered := resume_card.visible
+ var visiting: bool = director.game.club != null and director.game.club.live != null and director.game.club.live.active
  if navigation != null:
   for node in navigation.get_children():
    if node is Button:
@@ -357,6 +362,8 @@ func refresh() -> void:
   status_rows[i].text = "%s %s  %.1f / %.0f%%" % ["✓" if session.goal_met(i) else "·",ShiftSession.JOB_NAMES[i],session.values[i],session.goals()[i]]
  heading.text = "OPERATIONS"
  description.text = "Free practice. Visit Clubhouse to take the Owls groundskeeper job." if not director.career.club_started() else "Between home games. Clubhouse has your next story objective."
+ if visiting:
+  description.text = "Live matchday paused. Return to the park, or end the visit before paid prep, construction or manual checkpoints."
  score_label.visible = active or finished
  score_label.text = ""
  var values: Array = Array(session.values)
@@ -387,15 +394,16 @@ func refresh() -> void:
   board_rows[i].visible = (active or finished) and targets[i] > 0
   board_rows[i].text = "%s  %s     %.1f%% / %.0f%% goal" % ["✓" if met[i] else "·",ShiftSession.JOB_NAMES[i],values[i],targets[i]]+ (" · Quality %.0f%%" % (float(qualities[i])*100) if i != 4 else " · Quality —")
   board_rows[i].modulate = Color("a5d2b9") if met[i] else Color.WHITE
- replay_button.disabled = active or offered
+ replay_button.disabled = active or offered or visiting
  close_button.disabled = offered
- load_button.disabled = offered
- save_button.disabled = offered
+ load_button.disabled = offered or visiting
+ save_button.disabled = offered or visiting
  contracts_button.disabled = offered
- training_button.disabled = active or offered
- full_button.disabled = active or offered
- end_button.visible = active
- close_button.text = "Resume" if active else "Return to field"
+ training_button.disabled = active or offered or visiting
+ full_button.disabled = active or offered or visiting
+ end_button.visible = active or visiting
+ end_button.text = "End visit and view Results" if visiting else "End shift now"
+ close_button.text = "Return to matchday" if visiting else ("Resume" if active else "Return to field")
  scoring_label.visible = active or finished
  career_hero.get_parent().visible = not active
  status_panel.reset_size()

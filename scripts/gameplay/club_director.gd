@@ -7,6 +7,7 @@ var life: StadiumLife
 var opening: OpeningGates
 var ownership := {}
 var matchday: MatchdayPark
+var live: LiveMatchday
 func _ready() -> void:
  world = ClubStadium.new()
  world.game = game
@@ -20,17 +21,20 @@ func _ready() -> void:
  opening = OpeningGates.new()
  opening.game = game
  add_child(opening)
+ live = LiveMatchday.new()
+ live.game = game
+ add_child(live)
  ownership = ClubOwnership.review(game.shift.career)
  game.shift.overlay.attach_club(self)
  game.shift.career.changed.connect(sync)
  game.shift.session.changed.connect(refresh_spectators)
  sync()
 func available() -> bool:
- return game.shift.session.phase != ShiftSession.Phase.ACTIVE and (game.autosave == null or game.autosave.candidate.is_empty())
+ return (live == null or not live.active) and game.shift.session.phase != ShiftSession.Phase.ACTIVE and (game.autosave == null or game.autosave.candidate.is_empty())
 func refresh_spectators() -> void:
  var visible_crowd: bool = game.shift.session.phase == ShiftSession.Phase.PRACTICE
  for node in world.structures.get_children():
-  if String(node.name).begins_with("Supporter") or node.name == "CrowdDetails":
+  if node.get_meta("club_crowd",false):
    (node as Node3D).visible = visible_crowd
 func sync() -> void:
  var career: CareerProfile = game.shift.career
@@ -90,6 +94,8 @@ func host() -> bool:
  opening.present(receipt.receipt)
  return true
 func build(id: String) -> bool:
+ if not available():
+  return false
  opening.finish()
  if not available() or not game.shift.career.purchase_stadium(id):
   message = game.shift.career.error if not game.shift.career.error.is_empty() else "Meet the fan, budget and project requirements first."

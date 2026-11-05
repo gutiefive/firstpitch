@@ -5,6 +5,7 @@ var structures: Node3D
 var signature := ""
 var seat_count := 0
 var crowd_count := 0
+var seat_positions := PackedVector3Array()
 var rebuilds := 0
 const G = preload("res://scripts/gameplay/geometry.gd")
 func sync(state: Dictionary) -> void:
@@ -41,6 +42,7 @@ func sync(state: Dictionary) -> void:
  for i in range(60):
   for bank in banks:
    seats.append(bank[i])
+ seat_positions = seats
  seat_count = seats.size()
  crowd_count = mini(crowd,seats.size())
  build_crowd(seats,crowd_count)
@@ -105,6 +107,8 @@ func build_crowd(seats: PackedVector3Array,count: int) -> void:
     bodies.append(seats[i]+Vector3(0,0.27,0))
   if not bodies.is_empty():
    var fans := G.box_instances(structures,bodies,Vector3(0.30,0.42,0.25),palette[color],"Supporters")
+   fans.set_meta("club_crowd",true)
+   fans.set_meta("crowd_body",true)
    var body_mesh := CapsuleMesh.new()
    body_mesh.radius = 0.14
    body_mesh.height = 0.43
@@ -117,6 +121,7 @@ func build_crowd(seats: PackedVector3Array,count: int) -> void:
   return
  var detail := Node3D.new()
  detail.name = "CrowdDetails"
+ detail.set_meta("club_crowd",true)
  structures.add_child(detail)
  var eyes := PackedVector3Array()
  var hair := PackedVector3Array()
@@ -160,6 +165,7 @@ func build_crowd(seats: PackedVector3Array,count: int) -> void:
   instances.set_instance_transform(i,Transform3D(Basis.IDENTITY,seats[i]+Vector3(0,0.59,0)))
  var heads := MultiMeshInstance3D.new()
  heads.name = "SupporterHeads"
+ heads.set_meta("club_crowd",true)
  heads.multimesh = instances
  heads.material_override = G.material(Color("bd9279"))
  heads.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -261,3 +267,15 @@ func serving_window(root: Node3D,width: float,y: float,z: float) -> void:
  glow.emission = Color("b79a68").srgb_to_linear()
  glow.emission_energy_multiplier = 0.45
  lamp.material_override = glow
+
+func reserve_seats(count: int) -> void:
+ for node in structures.get_children():
+  if node.get_meta("club_crowd",false):
+   structures.remove_child(node)
+   node.queue_free()
+ build_crowd(seat_positions.slice(count),maxi(0,crowd_count-count))
+
+func show_static_crowd(showing: bool) -> void:
+ for node in structures.get_children():
+  if node.get_meta("club_crowd",false):
+   node.visible = showing

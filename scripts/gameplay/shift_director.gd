@@ -136,6 +136,8 @@ func on_finished(result: Dictionary) -> void:
  open_board()
 
 func start_shift(profile: String) -> bool:
+ if game.club != null and game.club.live != null and game.club.live.active:
+  return false
  if game.autosave != null and not game.autosave.candidate.is_empty():
   return false
  if session.phase == ShiftSession.Phase.ACTIVE or not ShiftSession.PROFILES.has(profile):

@@ -83,12 +83,15 @@ func _ready() -> void:
  refresh()
 
 func refresh() -> void:
+ var visiting: bool = director.game.club != null and director.game.club.live != null and director.game.club.live.active
  var active := director.session.phase == ShiftSession.Phase.ACTIVE
  wallet.text = "%s · %d cr available · %d cr lifetime earnings" % [director.career.rank_title(),director.career.balance,director.career.earned]
  for id in buttons:
   var minimum := int(ShiftSession.PROFILES[id].get("minimum_earnings",0))
   var locked := director.career.earned < minimum
-  buttons[id].disabled = active or locked
+  buttons[id].disabled = active or locked or visiting
   buttons[id].text = ("Crew Lead required" if minimum >= 1500 else "Field Hand required") if locked else ("Shift active" if active else ("Start game day" if ShiftSession.PROFILES[id].get("start","fresh") == "game_day" else "Start fresh contract"))
+  if visiting:
+   buttons[id].text = "End park visit first"
   best_labels[id].text = "Best %.1f / 100%s" % [director.career.best.get(id,0.0)," · Unlocks at %d cr lifetime earnings" % minimum if locked else " · Available"]
- message.text = "Finish or end the current shift before taking another contract." if active else "Partial work pays too. Full training and full-park shifts remain on the main board."
+ message.text = "End the live park visit before taking paid work." if visiting else ("Finish or end the current shift before taking another contract." if active else "Partial work pays too. Full training and full-park shifts remain on the main board.")

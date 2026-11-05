@@ -26,6 +26,7 @@ var town_voices: Label
 var town_filter := "All"
 var town_buttons := {}
 var watch_button: Button
+var walk_button: Button
 var match_summary: Label
 var result_details: Button
 var sections := {}
@@ -105,6 +106,10 @@ func _ready() -> void:
  watch_button = GameUI.button(result_actions,"Watch latest matchday")
  watch_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
  watch_button.pressed.connect(director.watch_last_game)
+ walk_button = GameUI.button(result_actions,"Walk the park")
+ walk_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+ walk_button.tooltip_text = "Explore a live matchday and help with optional crew jobs."
+ walk_button.pressed.connect(func(): director.live.start())
  recap_continue.pressed.connect(func(): show_section("matchday"); prep_button.grab_focus())
  sections.results.add_theme_constant_override("separation",10)
  var earnings := HBoxContainer.new()
@@ -198,6 +203,7 @@ func refresh() -> void:
  var state: Dictionary = career.club
  show_town_voice(town_filter)
  watch_button.disabled = not director.can_watch()
+ walk_button.disabled = not director.can_watch()
  watch_button.tooltip_text = "Rewatch without changing your earnings." if not watch_button.disabled else "Host a game and finish current work to watch again."
  if not state.last.is_empty():
   var score := MatchdayPark.score_for(int(state.games))
@@ -267,7 +273,7 @@ func refresh() -> void:
   if career.balance < int(item.cost):
    requirements.append("Save %d more cr" % (int(item.cost)-career.balance))
   if not ready:
-   requirements.append("Finish your current shift first")
+   requirements.append("End the park visit first" if director.live.active else "Finish your current shift first")
   if not career.healthy:
    requirements.append("Reload your career first")
   project_status[id].text = "Built · benefits active" if id in state.buildings else (GameUI.funding(career.balance,int(item.cost)) if requirements.is_empty() else " · ".join(requirements))

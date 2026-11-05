@@ -4,6 +4,7 @@ extends Node3D
 const G = preload("res://scripts/gameplay/geometry.gd")
 var game: Node
 var agents: Array[Dictionary] = []
+var regular: Node3D
 var fielders: Array[Dictionary] = []
 var actors: Node3D
 var ball: MeshInstance3D
@@ -127,10 +128,10 @@ func sync(state: Dictionary) -> void:
  build_identity(state)
  story_lines = stories(state)
 func build_identity(state: Dictionary) -> void:
- var regular := person(identity,Color("6c8b7c"),1)
+ regular = person(identity,Color("6c8b7c"),1)
  regular.position = Vector3(-7,0.05,24)
  regular.rotation.y = PI
- var regular_name := G.label(identity,"ELI · SEASON-TICKET REGULAR",Vector3(-7,2.1,24),24)
+ var regular_name := G.label(regular,"ELI · SEASON-TICKET REGULAR",Vector3(0,2.1,0),24)
  regular_name.pixel_size = 0.008
  regular_name.billboard = BaseMaterial3D.BILLBOARD_ENABLED
  var items := {"bleachers":[Vector3(-15,0,24),"THE TOWN'S SECTION"],"grandstand":[Vector3(15,0,24),"COVERED SEATS · OWLS COUNTRY"],"snack_shack":[Vector3(28.5,0,16.5),"LENI'S LOCAL FAVORITES"],"grill_stand":[Vector3(-29,0,15),"HOT OFF THE GRILL"],"scoreboard":[Vector3(12,0,25),"FOLLOW EVERY INNING"],"video_board":[Vector3(-12,0,25),"MAKE SOME NOISE, CEDAR GROVE!"]}
@@ -217,12 +218,15 @@ func _process(delta: float) -> void:
  var allowed: bool = hosted and game.shift.session.phase == ShiftSession.Phase.PRACTICE
  visible = game.shift.career.club.active
  for a in agents:
-  a.node.visible = allowed
- actors.visible = allowed and showing and stage == "game"
+  a.node.visible = allowed and a.get("state","") != "departed"
+ actors.visible = allowed and (showing or (game.club.live != null and game.club.live.active)) and stage == "game"
  score_sign.visible = allowed and hosted and not showing and stage in ["game","stories"]
  if not allowed or (get_tree().paused and not showing) or (showing and game.club.opening.playback_paused):
   return
- advance(minf(delta,0.1)*(game.club.opening.playback_speed if showing else 1.0))
+ if game.club.live != null and game.club.live.active:
+  advance_routines(minf(delta,0.1)*(game.club.opening.playback_speed if showing else 1.0))
+ else:
+  advance(minf(delta,0.1)*(game.club.opening.playback_speed if showing else 1.0))
 func advance(delta: float) -> void:
  ambient_time += delta
  for worker in workers:
@@ -259,3 +263,129 @@ static func score_for(date: int,innings: int = 9) -> Vector2i:
   home += int(date%2 == 0)
   away += int(date%2 != 0)
  return Vector2i(home,away)
+
+func begin_routines() -> void:
+ for i in range(agents.size()):
+  var a: Dictionary = agents[i]
+  var seat: Vector3 = game.club.world.seat_positions[i]
+  var side := -1.0 if seat.x < 0 else 1.0
+  var aisle: float = side*(13.5 if absf(seat.x) > 14 else 0.8)
+  var approach := Vector3(seat.x,0.05,maxf(14.4,seat.z+3.5))
+  a.index = i
+  a.state = "queue" if a.target == 7 else "arriving"
+  a.seat = seat-Vector3(0,0.79,0)
+  a.approach = approach
+  a.seat_route = PackedVector3Array([Vector3(aisle,0.05,24),Vector3(aisle,0.05,approach.z),approach])
+  a.step = 0
+  a.timer = 0.0
+  a.last_inning = 0
+  a.direction = Vector3.ZERO
+  a.blocked = 0.0
+func walk_routine(a: Dictionary,goal: Vector3,delta: float) -> bool:
+ var fan: Node3D = a.node
+ if fan.position.distance_to(goal) < 0.12:
+  return true
+ var direction := (goal-fan.position).normalized()
+ var blocked := false
+ for other in agents:
+  if other.index == a.index or other.state in ["seated","departed"]:
+   continue
+  var offset: Vector3 = other.node.position-fan.position
+  if offset.length() < 0.65 and offset.dot(direction) > 0.05:
+   if fan.position.distance_to(goal) < 0.8:
+    a.blocked = 0.0
+    return true # Shared aisle waypoint reached without stacking people at its center.
+   blocked = true
+   a.blocked += delta
+   if a.blocked < 1:
+    return false
+   if a.blocked < 3:
+    direction = (direction+Vector3(-direction.z,0,direction.x)*(0.6 if a.index%2 == 0 else -0.6)).normalized()
+   break
+ if not blocked:
+  a.blocked = 0.0
+ a.direction = direction
+ fan.position += direction*minf(a.speed*delta,fan.position.distance_to(goal))
+ fan.rotation.y = atan2(-direction.x,-direction.z)
+ a.phase += delta*7
+ fan.get_node("LegLeft").rotation.x = sin(a.phase)*0.35
+ fan.get_node("LegRight").rotation.x = -sin(a.phase)*0.35
+ fan.get_node("ArmLeft").rotation.x = -sin(a.phase)*0.22
+ fan.get_node("ArmRight").rotation.x = sin(a.phase)*0.22
+ return false
+func advance_routines(delta: float) -> void:
+ ambient_time += delta
+ for worker in workers:
+  worker.get_node("ArmRight").rotation.x = 0.5+sin(ambient_time*2)*0.2
+ var final: bool = game.club.live.visit_time >= LiveMatchday.FINAL
+ for a in agents:
+  if a.state == "departed":
+   continue
+  if final and a.state not in ["exit","exit_aisle","leave_section","return_concourse"]:
+   a.wait = 0
+   if a.state in ["seated","find_seat"]:
+    a.step = a.seat_route.size()-1 if a.state == "seated" else mini(a.step,a.seat_route.size()-1)
+    a.state = "leave_section"
+   elif a.node.position.z < 23 and absf(a.node.position.x) > 26:
+    a.state = "return_concourse"
+    a.step = 0
+   else:
+    a.state = "exit" if a.node.position.z >= 25 else "exit_aisle"
+  if a.state == "seated":
+   a.timer += delta
+   if a.last_inning != inning:
+    a.last_inning = inning
+    a.timer = 0
+   a.node.get_node("ArmLeft").rotation.x = -1.8 if a.timer < 1.4 else 0
+   a.node.get_node("ArmRight").rotation.x = -1.8 if a.timer < 1.4 else 0
+   if a.timer > 18+float(a.index%5)*3 and a.index%3 == 0:
+    a.state = "leave_section"
+    a.step = a.seat_route.size()-1
+   continue
+  if a.wait > 0:
+   a.wait -= delta
+   continue
+  if a.state in ["arriving","concourse","queue"]:
+   if walk_routine(a,a.route[a.target],delta):
+    if a.target == a.route.size()-1:
+     a.state = "find_seat"
+     a.step = 0
+    else:
+     var served: bool = a.target == 6 and a.route.size() > 8
+     a.target += 1
+     a.wait = 5+float(a.index%3) if served else 0.2
+     a.state = "queue" if served else "concourse"
+     if served:
+      a.node.rotation.y = PI
+  elif a.state == "find_seat":
+   if walk_routine(a,a.seat_route[a.step],delta):
+    a.step += 1
+    if a.step >= a.seat_route.size():
+     a.node.position = a.seat
+     a.node.rotation.y = 0
+     a.node.get_node("LegLeft").rotation.x = 0.9
+     a.node.get_node("LegRight").rotation.x = 0.9
+     a.state = "seated"
+     a.timer = 0
+  elif a.state == "leave_section":
+   if walk_routine(a,a.seat_route[a.step],delta):
+    a.step -= 1
+    if a.step < 0:
+     a.state = "exit_aisle" if final else "concourse"
+     a.target = 3
+  elif a.state == "return_concourse":
+   var side := -1.0 if a.node.position.x < 0 else 1.0
+   var target := Vector3(side*27.9,0.05,a.node.position.z if a.step == 0 else 24)
+   if walk_routine(a,target,delta):
+    a.step += 1
+    if a.step >= 2:
+     a.state = "exit_aisle"
+  elif a.state == "exit_aisle":
+   var lane: float = -4.5 if a.node.position.x < 0 else 4.5
+   if walk_routine(a,Vector3(lane,0.05,25),delta):
+    a.state = "exit"
+  elif a.state == "exit":
+   var lane: float = -4.5 if a.node.position.x < 0 else 4.5
+   if walk_routine(a,Vector3(lane,0.05,42),delta):
+    a.state = "departed"
+    a.node.visible = false

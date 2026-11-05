@@ -42,3 +42,5 @@
 - Living matchday first slice: moving representative supporters, public concourse and concession routes, animated staff, upgrade identity signs and warm counter lights, 47-second skippable arrivals/game/story sequence, nine-inning staged baseball action, live upgraded scoreboards, and progress-sensitive Mara/Eli/Leni story lines.
 
 - Matchday viewing UI: pause/play, double speed, chapter skipping, clear chapter/time badge, safe explicit Results action, guarded latest-matchday replay, matching final score in Results, and a speaker-filtered Town tab.
+
+- Playable live matchday: on-foot visits share time with broadcast; representative fans reserve seats, visit concessions, react and depart; optional held spill cleanup, breadcrumb-followed regular escort and carried concession delivery; service HUD and safe visit teardown.

@@ -161,6 +161,8 @@ func configure_input() -> void:
 
 func _input(event: InputEvent) -> void:
  # Captured tool clicks must not be swallowed by the noninteractive reticle HUD.
+ if club != null and club.live != null and club.live.active:
+  return
  if not get_tree().paused and tamper != null and tamper.equipped and event.is_action_pressed("tamp_mound"):
   tamper.request_tamp()
 
@@ -183,6 +185,8 @@ func _unhandled_input(event: InputEvent) -> void:
    camera_distance = maxf(3,camera_distance-0.7)
   elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
    camera_distance = minf(18,camera_distance+0.7)
+ if club != null and club.live != null and club.live.active:
+  return
  if event.is_action_pressed("interact"):
   interact()
  if event.is_action_pressed("mound_tool") and not driving and not pushing_chalk:
@@ -215,6 +219,9 @@ func near_chalk_marker() -> bool:
  return distance < 2.6 and distance < player.global_position.distance_to(mower.global_position)
 
 func interact() -> void:
+ if club != null and club.live != null and club.live.active:
+  club.live.interact_job()
+  return
  if pushing_chalk:
   if chalk_marker.can_exit() and place_player_beside(chalk_marker,1.3):
    chalk_marker.set_occupied(false)
