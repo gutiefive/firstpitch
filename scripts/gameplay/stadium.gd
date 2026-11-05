@@ -110,10 +110,10 @@ func build_foul_boundary() -> void:
    fence_run(boundary,after,gate_near,2.4,"WorkshopWing")
    fence_run(boundary,gate_far,corner,2.4,"FirstBaseFence")
    var gate := Props.group(boundary,"OpenEquipmentGate",(gate_near+gate_far)*0.5)
-   var sign := G.label(gate,"GROUNDS CREW  /  FIELD ACCESS",Vector3(0,3.3,0),32)
-   sign.rotation.y = dugout.rotation.y
-   sign.pixel_size = 0.006
-   sign.modulate = CREAM
+   var placard := G.label(gate,"GROUNDS CREW  /  FIELD ACCESS",Vector3(0,3.3,0),32)
+   placard.rotation.y = dugout.rotation.y
+   placard.pixel_size = 0.006
+   placard.modulate = CREAM
    # Open gate leaves lie along the outside fence, clear of the driving lane.
    fence_run(boundary,gate_near+outward*0.3,gate_near+outward*0.3-along*3,2.0,"OpenGateLeaf")
    fence_run(boundary,gate_far+outward*0.3,gate_far+outward*0.3+along*3,2.0,"OpenGateLeaf")

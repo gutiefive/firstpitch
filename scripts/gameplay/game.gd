@@ -395,8 +395,8 @@ func update_progress(_value: float) -> void:
 
 func refresh_bindings() -> void:
  chalk_marker_sign.text = "CHALK MARKER\n%s USE / %s GATE" % [binding_text("interact"),binding_text("lift_drag")]
- tool_bay.sign.text = "TOOL BAY\n%s SWAP MOWER / DRAG" % binding_text("swap_tool")
- watering.sign.text = "WATER STATION\n%s TAKE / STOW HOSE" % binding_text("water_tool")
- tamper.sign.text = "MOUND REPAIR\n%s TAKE / STOW TAMPER" % binding_text("mound_tool")
+ tool_bay.placard.text = "TOOL BAY\n%s SWAP MOWER / DRAG" % binding_text("swap_tool")
+ watering.placard.text = "WATER STATION\n%s TAKE / STOW HOSE" % binding_text("water_tool")
+ tamper.placard.text = "MOUND REPAIR\n%s TAKE / STOW TAMPER" % binding_text("mound_tool")
  shift.notice_sign.text = "CEDAR GROVE\nPREPARATION SHIFTS\n%s SHIFT BOARD" % binding_text("shift_board")
  shift.overlay.refresh()

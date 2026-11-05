@@ -181,10 +181,10 @@ func add_job(id: String,label: String,point: Vector3,duration: float) -> void:
   game.club.matchday.person(marker,Color("829eaa"),1)
  elif id == "supply":
   G.box(marker,Vector3(0,0.3,0),Vector3(0.65,0.6,0.45),Color("a18b62"))
- var sign := G.label(marker,label,Vector3(0,2.3,0),24)
- sign.pixel_size = 0.008
- sign.billboard = BaseMaterial3D.BILLBOARD_ENABLED
- jobs.append({"id":id,"title":label,"point":point,"progress":0.0,"duration":duration,"state":"available","marker":marker,"label":sign})
+ var placard := G.label(marker,label,Vector3(0,2.3,0),24)
+ placard.pixel_size = 0.008
+ placard.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+ jobs.append({"id":id,"title":label,"point":point,"progress":0.0,"duration":duration,"state":"available","marker":marker,"label":placard})
 func near_job() -> int:
  for i in range(jobs.size()):
   if jobs[i].state in ["available","carrying"] and game.player.position.distance_to(jobs[i].point) < 2:
@@ -302,8 +302,8 @@ func _process(delta: float) -> void:
  if game.player.position.z < 6.5 and not public_wing(game.player.position):
   var side := -1 if game.player.position.x < 0 else 1
   var outward: Vector3 = game.club.world.wing_outward(side)
-  var start: Vector3 = game.layout.boundary_start(side)
-  var clearance: float = (game.player.position-start).dot(outward)
+  var boundary_origin: Vector3 = game.layout.boundary_start(side)
+  var clearance: float = (game.player.position-boundary_origin).dot(outward)
   if absf(game.player.position.x) < 16:
    game.player.position.z = 6.5
    game.player.velocity.z = maxf(0,game.player.velocity.z)
@@ -380,5 +380,5 @@ func claim_bonus() -> bool:
 
 func public_wing(point: Vector3) -> bool:
  var side := -1 if point.x < 0 else 1
- var start: Vector3 = game.layout.boundary_start(side)
- return (point-start).dot(game.club.world.wing_outward(side)) >= 3.8
+ var boundary_origin: Vector3 = game.layout.boundary_start(side)
+ return (point-boundary_origin).dot(game.club.world.wing_outward(side)) >= 3.8

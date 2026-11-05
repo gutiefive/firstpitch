@@ -155,13 +155,13 @@ func start_shift(profile: String) -> bool:
   reset_equipment()
   if wear.is_blank(game):
    wear.bootstrap(game,profile)
-  var seed := session.attempt_id.sha256_buffer().decode_u32(0)
-  wear.apply(game,seed,float(config.wear),profile)
+  var wear_seed_value := session.attempt_id.sha256_buffer().decode_u32(0)
+  wear.apply(game,wear_seed_value,float(config.wear),profile)
   GameDay.apply_conditions(game,profile)
   game.infield.reset_quality()
   game.moisture.reset_quality()
   game.chalk.reset_quality()
-  session.configure_work(counts(),totals(),mode,seed)
+  session.configure_work(counts(),totals(),mode,wear_seed_value)
  else:
   reset_field()
   session.configure_work([0,0,0,0,0],totals())

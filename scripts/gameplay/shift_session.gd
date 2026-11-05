@@ -45,7 +45,7 @@ static func wear_rules(profile: String = "training") -> Dictionary:
   rules.merge(PROFILES[profile].get("wear_rules",{}),true)
  return rules
 
-func configure_work(starting: Array,totals: Array,mode: String = "fresh",seed: int = 0) -> bool:
+func configure_work(starting: Array,totals: Array,mode: String = "fresh",wear_seed_value: int = 0) -> bool:
  if starting.size() != 5 or totals.size() != 5 or mode not in ["fresh","game_day"]:
   return false
  for i in range(5):
@@ -54,7 +54,7 @@ func configure_work(starting: Array,totals: Array,mode: String = "fresh",seed: i
  starting_counts = PackedInt64Array(starting)
  work_totals = PackedInt64Array(totals)
  start_mode = mode
- wear_seed = seed
+ wear_seed = wear_seed_value
  return true
 
 func set_counts(current: Array,complete: Array) -> bool:

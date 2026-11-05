@@ -37,8 +37,8 @@ var selected_section := "matchday"
 var metrics := {}
 var project_grid: GridContainer
 var results_title: Label
-func text(parent: Node,value: String,size: int = 14) -> Label:
- return GameUI.label(parent,value,size)
+func text(parent: Node,value: String,font_size: int = 14) -> Label:
+ return GameUI.label(parent,value,font_size)
 func button(parent: Node,value: String) -> Button:
  return GameUI.button(parent,value)
 func _ready() -> void:
@@ -228,7 +228,7 @@ func refresh() -> void:
  else:
   match_summary.text = "Host your first home date to see its matchday summary."
  var story := ClubProgress.chapter(state)
- var ready := director.available()
+ var project_available := director.available()
  stats.text = career.rank_title()+"  ·  Shared club funds"
  metrics.BUDGET.text = "%d cr" % career.balance
  metrics.SUPPORTERS.text = str(state.fans)
@@ -268,14 +268,14 @@ func refresh() -> void:
    season_review.text += "\nHome season complete! Your supporters, stadium and tools carry into the next season."
 
  join_button.visible = not state.active
- join_button.disabled = not ready or not career.healthy
+ join_button.disabled = not project_available or not career.healthy
  prep_button.visible = state.active
  host_button.visible = state.active
- prep_button.disabled = not ready or not career.healthy or not String(state.pending).is_empty()
- host_button.disabled = not ready or not career.healthy or String(state.pending).is_empty()
+ prep_button.disabled = not project_available or not career.healthy or not String(state.pending).is_empty()
+ host_button.disabled = not project_available or not career.healthy or String(state.pending).is_empty()
  for id in projects:
   projects[id].text = "Built" if id in state.buildings else ("Build · %d cr" % ClubProgress.PROJECTS[id].cost)
-  projects[id].disabled = not ready or not career.healthy or not state.active or not ClubProgress.project_ready(state,id) or career.balance < int(ClubProgress.PROJECTS[id].cost)
+  projects[id].disabled = not project_available or not career.healthy or not state.active or not ClubProgress.project_ready(state,id) or career.balance < int(ClubProgress.PROJECTS[id].cost)
   var item: Dictionary = ClubProgress.PROJECTS[id]
   project_savings[id].value = minf(100,100.0*career.balance/int(item.cost))
   project_savings[id].visible = id not in state.buildings
@@ -289,7 +289,7 @@ func refresh() -> void:
     requirements.append("Build "+String(ClubProgress.PROJECTS[dependency].title))
   if career.balance < int(item.cost):
    requirements.append("Save %d more cr" % (int(item.cost)-career.balance))
-  if not ready:
+  if not project_available:
    requirements.append("End the park visit first" if director.live.active else "Finish your current shift first")
   if not career.healthy:
    requirements.append("Reload your career first")
@@ -306,7 +306,7 @@ func refresh() -> void:
  investment.text = GameDay.investment_text(career) if state.active else ""
  ownership_review.visible = true
  ownership_review.text = director.ownership.get("text","Complete your first six hosted home dates to receive Mara’s ownership review and a concrete objective for next season.")
- recap_continue.visible = state.active and not state.last.is_empty() and ready and String(state.pending).is_empty()
+ recap_continue.visible = state.active and not state.last.is_empty() and project_available and String(state.pending).is_empty()
  if not String(state.pending).is_empty():
   for record in career.data.records:
    if record.id == state.pending:

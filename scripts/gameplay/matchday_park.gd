@@ -171,10 +171,10 @@ func build_identity(state: Dictionary) -> void:
   elif id in ["bleachers","grandstand"]:
    p = game.club.world.wing_point(-1 if id == "bleachers" else 1,36 if id == "bleachers" else 68,14)
   G.cylinder(identity,p+Vector3(0,1.1,0),0.045,2.2,Color("536362"))
-  var sign := G.label(identity,items[id][1],p+Vector3(0,2.4,0),28)
-  sign.pixel_size = 0.009
-  sign.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-  sign.modulate = Color("edcf8b")
+  var placard := G.label(identity,items[id][1],p+Vector3(0,2.4,0),28)
+  placard.pixel_size = 0.009
+  placard.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+  placard.modulate = Color("edcf8b")
   if id in ["snack_shack","grill_stand"]:
    var worker := person(identity,Color("c1aa81"),staff_count)
    workers.append(worker)

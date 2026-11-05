@@ -14,7 +14,7 @@ var player: Groundskeeper
 var camera: Camera3D
 var mound: MoundSurface
 var binding_query: Callable
-var sign: Label3D
+var placard: Label3D
 var capture_query: Callable
 var equipped := false
 var busy := false
@@ -60,9 +60,9 @@ func build_rack() -> void:
  for side in [-1,1]:
   ParkGeometry.box(self,rack_position+Vector3(side*0.65,0.9,-0.25),Vector3(0.08,1.8,0.08),Color("28585a"))
  ParkGeometry.box(self,rack_position+Vector3(0,1.65,-0.25),Vector3(2,0.5,0.12),Color("eee3c6"))
- sign = ParkGeometry.label(self,"MOUND REPAIR\nTAKE / STOW TAMPER",rack_position+Vector3(0,1.65,-0.17),34)
- sign.pixel_size = 0.004
- sign.modulate = Color("28585a")
+ placard = ParkGeometry.label(self,"MOUND REPAIR\nTAKE / STOW TAMPER",rack_position+Vector3(0,1.65,-0.17),34)
+ placard.pixel_size = 0.004
+ placard.modulate = Color("28585a")
  stored = TamperVisual.new()
  stored.position = rack_position+Vector3.UP*0.2
  add_child(stored)
@@ -177,19 +177,19 @@ func _process(delta: float) -> void:
   return
  if equipped:
   var rest := player.visual.to_global(Vector3(0,0.08,-0.6))
-  var position := rest
+  var work_position := rest
   if busy:
-   var impact := mound.patch_world(locked_index)+Vector3.UP*0.045
-   var raised := impact+Vector3.UP*0.75
+   var impact_point := mound.patch_world(locked_index)+Vector3.UP*0.045
+   var raised := impact_point+Vector3.UP*0.75
    if swing_time < 0.22:
-    position = rest.lerp(raised,smoothstep(0,0.22,swing_time))
+    work_position = rest.lerp(raised,smoothstep(0,0.22,swing_time))
    elif swing_time < contact_time:
-    position = raised.lerp(impact,smoothstep(0.22,contact_time,swing_time))
+    work_position = raised.lerp(impact_point,smoothstep(0.22,contact_time,swing_time))
    else:
-    position = impact.lerp(rest,smoothstep(contact_time,stroke_duration,swing_time))
-  held.global_position = position
+    work_position = impact_point.lerp(rest,smoothstep(contact_time,stroke_duration,swing_time))
+  held.global_position = work_position
   held.rotation.y = player.visual.global_rotation.y
-  (player.visual as CrewVisual).tamp_lift = clampf(position.y-rest.y,0,1)
+  (player.visual as CrewVisual).tamp_lift = clampf(work_position.y-rest.y,0,1)
   ring.visible = target_index >= 0
   if ring.visible:
    ring.global_position = mound.patch_world(target_index)+Vector3.UP*0.035
@@ -200,5 +200,5 @@ func _process(delta: float) -> void:
   for i in range(10):
    var angle := i*TAU/10
    var point := dust_origin+Vector3(sin(angle)*dust_time,0.08+dust_time-2*dust_time*dust_time,cos(angle)*dust_time)
-   var basis := Basis(Vector3.UP,angle).scaled(Vector3.ONE*(1-dust_time/0.3))
-   dust.multimesh.set_instance_transform(i,Transform3D(basis,point))
+   var work_basis := Basis(Vector3.UP,angle).scaled(Vector3.ONE*(1-dust_time/0.3))
+   dust.multimesh.set_instance_transform(i,Transform3D(work_basis,point))

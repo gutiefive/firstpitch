@@ -8,10 +8,10 @@ var buttons: Dictionary = {}
 var best_labels: Dictionary = {}
 var back_button: Button
 
-func text(parent: Node,value: String,size: int = 14) -> Label:
+func text(parent: Node,value: String,font_size: int = 14) -> Label:
  var label := Label.new()
  label.text = value
- label.add_theme_font_size_override("font_size",size)
+ label.add_theme_font_size_override("font_size",font_size)
  label.modulate = Color("edf4f3")
  label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  parent.add_child(label)

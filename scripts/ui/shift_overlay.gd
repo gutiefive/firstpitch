@@ -69,7 +69,7 @@ func label(text: String,size: int,color: Color = CREAM) -> Label:
  node.add_theme_color_override("font_color",color)
  return node
 
-func style(color: Color) -> StyleBoxFlat:
+func style(_color: Color) -> StyleBoxFlat:
  return GameUI.box(GameUI.SURFACE,22)
 
 func button(text: String) -> Button:

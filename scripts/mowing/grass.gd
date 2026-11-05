@@ -115,12 +115,12 @@ func build_tufts() -> void:
  var geometry := SurfaceTool.new()
  geometry.begin(Mesh.PRIMITIVE_TRIANGLES)
  for rotation_index in range(2):
-  var basis := Basis(Vector3.UP,rotation_index*PI/2)
+  var work_basis := Basis(Vector3.UP,rotation_index*PI/2)
   var vertices := [Vector3(-0.018,0,0),Vector3(-0.009,0.055,0),Vector3(0.012,0.055,0),Vector3(-0.018,0,0),Vector3(0.012,0.055,0),Vector3(0.018,0,0),Vector3(-0.009,0.055,0),Vector3(0.025,0.11,0),Vector3(0.012,0.055,0)]
   for vertex in vertices:
    geometry.set_normal(Vector3.UP)
    geometry.set_uv(Vector2(0,vertex.y/0.11))
-   geometry.add_vertex(basis*vertex)
+   geometry.add_vertex(work_basis*vertex)
  var mesh := geometry.commit()
  var mat := ShaderMaterial.new()
  mat.shader = preload("res://shaders/grass_tufts.gdshader")
@@ -143,10 +143,10 @@ func build_tufts() -> void:
    if is_grass(point):
     found = true
     break
-  var basis := Basis(Vector3.UP,rng.randf()*TAU).scaled(Vector3.ONE*rng.randf_range(0.75,1.35))
+  var work_basis := Basis(Vector3.UP,rng.randf()*TAU).scaled(Vector3.ONE*rng.randf_range(0.75,1.35))
   if not found:
-   basis = basis.scaled(Vector3.ZERO)
-  batch.set_instance_transform(index,Transform3D(basis,Vector3(point.x,layout.grass_height+0.003,point.y)))
+   work_basis = work_basis.scaled(Vector3.ZERO)
+  batch.set_instance_transform(index,Transform3D(work_basis,Vector3(point.x,layout.grass_height+0.003,point.y)))
  tufts = MultiMeshInstance3D.new()
  tufts.name = "UncutGrassTufts"
  tufts.multimesh = batch

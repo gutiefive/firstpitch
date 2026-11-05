@@ -16,11 +16,11 @@ var purchase_feedback: Label
 var back_button: Button
 var retry_button: Button
 
-func text(content: VBoxContainer,value: String,size: int = 16) -> Label:
+func text(content: VBoxContainer,value: String,font_size: int = 16) -> Label:
  var label := Label.new()
  label.text = value
  label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
- label.add_theme_font_size_override("font_size",size)
+ label.add_theme_font_size_override("font_size",font_size)
  label.modulate = Color("edf4f3")
  content.add_child(label)
  return label
@@ -136,6 +136,6 @@ func finish_purchase_focus() -> void:
  if not is_inside_tree():
   return
  var screen: ScrollContainer = director.game.shift.overlay.career_screen
- var owner := get_viewport().gui_get_focus_owner()
- if screen.is_visible_in_tree() and owner != null and screen.is_ancestor_of(owner):
-  screen.ensure_control_visible(owner)
+ var focus_owner := get_viewport().gui_get_focus_owner()
+ if screen.is_visible_in_tree() and focus_owner != null and screen.is_ancestor_of(focus_owner):
+  screen.ensure_control_visible(focus_owner)

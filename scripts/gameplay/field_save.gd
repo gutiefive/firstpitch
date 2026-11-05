@@ -72,8 +72,8 @@ func migrate(data: Variant,g: Node) -> Dictionary:
   return {}
  if data.version == 2:
   return candidate
- var reference := preload("res://resources/layouts/cedar_grove_v1_masks.res")
- var old := {"grass":reference.get_meta("grass"),"dirt":reference.get_meta("dirt")}
+ var mask_reference := preload("res://resources/layouts/cedar_grove_v1_masks.res")
+ var old := {"grass":mask_reference.get_meta("grass"),"dirt":mask_reference.get_meta("dirt")}
  if not old is Dictionary or not mask_data_ok(candidate.grass,old.grass) or not mask_data_ok(candidate.dirt,old.dirt):
   return {}
  for i in range(candidate.moisture.size()):
@@ -144,10 +144,10 @@ func validate(data: Variant,g: Node) -> bool:
  return true
 
 func digest(bytes: PackedByteArray) -> PackedByteArray:
- var hash := HashingContext.new()
- hash.start(HashingContext.HASH_SHA256)
- hash.update(bytes)
- return hash.finish()
+ var context := HashingContext.new()
+ context.start(HashingContext.HASH_SHA256)
+ context.update(bytes)
+ return context.finish()
 
 func number(value: Variant) -> bool:
  return typeof(value) in [TYPE_INT,TYPE_FLOAT] and is_finite(float(value))

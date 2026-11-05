@@ -56,9 +56,9 @@ static func sector(parent: Node3D, inner: float, outer: float, y: float, color: 
  mesh.surface_end()
  var node := MeshInstance3D.new()
  node.mesh = mesh
- var surface_material := material(color).duplicate() as StandardMaterial3D
- surface_material.cull_mode = BaseMaterial3D.CULL_DISABLED
- node.material_override = surface_material
+ var sector_material := material(color).duplicate() as StandardMaterial3D
+ sector_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+ node.material_override = sector_material
  parent.add_child(node)
  return node
 
@@ -269,9 +269,9 @@ static func tailored_body(parent: Node3D,pos: Vector3,color: Color) -> MeshInsta
    var normals := []
    var slope: float = (profile[row+1].y-profile[row].y)/(profile[row+1].x-profile[row].x)
    for pair in [Vector2(0,0),Vector2(1,0),Vector2(1,1),Vector2(0,1)]:
-    var ring: Vector2 = profile[row+int(pair.y)]
+    var profile_ring: Vector2 = profile[row+int(pair.y)]
     var angle: float = TAU*(column+pair.x)/24
-    vertices.append(Vector3(cos(angle)*ring.y,ring.x,sin(angle)*ring.y*0.72))
+    vertices.append(Vector3(cos(angle)*profile_ring.y,profile_ring.x,sin(angle)*profile_ring.y*0.72))
     normals.append(Vector3(cos(angle),-slope,sin(angle)/0.72).normalized())
    for i in [0,1,2,0,2,3]:
     surface.set_normal(normals[i])
@@ -331,10 +331,10 @@ static func mound_visual(base_radius: float,top_radius: float,height: float) -> 
    var normals := []
    for pair in [Vector2(0,0),Vector2(1,0),Vector2(1,1),Vector2(0,1)]:
     var index := row+int(pair.y)
-    var ring: Vector2 = profile[index]
+    var profile_ring: Vector2 = profile[index]
     var angle: float = TAU*(column+pair.x)/64
     var delta: Vector2 = profile[mini(profile.size()-1,index+1)]-profile[maxi(0,index-1)]
-    vertices.append(Vector3(cos(angle)*ring.x,ring.y-height*0.5,sin(angle)*ring.x))
+    vertices.append(Vector3(cos(angle)*profile_ring.x,profile_ring.y-height*0.5,sin(angle)*profile_ring.x))
     normals.append(Vector3(-cos(angle)*delta.y,delta.x,-sin(angle)*delta.y).normalized())
    for i in [0,2,1,0,3,2]:
     surface.set_normal(normals[i])

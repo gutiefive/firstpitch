@@ -4,7 +4,7 @@ extends Node3D
 @export var service_radius := 9.0
 var parked_drag: DragAttachment
 var spare_deck: Node3D
-var sign: Label3D
+var placard: Label3D
 const G = preload("res://scripts/gameplay/geometry.gd")
 
 func _ready() -> void:
@@ -27,9 +27,9 @@ func _ready() -> void:
  for x in [-1.7,1.7]:
   G.box(self,Vector3(x,1.5,-0.9),Vector3(0.1,3,0.1),Color("28585a"))
  G.box(self,Vector3(0,2.7,-0.9),Vector3(3.5,0.65,0.12),Color("eee3c6"))
- sign = G.label(self,"TOOL BAY\nSWAP MOWER / DRAG",Vector3(0,2.7,-0.8),38)
- sign.pixel_size = 0.0045
- sign.modulate = Color("28585a")
+ placard = G.label(self,"TOOL BAY\nSWAP MOWER / DRAG",Vector3(0,2.7,-0.8),38)
+ placard.pixel_size = 0.0045
+ placard.modulate = Color("28585a")
 
 func contains(world_position: Vector3) -> bool:
  return Vector2(world_position.x-global_position.x,world_position.z-global_position.z).length() <= service_radius

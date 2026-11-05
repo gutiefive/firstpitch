@@ -14,7 +14,7 @@ var moisture: DirtMoisture
 var surface_height: Callable
 # Optional input adapter for headless tests; desktop play uses the actual cursor mode.
 var binding_query: Callable
-var sign: Label3D
+var placard: Label3D
 var capture_query: Callable
 var equipped := false
 var spraying := false
@@ -77,9 +77,9 @@ func build_station() -> void:
  var coil := G.cylinder(self,station_position+Vector3(0,1,0),0.32,0.45,Color("315b4c"))
  coil.rotation.z = PI/2
  G.box(self,station_position+Vector3(0,1.7,0),Vector3(2.1,0.5,0.12),Color("eee3c6"))
- sign = G.label(self,"WATER STATION\nTAKE / STOW HOSE",station_position+Vector3(0,1.7,0.08),34)
- sign.pixel_size = 0.004
- sign.modulate = Color("28585a")
+ placard = G.label(self,"WATER STATION\nTAKE / STOW HOSE",station_position+Vector3(0,1.7,0.08),34)
+ placard.pixel_size = 0.004
+ placard.modulate = Color("28585a")
 
 func toggle_equipped() -> bool:
  if player == null or player.seated:
@@ -214,6 +214,6 @@ func rebuild_hose() -> void:
  geometry.begin(Mesh.PRIMITIVE_TRIANGLES)
  for i in range(points.size()-1):
   var direction := points[i+1]-points[i]
-  var basis := Basis(Quaternion(Vector3.UP,direction.normalized())).scaled(Vector3(1,direction.length(),1))
-  geometry.append_from(hose_segment,0,Transform3D(basis,(points[i+1]+points[i])*0.5))
+  var work_basis := Basis(Quaternion(Vector3.UP,direction.normalized())).scaled(Vector3(1,direction.length(),1))
+  geometry.append_from(hose_segment,0,Transform3D(work_basis,(points[i+1]+points[i])*0.5))
  hose_mesh.mesh = geometry.commit()

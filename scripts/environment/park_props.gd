@@ -42,9 +42,9 @@ static func shed(parent: Node3D,layout: FieldLayout) -> void:
  G.box(root,Vector3(2,1.9,3.74),Vector3(0.07,1.05,0.04),CREAM)
  G.box(root,Vector3(2,1.9,3.74),Vector3(1.5,0.07,0.04),CREAM)
  G.box(root,Vector3(0,3.1,3.66),Vector3(5.8,0.55,0.15),CREAM)
- var sign := G.label(root,"GROUNDS & FIELD",Vector3(0,3.1,3.76),42)
- sign.pixel_size = 0.008
- sign.modulate = TEAL
+ var placard := G.label(root,"GROUNDS & FIELD",Vector3(0,3.1,3.76),42)
+ placard.pixel_size = 0.008
+ placard.modulate = TEAL
  # Service-side window and wall-mounted tools are visible at the player spawn.
  G.box(root,Vector3(-4.09,2,0.5),Vector3(0.1,1.2,1.5),CREAM)
  G.box(root,Vector3(-4.15,2,0.5),Vector3(0.03,0.98,1.25),Color("587f89"))
@@ -78,9 +78,9 @@ static func dugout(parent: Node3D,side: int,layout: FieldLayout) -> Node3D:
   G.box(root,Vector3(x,1.5,1.9),Vector3(0.16,3,0.16),CREAM)
  G.box(root,Vector3(0,2.85,0),Vector3(12,0.22,5),Color("384f4c"),true)
  G.box(root,Vector3(0,2.65,2.45),Vector3(12,0.35,0.16),CREAM)
- var sign := G.label(root,"CEDAR GROVE  /  HOME" if side < 0 else "VISITING CLUB",Vector3(0,2.66,2.55),40)
- sign.pixel_size = 0.007
- sign.modulate = TEAL
+ var placard := G.label(root,"CEDAR GROVE  /  HOME" if side < 0 else "VISITING CLUB",Vector3(0,2.66,2.55),40)
+ placard.pixel_size = 0.007
+ placard.modulate = TEAL
  bench(root,Vector3(0,0.15,-0.7),8.5)
  for x in [-4.5,4.5]:
   G.cylinder(root,Vector3(x,0.48,0.8),0.24,0.7,Color("e7d5af"))
@@ -126,10 +126,10 @@ static func grandstand(parent: Node3D,side: int) -> Node3D:
   for z in [-0.5,5.6]:
    G.box(root,Vector3(x,2.4,z),Vector3(0.15,4.8,0.15),CREAM)
  G.box(root,Vector3(0,4.65,-1.1),Vector3(19.5,0.4,0.12),CREAM)
- var sign := G.label(root,"CEDAR GROVE BALLPARK",Vector3(0,4.64,-1.2),48)
- sign.rotation.y = PI
- sign.pixel_size = 0.008
- sign.modulate = TEAL
+ var placard := G.label(root,"CEDAR GROVE BALLPARK",Vector3(0,4.64,-1.2),48)
+ placard.rotation.y = PI
+ placard.pixel_size = 0.008
+ placard.modulate = TEAL
  return root
 
 static func scoreboard(parent: Node3D,layout: FieldLayout) -> void:

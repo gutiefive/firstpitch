@@ -75,14 +75,14 @@ func sync(state: Dictionary) -> void:
   build_grill()
  if upgraded:
   build_scoreboard("video_board" in state.buildings,state)
- var sign := G.label(structures,"CEDAR GROVE OWLS\nLOW-A BASEBALL",Vector3(0,5.8,9),36)
- sign.billboard = BaseMaterial3D.BILLBOARD_ENABLED
- sign.pixel_size = 0.012
- sign.modulate = Color("bca977")
-func build_bank(position: Vector3,covered: bool,yaw: float = 0,wing_side: int = 0,distance: float = 0) -> PackedVector3Array:
+ var placard := G.label(structures,"CEDAR GROVE OWLS\nLOW-A BASEBALL",Vector3(0,5.8,9),36)
+ placard.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+ placard.pixel_size = 0.012
+ placard.modulate = Color("bca977")
+func build_bank(work_position: Vector3,covered: bool,yaw: float = 0,wing_side: int = 0,distance: float = 0) -> PackedVector3Array:
  var root := Node3D.new()
  root.name = "CoveredStand" if covered else "CommunityBleachers"
- root.position = position
+ root.position = work_position
  root.rotation.y = yaw
  structures.add_child(root)
  section_roots.append(root)
@@ -104,7 +104,7 @@ func build_bank(position: Vector3,covered: bool,yaw: float = 0,wing_side: int = 
    world_seats.append(world_seat)
    var route := PackedVector3Array()
    if wing_side == 0:
-    var aisle: float = -0.8 if position.x < 0 else 0.8
+    var aisle: float = -0.8 if work_position.x < 0 else 0.8
     route = PackedVector3Array([Vector3(aisle,0.05,24),Vector3(aisle,0.05,14.4),Vector3(world_seat.x,0.05,14.4)])
    else:
     route = wing_route(wing_side,distance)
@@ -257,10 +257,10 @@ func build_grill() -> void:
  lettering.rotation.y = PI
  lettering.pixel_size = 0.003
  G.box(root,Vector3(1.8,3.6,0.6),Vector3(0.65,1.2,0.65),Color("526569"))
- var sign := G.label(root,"OWLS GRILL",Vector3(0,2.54,-1.97),36)
- sign.rotation.y = PI
- sign.pixel_size = 0.007
- sign.modulate = Color("bca977")
+ var placard := G.label(root,"OWLS GRILL",Vector3(0,2.54,-1.97),36)
+ placard.rotation.y = PI
+ placard.pixel_size = 0.007
+ placard.modulate = Color("bca977")
  for x in [-2,2]:
   G.box(root,Vector3(x,0.8,-4),Vector3(2.4,0.15,1.1),Color("9e8c70"),true)
   for z in [-4.8,-3.2]:

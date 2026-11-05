@@ -68,10 +68,10 @@ func build_guides() -> void:
  batch.instance_count = count*2
  for side in range(2):
   var direction := line_direction(side)
-  var basis := Basis(Vector3.UP,atan2(-direction.x,-direction.y))
+  var work_basis := Basis(Vector3.UP,atan2(-direction.x,-direction.y))
   for i in range(count):
    var point := layout.plate_position+direction*(line_start+i*1.25+0.25)
-   var pose := basis.scaled(Vector3.ZERO) if is_protected(point) else basis
+   var pose := work_basis.scaled(Vector3.ZERO) if is_protected(point) else work_basis
    batch.set_instance_transform(side*count+i,Transform3D(pose,Vector3(point.x,layout.ground_height(point)+0.006,point.y)))
  guides = MultiMeshInstance3D.new()
  guides.name = "FoulLineGuides"

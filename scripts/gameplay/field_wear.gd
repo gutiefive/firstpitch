@@ -42,7 +42,7 @@ func bootstrap(g: Node,profile: String) -> void:
  g.chalk.prepare_all()
  g.mound.prepare_all()
 
-func apply(g: Node,seed: int,intensity: float,profile: String = "full") -> float:
+func apply(g: Node,wear_seed_value: int,intensity: float,profile: String = "full") -> float:
  var start := Time.get_ticks_usec()
  if not is_finite(intensity) or intensity <= 0:
   last_ms = 0
@@ -52,7 +52,7 @@ func apply(g: Node,seed: int,intensity: float,profile: String = "full") -> float
  intensity = clampf(intensity,0,1)
  var rules := ShiftSession.wear_rules(profile)
  var rng := RandomNumberGenerator.new()
- rng.seed = seed
+ rng.seed = wear_seed_value
  var dirt: PackedByteArray = g.infield.snapshot_cells()
  for n in range(dirt_indices.size()):
   var chance: float = rules.heavy_chance if dirt_heavy[n] == 1 else rules.light_chance
