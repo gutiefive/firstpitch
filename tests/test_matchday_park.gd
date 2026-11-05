@@ -116,11 +116,11 @@ func run() -> void:
  var queue := false
  for a in park.agents:
   for point in a.route:
-   queue = queue or (point.x > 29 and point.z == 16)
+   queue = queue or point.distance_to(g.club.world.service_point()) < 1.5
  check(queue,"snack upgrade creates a routed concession queue destination")
  var waiting := 0
  for a in park.agents:
-  waiting += int(a.node.position.x > 29 and a.node.position.z == 16)
+  waiting += int(a.node.has_meta("service_stop") and a.node.position.distance_to(a.route[int(a.node.get_meta("service_stop"))]) < 0.1)
  check(waiting > 0,"early regulars visibly occupy built concession queues during arrivals")
  park.set_time(25)
  check(park.scoreboards.size() == 1 and park.scoreboards[0].text.contains("INNING 5"),"purchased scoreboard displays live inning and score")

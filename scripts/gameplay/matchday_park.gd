@@ -125,14 +125,15 @@ func sync(state: Dictionary) -> void:
   var lane: float = side*(4.0+float(i%3)*0.55)
   var destination := Vector3(side*(9+float(i%5)*3.8),0.05,24+float(i%3)*0.5)
   var route := PackedVector3Array([Vector3(lane,0.05,39+float(i%5)*1.4),Vector3(lane,0.05,33),Vector3(lane,0.05,25.2),destination])
-  if "snack_shack" in state.buildings and side > 0:
-   route.append(Vector3(27.9,0.05,24))
-   route.append(Vector3(27.9,0.05,16))
-   route.append(Vector3(30.5-float(i%3)*0.5,0.05,16))
-  if "grill_stand" in state.buildings and side < 0:
-   route.append(Vector3(-27.9,0.05,24))
-   route.append(Vector3(-27.9,0.05,15))
-   route.append(Vector3(-31+float(i%3)*0.5,0.05,15))
+  var concession := "snack_shack" if side > 0 else "grill_stand"
+  if concession in state.buildings:
+   var wing: PackedVector3Array = game.club.world.wing_route(int(side),61 if side > 0 else 43)
+   # Queue indices follow the authored approach, including the first-base workshop detour.
+   route.resize(3)
+   route.append_array(wing)
+   var stop := route.size()
+   route.append(game.club.world.concession_point(concession,Vector3(float(i%3)*0.45,0.05,-4.5)))
+   fan.set_meta("service_stop",stop)
   # Walk back along the same clear approach rather than cutting through buildings.
   for j in range(route.size()-2,1,-1):
    route.append(route[j])
@@ -141,9 +142,10 @@ func sync(state: Dictionary) -> void:
   var wait := float(i)*0.22
   # Early regulars already at service keep the concourse alive while arrivals enter.
   if route.size() > 8 and i >= 5 and (i%4 == 1 if side > 0 else i%4 == 0):
-   fan.position = route[6]
-   fan.rotation.y = PI
-   target = 7
+   var stop: int = fan.get_meta("service_stop")
+   fan.position = route[stop]
+   fan.rotation.y = game.club.world.wing_yaw(int(side))+PI
+   target = stop+1
    wait = 8+float(i%5)
   agents.append({"node":fan,"route":route,"target":target,"wait":wait,"phase":float(i),"speed":1.1+float(i%4)*0.17})
  scoreboards.clear()
@@ -164,6 +166,10 @@ func build_identity(state: Dictionary) -> void:
  var items := {"bleachers":[Vector3(-15,0,24),"THE TOWN'S SECTION"],"grandstand":[Vector3(15,0,24),"COVERED SEATS · OWLS COUNTRY"],"snack_shack":[Vector3(28.5,0,16.5),"LENI'S LOCAL FAVORITES"],"grill_stand":[Vector3(-29,0,15),"HOT OFF THE GRILL"],"scoreboard":[Vector3(12,0,25),"FOLLOW EVERY INNING"],"video_board":[Vector3(-12,0,25),"MAKE SOME NOISE, CEDAR GROVE!"]}
  for id in state.buildings:
   var p: Vector3 = items[id][0]
+  if id in ["snack_shack","grill_stand"]:
+   p = game.club.world.concession_point(id,Vector3(-3,0,-4.4))
+  elif id in ["bleachers","grandstand"]:
+   p = game.club.world.wing_point(-1 if id == "bleachers" else 1,36 if id == "bleachers" else 68,14)
   G.cylinder(identity,p+Vector3(0,1.1,0),0.045,2.2,Color("536362"))
   var sign := G.label(identity,items[id][1],p+Vector3(0,2.4,0),28)
   sign.pixel_size = 0.009
@@ -172,7 +178,8 @@ func build_identity(state: Dictionary) -> void:
   if id in ["snack_shack","grill_stand"]:
    var worker := person(identity,Color("c1aa81"),staff_count)
    workers.append(worker)
-   worker.position = Vector3(33.25 if id == "snack_shack" else -34.6,0.05,17)
+   worker.position = game.club.world.concession_point(id,Vector3(2.4,0.05,-3))
+   worker.rotation.y = game.club.world.wing_yaw(1 if id == "snack_shack" else -1)
    var nameplate := G.label(identity,"LENI · CONCESSIONS" if id == "snack_shack" else "GRILL CREW",worker.position+Vector3(0,2.2,0),22)
    nameplate.pixel_size = 0.008
    nameplate.billboard = BaseMaterial3D.BILLBOARD_ENABLED
@@ -272,8 +279,8 @@ func advance(delta: float) -> void:
   var goal: Vector3 = a.route[a.target]
   var distance := fan.position.distance_to(goal)
   if distance < 0.08:
-   if a.route.size() > 8 and a.target == 6:
-    fan.rotation.y = PI
+   if a.target == int(fan.get_meta("service_stop",-1)):
+    fan.rotation.y = game.club.world.wing_yaw(-1 if fan.position.x < 0 else 1)+PI
    a.target = 2 if a.target == a.route.size()-1 else a.target+1
    a.wait = 1.5+float(a.target%3)*0.7
   else:
@@ -303,14 +310,13 @@ func begin_routines() -> void:
  for i in range(agents.size()):
   var a: Dictionary = agents[i]
   var seat: Vector3 = game.club.world.seat_positions[i]
-  var side := -1.0 if seat.x < 0 else 1.0
-  var aisle: float = side*(13.5 if absf(seat.x) > 14 else 0.8)
-  var approach := Vector3(seat.x,0.05,maxf(14.4,seat.z+3.5))
+  var access: Dictionary = game.club.world.seat_access[seat]
   a.index = i
-  a.state = "queue" if a.target == 7 else "arriving"
+  a.state = "queue" if a.target == int(a.node.get_meta("service_stop",-2))+1 else "arriving"
   a.seat = seat-Vector3(0,0.79,0)
-  a.approach = approach
-  a.seat_route = PackedVector3Array([Vector3(aisle,0.05,24),Vector3(aisle,0.05,approach.z),approach])
+  a.approach = access.route[-1]
+  a.seat_route = access.route
+  a.seat_yaw = access.yaw
   a.step = 0
   a.timer = 0.0
   a.last_inning = 0
@@ -367,7 +373,7 @@ func advance_routines(delta: float) -> void:
     a.state = "leave_section"
    elif a.node.position.z < 23 and absf(a.node.position.x) > 26:
     a.state = "return_concourse"
-    a.step = 0
+    a.step = mini(a.target,a.route.size()-1)
    else:
     a.state = "exit" if a.node.position.z >= 25 else "exit_aisle"
   if a.state == "seated":
@@ -395,18 +401,18 @@ func advance_routines(delta: float) -> void:
      a.state = "find_seat"
      a.step = 0
     else:
-     var served: bool = a.target == 6 and a.route.size() > 8
+     var served: bool = a.target == int(a.node.get_meta("service_stop",-1))
      a.target += 1
      a.wait = (2 if game.club.live.queue_relief() else 5)+float(a.index%3) if served else 0.2
      a.state = "queue" if served else "concourse"
      if served:
-      a.node.rotation.y = PI
+      a.node.rotation.y = game.club.world.wing_yaw(-1 if a.node.position.x < 0 else 1)+PI
   elif a.state == "find_seat":
    if walk_routine(a,a.seat_route[a.step],delta):
     a.step += 1
     if a.step >= a.seat_route.size():
      a.node.position = a.seat
-     a.node.rotation.y = 0
+     a.node.rotation.y = a.seat_yaw
      a.node.get_node("LegLeft").rotation.x = 1.4
      a.node.get_node("LegRight").rotation.x = 1.4
      a.node.get_node("LegLeft/Knee").rotation.x = -1.5
@@ -418,13 +424,11 @@ func advance_routines(delta: float) -> void:
     a.step -= 1
     if a.step < 0:
      a.state = "exit_aisle" if final else "concourse"
-     a.target = 3
+     a.target = 2
   elif a.state == "return_concourse":
-   var side := -1.0 if a.node.position.x < 0 else 1.0
-   var target := Vector3(side*27.9,0.05,a.node.position.z if a.step == 0 else 24)
-   if walk_routine(a,target,delta):
-    a.step += 1
-    if a.step >= 2:
+   if walk_routine(a,a.route[a.step],delta):
+    a.step -= 1
+    if a.step < 2:
      a.state = "exit_aisle"
   elif a.state == "exit_aisle":
    var lane: float = -4.5 if a.node.position.x < 0 else 4.5

@@ -166,9 +166,14 @@ func update_view(fraction: float) -> void:
   moment.text = park.story_lines[0] if not park.story_lines.is_empty() else "Welcome to Cedar Grove."
  elif seconds < 13:
   heading.text = "MATCHDAY · A PARK FULL OF LIFE"
-  var side := 1.0 if "snack_shack" in game.shift.career.club.buildings else -1.0
-  camera.position = Vector3(side*24,3.5,12).lerp(Vector3(side*27,2.8,13),(seconds-7)/6)
-  camera.look_at(Vector3(side*31,1.4,18))
+  var buildings: Array = game.shift.career.club.buildings
+  if "snack_shack" in buildings or "grill_stand" in buildings:
+   var id := "snack_shack" if "snack_shack" in buildings else "grill_stand"
+   camera.position = game.club.world.concession_point(id,Vector3(-7,3.7,-7.5).lerp(Vector3(-5,2.8,-6.5),(seconds-7)/6))
+   camera.look_at(game.club.world.concession_point(id,Vector3(0,1.4,-1.8)))
+  else:
+   camera.position = Vector3(-24,3.5,12).lerp(Vector3(-27,2.8,13),(seconds-7)/6)
+   camera.look_at(Vector3(-7,1.4,24))
   moment.text = park.story_lines[2]
  elif seconds < 40:
   heading.text = "OWLS %d  ·  %s %d  /  INNING %d" % [park.home_runs,String(park.fixture.opponent).to_upper(),park.away_runs,park.inning]

@@ -173,14 +173,14 @@ func run() -> void:
  var normal_wait := 0.0
  if not customer.is_empty():
   customer.state = "concourse"
-  customer.target = 6
+  customer.target = int(customer.node.get_meta("service_stop"))
   customer.wait = 0
-  customer.node.position = customer.route[6]
+  customer.node.position = customer.route[int(customer.node.get_meta("service_stop"))]
   park.advance_routines(0.1)
   relieved_wait = customer.wait
   rush.state = "available"
   customer.state = "concourse"
-  customer.target = 6
+  customer.target = int(customer.node.get_meta("service_stop"))
   customer.wait = 0
   park.advance_routines(0.1)
   normal_wait = customer.wait

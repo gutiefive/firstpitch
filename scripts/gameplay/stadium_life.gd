@@ -19,8 +19,8 @@ func _ready() -> void:
   loops[id] = player
   targets[id] = false
  loops.crowd.position = Vector3(0,1.5,11)
- loops.snacks.position = Vector3(31,1.4,20)
- loops.grill.position = Vector3(-32,1.4,20)
+ loops.snacks.position = game.club.world.concession_point("snack_shack",Vector3(0,1.4,-3))
+ loops.grill.position = game.club.world.concession_point("grill_stand",Vector3(0,1.4,-3))
  reaction = AudioStreamPlayer3D.new()
  reaction.stream = game.audio.stream("crowd_cheer")
  reaction.bus = "GroundsAmbience"
@@ -33,6 +33,8 @@ func _process(delta: float) -> void:
  var state: Dictionary = game.shift.career.club
  var presenting: bool = game.club.opening != null and game.club.opening.active and not game.club.opening.playback_paused
  var allowed: bool = state.active and not state.last.is_empty() and game.shift.session.phase == ShiftSession.Phase.PRACTICE and (not get_tree().paused or presenting)
+ loops.snacks.position = game.club.world.concession_point("snack_shack",Vector3(0,1.4,-3))
+ loops.grill.position = game.club.world.concession_point("grill_stand",Vector3(0,1.4,-3))
  targets.crowd = allowed
  targets.snacks = allowed and "snack_shack" in state.buildings
  targets.grill = allowed and "grill_stand" in state.buildings

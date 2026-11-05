@@ -518,3 +518,11 @@ The staged Owls wear cream-and-teal jerseys, caps, piping and numbers. Visiting 
 A reproducible [six-date audit](docs/audits/SIX_DATE_POLISH.md) follows the complete ideal-work loop without side-job income: nozzle after Opening Day, snack shack after date three, bleachers after date four. It finishes with 1,967 credits and 189 supporters. These are scripted integration results, not a claim that human prep timing or fun has been validated.
 
 [Sweeping](docs/screenshots/polish-cleaning.png) · [Crate carrying](docs/screenshots/polish-carry.png) · [Owls uniform](docs/screenshots/polish-uniform.png)
+
+### Ballpark expansion along the lines
+
+The starter 120 seats stay behind home plate. Community bleachers add a 60-seat section along each foul line; the covered grandstand adds four more sections farther toward the outfield and roofs the existing stands, for 480 total seats. Sections face the diamond rather than forming additional rows behind home plate.
+
+The snack shack opens on the first-base promenade and the grill on the third-base promenade. Connected paths, section stairs and lamps extend with construction; the first-base route goes outside the workshop and equipment access. Fans, concession staff, supply/rush jobs, localized sound and the concourse presentation follow the new layout. Existing saves use the new arrangement automatically, with the same purchases, prices and capacity.
+
+[Starter park](docs/screenshots/growth-starter.png) · [Line bleachers](docs/screenshots/growth-bleachers.png) · [Covered ballpark](docs/screenshots/growth-covered.png) · [First-base concessions](docs/screenshots/growth-concessions.png)

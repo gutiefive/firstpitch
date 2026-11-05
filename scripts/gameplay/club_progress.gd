@@ -7,10 +7,10 @@ const STARTER_DECK := 1.8
 const STARTER_DRAG := 2.4
 const STARTER_WATER := 0.65
 const PROJECTS := {
- "bleachers":{"title":"Community bleachers","cost":600,"fans":90,"requires":[],"seats":120,"fan_bonus":0,"ticket_bonus":0,"food":0,"detail":"Add 120 seats. Supporters need room before crowds can grow."},
- "snack_shack":{"title":"Family snack shack","cost":450,"fans":75,"requires":[],"seats":0,"fan_bonus":3,"ticket_bonus":0,"food":1,"detail":"Earn 1 cr per attendee in food profit; attract 3 extra fans per game."},
- "grandstand":{"title":"Covered grandstand","cost":1400,"fans":200,"requires":["bleachers","snack_shack"],"seats":240,"fan_bonus":5,"ticket_bonus":1,"food":0,"detail":"Add 240 seats, covered seating, 1 cr per ticket and 5 extra fans per game."},
- "grill_stand":{"title":"Owls grill stand","cost":900,"fans":150,"requires":["snack_shack"],"seats":0,"fan_bonus":3,"ticket_bonus":0,"food":1,"detail":"Add a second concession stand: +1 cr food profit per attendee and +3 fans per game."},
+ "bleachers":{"title":"Community bleachers","cost":600,"fans":90,"requires":[],"seats":120,"fan_bonus":0,"ticket_bonus":0,"food":0,"detail":"Extend both foul lines with 120 seats. Supporters need room before crowds can grow."},
+ "snack_shack":{"title":"Family snack shack","cost":450,"fans":75,"requires":[],"seats":0,"fan_bonus":3,"ticket_bonus":0,"food":1,"detail":"Open a first-base concession: +1 cr food profit per attendee and +3 fans per game."},
+ "grandstand":{"title":"Covered grandstand","cost":1400,"fans":200,"requires":["bleachers","snack_shack"],"seats":240,"fan_bonus":5,"ticket_bonus":1,"food":0,"detail":"Extend both lines with 240 seats and cover the stands: +1 cr per ticket and +5 fans per game."},
+ "grill_stand":{"title":"Owls grill stand","cost":900,"fans":150,"requires":["snack_shack"],"seats":0,"fan_bonus":3,"ticket_bonus":0,"food":1,"detail":"Open a third-base grill: +1 cr food profit per attendee and +3 fans per game."},
  "scoreboard":{"title":"Electronic scoreboard","cost":1100,"fans":120,"requires":[],"seats":0,"fan_bonus":2,"ticket_bonus":1,"food":0,"detail":"Replace the old board: +1 cr per ticket and +2 fans per game."},
  "video_board":{"title":"Owls video board","cost":2600,"fans":320,"requires":["scoreboard","grandstand"],"seats":0,"fan_bonus":6,"ticket_bonus":1,"food":0,"detail":"Replace the electronic board with a video screen: another +1 cr per ticket and +6 fans per game."}
 }

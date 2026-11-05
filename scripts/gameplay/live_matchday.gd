@@ -200,7 +200,7 @@ func interact_job() -> void:
    carrying = true
    game.player.visual.carrying_pose = true
    job.state = "carrying"
-   job.point = Vector3(30,0.05,16) if "snack_shack" in game.shift.career.club.buildings else Vector3(-31,0.05,15)
+   job.point = game.club.world.service_point()
    for child in job.marker.get_children():
     if child is MeshInstance3D:
      child.visible = false
@@ -299,9 +299,17 @@ func _process(delta: float) -> void:
  game.club.world.show_static_crowd(visit_time < FINAL+30)
  game.club.matchday.set_time(minf(47,visit_time/LENGTH*47))
  # Live-game visitors stay behind the field; they can use stands and public paths.
- if game.player.position.z < 6.5:
-  game.player.position.z = 6.5
-  game.player.velocity.z = maxf(0,game.player.velocity.z)
+ if game.player.position.z < 6.5 and not public_wing(game.player.position):
+  var side := -1 if game.player.position.x < 0 else 1
+  var outward: Vector3 = game.club.world.wing_outward(side)
+  var start: Vector3 = game.layout.boundary_start(side)
+  var clearance: float = (game.player.position-start).dot(outward)
+  if absf(game.player.position.x) < 16:
+   game.player.position.z = 6.5
+   game.player.velocity.z = maxf(0,game.player.velocity.z)
+  else:
+   game.player.position += outward*(4.0-clearance)
+   game.player.velocity -= outward*minf(0,game.player.velocity.dot(outward))
   feedback = "The game is live. Please stay in the stands and public concourse."
  advance_jobs(delta)
  refresh_hud()
@@ -344,7 +352,7 @@ func spawn_event() -> void:
  if id == "litter":
   add_job(id,"Clear the concourse litter",Vector3(-13,0.06,24),3)
  elif id == "rush":
-  add_job(id,"Help serve the concession rush",Vector3(30,0.05,16) if "snack_shack" in game.shift.career.club.buildings else Vector3(-31,0.05,15),3)
+  add_job(id,"Help serve the concession rush",game.club.world.service_point(),3)
  else:
   add_job(id,"Give a visiting family directions",Vector3(13,0.05,24),0)
  feedback = "MATCHDAY EVENT · "+String(jobs[-1].title)
@@ -369,3 +377,8 @@ func claim_bonus() -> bool:
   game.club.message = "Mara: A good night at the park brings people back. Park bonus settled."
  game.club.sync()
  return ok
+
+func public_wing(point: Vector3) -> bool:
+ var side := -1 if point.x < 0 else 1
+ var start: Vector3 = game.layout.boundary_start(side)
+ return (point-start).dot(game.club.world.wing_outward(side)) >= 3.8

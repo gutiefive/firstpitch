@@ -363,3 +363,7 @@ MatchdayAtmosphere owns an environment snapshot and restores it idempotently aft
 Carry and cleanup need their own CrewVisual flags rather than borrowing the chalk-cart pushing pose. Stationary cleanup uses a time-based work phase, because locomotion phase does not advance at zero speed. Props attach to the rotating visual rig, not the unrotated player body. Release/completion/broadcast/exit clear work state; hiding the source crate avoids duplicate pickup props.
 
 Audit affordability using one continuous saved career and real ledger claims/purchases. The ideal tools-first route cannot afford a date-two concession after buying the opening nozzle. Document that tradeoff instead of silently retuning prices to satisfy the test. Surface/service fixtures validate transitions and money, not human route completion times or entertainment value.
+
+## Foul-line expansion
+
+Seating positions are transforms, not offsets alone: rotate the seat locations, seated fan facing, facial details and access routes together. Reuse the sideline frame for concession placement, serving points, workers, audio and cameras. A fixed home-plate Z boundary prevented visitors reaching line-side amenities; public field exclusion now follows the fence normal. Sample complete route segments and exercise the real controller to catch paths that clear at their endpoints but cross the workshop between them. Review concession cameras after moving buildings: the old field-side camera framing can end up inside a covered seating section.
