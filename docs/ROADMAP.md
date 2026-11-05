@@ -40,3 +40,5 @@
 - Modern UI pass: persistent destination rail; shared navy/mint theme and original icons; Matchday/Stadium/Results/Season Clubhouse sections; card-based equipment and contracts; clearer live HUD; native mouse/controller navigation and responsive 1024/1280/1600-width checks.
 
 - Living matchday first slice: moving representative supporters, public concourse and concession routes, animated staff, upgrade identity signs and warm counter lights, 47-second skippable arrivals/game/story sequence, nine-inning staged baseball action, live upgraded scoreboards, and progress-sensitive Mara/Eli/Leni story lines.
+
+- Matchday viewing UI: pause/play, double speed, chapter skipping, clear chapter/time badge, safe explicit Results action, guarded latest-matchday replay, matching final score in Results, and a speaker-filtered Town tab.

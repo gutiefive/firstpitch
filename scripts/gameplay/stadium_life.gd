@@ -31,7 +31,7 @@ func _ready() -> void:
  add_child(reaction)
 func _process(delta: float) -> void:
  var state: Dictionary = game.shift.career.club
- var presenting: bool = game.club.opening != null and game.club.opening.active
+ var presenting: bool = game.club.opening != null and game.club.opening.active and not game.club.opening.playback_paused
  var allowed: bool = state.active and not state.last.is_empty() and game.shift.session.phase == ShiftSession.Phase.PRACTICE and (not get_tree().paused or presenting)
  targets.crowd = allowed
  targets.snacks = allowed and "snack_shack" in state.buildings

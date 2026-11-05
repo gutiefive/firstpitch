@@ -175,16 +175,9 @@ func set_time(seconds: float) -> void:
  clock = seconds
  stage = "arrivals" if seconds < 7 else ("concourse" if seconds < 13 else ("game" if seconds < 40 else "stories"))
  inning = clampi(1+int((seconds-13)/3),1,9) if seconds >= 13 else 0
- home_runs = 0
- away_runs = 0
- for n in range(inning):
-  home_runs += int(posmod(int(receipt.get("game",1))*5+n*5,7) < 2)
-  away_runs += int(posmod(int(receipt.get("game",1))*3+n*4,9) < 2)
- if inning == 9 and home_runs == away_runs:
-  if int(receipt.get("game",1))%2 == 0:
-   home_runs += 1
-  else:
-   away_runs += 1
+ var score := score_for(int(receipt.get("game",1)),inning)
+ home_runs = score.x
+ away_runs = score.y
  score_sign.text = "OWLS %d  ·  %s %d\n%s" % [home_runs,String(fixture.get("opponent","VISITORS")).to_upper(),away_runs,"INNING %d / 9" % inning if stage == "game" else ("FINAL · THANK YOU, CEDAR GROVE" if stage == "stories" else "GATES OPEN · FIND YOUR SEAT")]
  for display in scoreboards:
   if is_instance_valid(display):
@@ -227,9 +220,9 @@ func _process(delta: float) -> void:
   a.node.visible = allowed
  actors.visible = allowed and showing and stage == "game"
  score_sign.visible = allowed and hosted and not showing and stage in ["game","stories"]
- if not allowed or (get_tree().paused and not showing):
+ if not allowed or (get_tree().paused and not showing) or (showing and game.club.opening.playback_paused):
   return
- advance(minf(delta,0.1))
+ advance(minf(delta,0.1)*(game.club.opening.playback_speed if showing else 1.0))
 func advance(delta: float) -> void:
  ambient_time += delta
  for worker in workers:
@@ -255,3 +248,14 @@ func advance(delta: float) -> void:
    fan.get_node("LegRight").rotation.x = -sin(a.phase)*0.32
    fan.get_node("ArmLeft").rotation.x = -sin(a.phase)*0.22
    fan.get_node("ArmRight").rotation.x = sin(a.phase)*0.22
+
+static func score_for(date: int,innings: int = 9) -> Vector2i:
+ var home := 0
+ var away := 0
+ for n in range(innings):
+  home += int(posmod(date*5+n*5,7) < 2)
+  away += int(posmod(date*3+n*4,9) < 2)
+ if innings == 9 and home == away:
+  home += int(date%2 == 0)
+  away += int(date%2 != 0)
+ return Vector2i(home,away)

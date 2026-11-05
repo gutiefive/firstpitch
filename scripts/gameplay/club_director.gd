@@ -100,3 +100,14 @@ func build(id: String) -> bool:
  message = "Mara: %s is open. That's what reinvesting in the club looks like." % ClubProgress.PROJECTS[id].title
  sync()
  return true
+
+func can_watch() -> bool:
+ return available() and game.shift.session.phase == ShiftSession.Phase.PRACTICE and not game.shift.career.club.last.is_empty() and String(game.shift.career.club.pending).is_empty()
+func watch_last_game() -> bool:
+ if not can_watch() or opening.active:
+  return false
+ game.shift.open_board()
+ game.shift.overlay.club_button.pressed.emit()
+ game.shift.overlay.club_panel.show_section("results")
+ opening.present(game.shift.career.club.last)
+ return true

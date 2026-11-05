@@ -23,6 +23,10 @@ var project_status := {}
 var project_savings := {}
 var result_metrics := {}
 var town_voices: Label
+var town_filter := "All"
+var town_buttons := {}
+var watch_button: Button
+var match_summary: Label
 var result_details: Button
 var sections := {}
 var tabs := {}
@@ -54,7 +58,7 @@ func _ready() -> void:
  var navigation := HBoxContainer.new()
  navigation.add_theme_constant_override("separation",8)
  content.add_child(navigation)
- for key in ["matchday","stadium","results","season"]:
+ for key in ["matchday","stadium","results","season","town"]:
   var tab := GameUI.button(navigation,String(key).capitalize())
   tab.toggle_mode = true
   tab.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -93,7 +97,14 @@ func _ready() -> void:
  voice = text(story,"",14)
  objective = text(story,"",14)
  objective.modulate = GameUI.ACCENT
- recap_continue = GameUI.button(sections.results,"Continue to next date",true)
+ var result_actions := HBoxContainer.new()
+ result_actions.add_theme_constant_override("separation",8)
+ sections.results.add_child(result_actions)
+ recap_continue = GameUI.button(result_actions,"Continue to next date",true)
+ recap_continue.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+ watch_button = GameUI.button(result_actions,"Watch latest matchday")
+ watch_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+ watch_button.pressed.connect(director.watch_last_game)
  recap_continue.pressed.connect(func(): show_section("matchday"); prep_button.grab_focus())
  sections.results.add_theme_constant_override("separation",10)
  var earnings := HBoxContainer.new()
@@ -106,7 +117,7 @@ func _ready() -> void:
  var result_card := GameUI.card(sections.results)
  result_card.get_parent().add_theme_stylebox_override("panel",GameUI.box(Color("1b2e39"),12))
  results_title = text(result_card,"Your next home game starts here",24)
- GameUI.label(result_card,"Prep wages are paid when your shift ends. Gate profit and manager bonuses settle when you host.",12,GameUI.MUTED)
+ match_summary = GameUI.label(result_card,"",13,GameUI.MUTED)
  result_details = GameUI.button(result_card,"Show earnings breakdown")
  result_details.toggle_mode = true
  receipt = text(result_card,"",14)
@@ -138,7 +149,19 @@ func _ready() -> void:
  var season_card := GameUI.card(sections.season,"SEASON PERFORMANCE")
  season_review = text(season_card,"",18)
  ownership_review = text(GameUI.card(sections.season,"MARA'S OWNERSHIP REVIEW"),"",15)
- town_voices = text(GameUI.card(sections.season,"AROUND THE BALLPARK"),"",14)
+ GameUI.label(sections.town,"Around the ballpark",25)
+ GameUI.label(sections.town,"The people behind your home dates. Their updates change with your field work and stadium investment.",13,GameUI.MUTED)
+ var speakers := HFlowContainer.new()
+ speakers.add_theme_constant_override("h_separation",8)
+ speakers.add_theme_constant_override("v_separation",8)
+ sections.town.add_child(speakers)
+ for speaker in ["All","Mara","Eli","Leni"]:
+  var choose := GameUI.button(speakers,{"All":"Everyone","Mara":"Mara · Manager","Eli":"Eli · Regular fan","Leni":"Leni · Concessions"}[speaker])
+  choose.custom_minimum_size.x = 190 if speaker != "All" else 110
+  choose.toggle_mode = true
+  choose.pressed.connect(func(): show_town_voice(speaker); choose.grab_focus())
+  town_buttons[speaker] = choose
+ town_voices = text(GameUI.card(sections.town,"LATEST TOWN UPDATES"),"",15)
  notice = GameUI.label(content,"",13,GameUI.GOLD)
  back_button = button(content,"Back to operations")
  back_button.pressed.connect(func(): back_requested.emit())
@@ -173,7 +196,14 @@ func preferred_focus() -> Control:
 func refresh() -> void:
  var career: CareerProfile = director.game.shift.career
  var state: Dictionary = career.club
- town_voices.text = "\n\n".join(director.matchday.story_lines) if not director.matchday.story_lines.is_empty() else "The town is waiting for Opening Day. Take the job, prepare the field, and meet the regulars."
+ show_town_voice(town_filter)
+ watch_button.disabled = not director.can_watch()
+ watch_button.tooltip_text = "Rewatch without changing your earnings." if not watch_button.disabled else "Host a game and finish current work to watch again."
+ if not state.last.is_empty():
+  var score := MatchdayPark.score_for(int(state.games))
+  match_summary.text = "Owls %d · %s %d · Condensed nine-inning game" % [score.x,ClubSchedule.fixture(int(state.games)-1).opponent,score.y]
+ else:
+  match_summary.text = "Host your first home date to see its matchday summary."
  var story := ClubProgress.chapter(state)
  var ready := director.available()
  stats.text = career.rank_title()+"  ·  Shared club funds"
@@ -269,3 +299,13 @@ func scroll_to_recap() -> void:
  await get_tree().process_frame
  if is_inside_tree() and director.game.shift.overlay.club_screen.visible:
   director.game.shift.overlay.club_screen.scroll_vertical = 0
+
+func show_town_voice(speaker: String) -> void:
+ town_filter = speaker
+ var lines := PackedStringArray()
+ for line in director.matchday.story_lines:
+  if speaker == "All" or line.begins_with(speaker):
+   lines.append(line)
+ town_voices.text = "\n\n".join(lines) if not lines.is_empty() else "The town is waiting for Opening Day. Take the job and prepare the field to meet the regulars."
+ for key in town_buttons:
+  town_buttons[key].set_pressed_no_signal(key == speaker)

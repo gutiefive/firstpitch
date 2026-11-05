@@ -429,7 +429,7 @@ Tests: `test_game_day.gd` (rules, ledger and replay) and `test_game_day_gameplay
 
 The starter hose and drag are a little more forgiving: **0.65 application rate** and a **2.4 m mat**. The mower remains 1.8 m. Purchased equipment still reaches 1.0 watering rate, 3.5 m drag and 3.0 m mower width. Existing prices, payouts and manager rules are unchanged. A deterministic progression audit compares tools-first and seats-first strategies; see [balance review](docs/BALANCE_REVIEW.md) for its assumptions and purchase dates.
 
-After hosting, a **47-second matchday sequence** shows arrivals, concourse life, staged innings and town story beats, with crowd and gate audio, before revealing the recap. **Enter / A / click** continues; **Esc / B** skips. The world and shift clock stay paused. Skipping does not alter earnings or start the next date. Failed or duplicate hosting and career reloads do not replay the presentation.
+After hosting, a **47-second matchday sequence** shows arrivals, concourse life, staged innings and town story beats, with crowd and gate audio, before revealing the recap. **Enter / A / Results** continues; **Esc / B** skips. The world and shift clock stay paused. Skipping does not alter earnings or start the next date. Failed or duplicate hosting and career reloads do not replay the presentation.
 
 When you return to the postgame park, spectators murmur and occasionally react. Built concession stands have localized counter sounds. Paid prep hides spectators and fades their audio out. Crowd/concession sounds and cheers use the existing **Ambience** control; the gate cue uses **Effects**, and Master/mute controls both. Sounds are original synthetic prototype clips.
 
@@ -441,12 +441,13 @@ Every **six hosted dates**, Mara gives an **ownership review**: season targets, 
 
 The pause menu now has a persistent icon rail for **Operations, Clubhouse, Workshop, Contracts, Audio, Controls, Tutorial, and Return to field**. A shared navy and mint theme brings consistent cards, buttons, spacing, scrollbars, and visible controller focus to the menus. Operations puts the club career first while retaining practice, training, full prep and manual saves.
 
-The Clubhouse has four focused views:
+The Clubhouse has five focused views:
 
 - **Matchday:** next opponent, prep target, manager request, story objective, and prepare/host actions.
 - **Stadium:** upgrade cards with prices, supporter requirements, prerequisites, and benefits; two columns in smaller windows.
 - **Results:** a prominent Continue action, settled earnings, attendance, fan growth, and the next investment.
 - **Season:** performance and Mara's ownership review.
+- **Town:** the latest character updates, browsable by speaker.
 
 Workshop and contract purchases use cards. The field HUD uses a compact task/progress card, a separate shift checklist, contextual condition/tutorial panels, and a bottom interaction prompt. Menu navigation supports mouse, keyboard and controller: D-pad left/right crosses between the rail and content, B/Esc returns, and Tab returns to the field. Autosave recovery locks the rail until you choose Resume or Start fresh.
 
@@ -458,12 +459,19 @@ Operations groups crew training, full-park prep and the manual field checkpoint 
 
 ## A living matchday
 
-Hosting now starts a skippable **47-second matchday sequence**: gates and arrivals, concourse activity, a condensed nine-inning game, then town story beats before returning to Results. Enter/A/click continues to the recap; Esc/B skips. The covered menu cannot receive that input.
+Hosting now starts a skippable **47-second matchday sequence**: gates and arrivals, concourse activity, a condensed nine-inning game, then town story beats before returning to Results. Enter/A or the Results button continues to the recap; Esc/B skips. The covered menu cannot receive that input.
 
 A capped group of **up to 28 moving supporters** walks authored routes around the ticket booth and public concourse. Built concessions add queue destinations, serving workers, warm counter lights and local signage. Supporters swing their arms and legs; workers make serving gestures. They continue moving when you return to explore the park, freeze in ordinary paused menus, and clear from the active prep view. These walkers represent crowd activity alongside the existing seated crowd; they are not a one-agent-per-ticket attendance count and do not block tool/player physics.
 
 The condensed game shows fielders, a batter swinging, a pitched/batted ball and a runner circling the bases. Innings and a deterministic score advance on the matchday cameras and purchased scoreboards. This is staged baseball action, not a physics-driven baseball engine or a persistent league-results system. It adds no payouts and never changes the settled prep wages, gate income, manager bonuses or fan growth.
 
-Mara, Eli the season-ticket regular and Leni in concessions react to your field work and stadium investment. All six stadium upgrades gain local identity signs; concession upgrades add workers and lighting. Eli appears along the concourse, and the latest town lines remain readable under **Clubhouse → Season → Around the ballpark**. Relaunch restores the park from your career without replaying the matchday presentation.
+Mara, Eli the season-ticket regular and Leni in concessions react to your field work and stadium investment. All six stadium upgrades gain local identity signs; concession upgrades add workers and lighting. Eli appears along the concourse, and the latest town lines remain readable under **Clubhouse → Town**. Relaunch restores the park from your career without replaying the matchday presentation.
 
 [Arrivals](docs/screenshots/alive-arrival.png) · [Condensed game](docs/screenshots/alive-game.png) · [Concession activity](docs/screenshots/alive-concessions.png) · [Town story beat](docs/screenshots/alive-stories.png)
+
+
+Matchday viewing now has explicit **Pause/Play**, **1×/2× speed**, **Next moment**, and **Results** buttons, with chapter and elapsed-time indicators. Keyboard shortcuts are **Space**, **Y**, **N**, and **Enter**; controller shortcuts are **X**, **Y**, **RB**, and **A**. Esc/B also returns to Results. Clicking elsewhere does not dismiss the show or activate the covered menu. Pause freezes the presentation, moving supporters and ambience; the actual prep clock remains paused throughout.
+
+**Results → Watch latest matchday** revisits the latest hosted game without paying it again or changing the career ledger. Replay is available between dates after hosting, with no active/prepared shift or unresolved autosave recovery. The recap shows the same condensed final score as the presentation. **Clubhouse → Town** lets you browse Everyone, Mara, Eli or Leni; these remain contextual updates rather than conversation choices.
+
+[Playback controls](docs/screenshots/watch-playback.png) · [Latest matchday replay](docs/screenshots/watch-results.png) · [Town updates](docs/screenshots/watch-town.png)

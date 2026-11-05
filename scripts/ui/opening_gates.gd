@@ -10,6 +10,15 @@ var heading: Label
 var detail: Label
 var moment: Label
 var timeline: ProgressBar
+var playback_paused := false
+var playback_speed := 1.0
+var controls: HFlowContainer
+var pause_button: Button
+var speed_button: Button
+var next_button: Button
+var results_button: Button
+var chapter_label: Label
+var clock_label: Label
 var gates: Array[Node3D] = []
 var cheer: AudioStreamPlayer
 var latch: AudioStreamPlayer
@@ -36,6 +45,16 @@ func _ready() -> void:
  picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
  picture.mouse_filter = Control.MOUSE_FILTER_IGNORE
  add_child(picture)
+ var top := PanelContainer.new()
+ top.theme = GameUI.theme()
+ top.position = Vector2(24,24)
+ top.custom_minimum_size.x = 380
+ top.add_theme_stylebox_override("panel",GameUI.box(GameUI.BG,12))
+ add_child(top)
+ var top_stack := VBoxContainer.new()
+ top.add_child(top_stack)
+ chapter_label = GameUI.label(top_stack,"",12,GameUI.ACCENT)
+ clock_label = GameUI.label(top_stack,"",13)
  var band := PanelContainer.new()
  band.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
  band.offset_top = -155
@@ -50,6 +69,7 @@ func _ready() -> void:
  stack.mouse_filter = Control.MOUSE_FILTER_IGNORE
  band.add_child(stack)
  heading = Label.new()
+ heading.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  heading.add_theme_font_size_override("font_size",28)
  heading.modulate = GameUI.ACCENT
  heading.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -62,11 +82,23 @@ func _ready() -> void:
  moment = GameUI.label(stack,"",14,GameUI.TEXT)
  timeline = GameUI.meter(stack)
  timeline.theme = GameUI.theme()
- var skip := Label.new()
- skip.text = "Enter / A / click to continue · Esc / B to skip"
- skip.modulate = Color("b7d0bc")
- skip.mouse_filter = Control.MOUSE_FILTER_IGNORE
- stack.add_child(skip)
+ controls = HFlowContainer.new()
+ controls.theme = GameUI.theme()
+ controls.mouse_filter = Control.MOUSE_FILTER_STOP
+ controls.add_theme_constant_override("h_separation",8)
+ controls.add_theme_constant_override("v_separation",6)
+ stack.add_child(controls)
+ pause_button = GameUI.button(controls,"Pause · Space / X")
+ speed_button = GameUI.button(controls,"Speed 1× · Y")
+ next_button = GameUI.button(controls,"Next moment · N / RB")
+ results_button = GameUI.button(controls,"Results · Enter / A",true)
+ for button in [pause_button,speed_button,next_button,results_button]:
+  button.focus_mode = Control.FOCUS_NONE
+  button.custom_minimum_size.x = 210 if button == next_button else 185
+ pause_button.pressed.connect(toggle_pause)
+ speed_button.pressed.connect(cycle_speed)
+ next_button.pressed.connect(next_moment)
+ results_button.pressed.connect(finish)
  for id in ["crowd_cheer","gate_open"]:
   var player := AudioStreamPlayer.new()
   player.stream = game.audio.stream(id)
@@ -97,6 +129,12 @@ func set_gate_fraction(value: float) -> void:
   gates[i].rotation.y = (-1 if i == 0 else 1)*PI*0.5*value
 func present(receipt: Dictionary) -> void:
  elapsed = 0
+ playback_paused = false
+ playback_speed = 1
+ cheer.stream_paused = false
+ latch.stream_paused = false
+ pause_button.text = "Pause · Space / X"
+ speed_button.text = "Speed 1× · Y"
  game.club.matchday.begin(receipt)
  active = true
  visible = true
@@ -135,12 +173,14 @@ func update_view(fraction: float) -> void:
   camera.look_at(Vector3(-7,1.4,24))
   var index := mini(park.story_lines.size()-1,1+int((seconds-40)/2.4))
   moment.text = park.story_lines[index]
+ chapter_label.text = "MATCHDAY  /  "+{"arrivals":"1 OF 4 · ARRIVALS","concourse":"2 OF 4 · AROUND THE PARK","game":"3 OF 4 · THE GAME","stories":"4 OF 4 · TOWN VOICES"}[park.stage]
+ clock_label.text = "%s / 0:47  ·  %s" % [ShiftSession.clock_text(seconds),"PAUSED" if playback_paused else "%d× speed" % int(playback_speed)]
  timeline.value = fraction*100
  set_gate_fraction(1-pow(1-minf(1,seconds/3),3))
 func _process(delta: float) -> void:
- if not active:
+ if not active or playback_paused:
   return
- elapsed += delta
+ elapsed += delta*playback_speed
  update_view(clampf(elapsed/DURATION,0,1))
  if elapsed >= DURATION:
   finish()
@@ -150,12 +190,29 @@ func _input(event: InputEvent) -> void:
  if event is InputEventKey and event.echo:
   get_viewport().set_input_as_handled()
   return
- if event.is_action_pressed("ui_accept") or event.is_action_pressed("ui_cancel") or event.is_action_pressed("cursor_menu") or event.is_action_pressed("shift_board") or (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
+ if event is InputEventMouse and controls.get_global_rect().has_point(event.position):
+  return
+ if (event is InputEventKey and event.pressed and event.physical_keycode == KEY_SPACE) or (event is InputEventJoypadButton and event.pressed and event.button_index == JOY_BUTTON_X):
+  toggle_pause()
+  get_viewport().set_input_as_handled()
+  return
+ if (event is InputEventKey and event.pressed and event.physical_keycode == KEY_Y) or (event is InputEventJoypadButton and event.pressed and event.button_index == JOY_BUTTON_Y):
+  cycle_speed()
+  get_viewport().set_input_as_handled()
+  return
+ if (event is InputEventKey and event.pressed and event.physical_keycode == KEY_N) or (event is InputEventJoypadButton and event.pressed and event.button_index == JOY_BUTTON_RIGHT_SHOULDER):
+  next_moment()
+  get_viewport().set_input_as_handled()
+  return
+ if event.is_action_pressed("ui_accept") or event.is_action_pressed("ui_cancel") or event.is_action_pressed("cursor_menu") or event.is_action_pressed("shift_board"):
   finish()
  # The covered recap must not respond to navigation or pointer events underneath.
  get_viewport().set_input_as_handled()
 func finish() -> void:
  active = false
+ playback_paused = false
+ cheer.stream_paused = false
+ latch.stream_paused = false
  visible = false
  if game.club.matchday != null:
   game.club.matchday.complete()
@@ -163,3 +220,27 @@ func finish() -> void:
  view.render_target_update_mode = SubViewport.UPDATE_DISABLED
  cheer.stop()
  latch.stop()
+
+func toggle_pause() -> void:
+ if not active:
+  return
+ playback_paused = not playback_paused
+ cheer.stream_paused = playback_paused
+ latch.stream_paused = playback_paused
+ pause_button.text = "Play · Space / X" if playback_paused else "Pause · Space / X"
+ update_view(elapsed/DURATION)
+func cycle_speed() -> void:
+ if not active:
+  return
+ playback_speed = 2.0 if playback_speed == 1 else 1.0
+ speed_button.text = "Speed %d× · Y" % int(playback_speed)
+ update_view(elapsed/DURATION)
+func next_moment() -> void:
+ if not active:
+  return
+ for mark in [7.0,13.0,40.0]:
+  if elapsed < mark-0.01:
+   elapsed = mark
+   update_view(elapsed/DURATION)
+   return
+ finish()
