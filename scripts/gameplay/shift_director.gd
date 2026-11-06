@@ -4,6 +4,7 @@ var game: Node3D
 var session: ShiftSession
 var overlay: ShiftOverlay
 var career := CareerProfile.new()
+var playtest := PlaytestLog.new()
 var career_message := ""
 var standard_deck_width := 2.4
 var standard_water_rate := 0.8
@@ -37,6 +38,7 @@ func _ready() -> void:
 	overlay.load_requested.connect(load_field)
 	session.finished.connect(on_finished)
 	session.changed.connect(refresh_condition)
+	session.changed.connect(playtest.observe.bind(session))
 	build_noticeboard()
 
 
@@ -189,6 +191,7 @@ func end_shift() -> void:
 func on_finished(result: Dictionary) -> void:
 	var receipt := career.claim(session.attempt_id, result)
 	career_message = receipt.message
+	playtest.record(session, int(receipt.get("pay", 0)))
 	open_board()
 
 

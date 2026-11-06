@@ -526,3 +526,7 @@ The starter 120 seats stay behind home plate. Community bleachers add a 60-seat 
 The snack shack opens on the first-base promenade and the grill on the third-base promenade. Connected paths, section stairs and lamps extend with construction; the first-base route goes outside the workshop and equipment access. Fans, concession staff, supply/rush jobs, localized sound and the concourse presentation follow the new layout. Existing saves use the new arrangement automatically, with the same purchases, prices and capacity.
 
 [Starter park](docs/screenshots/growth-starter.png) · [Line bleachers](docs/screenshots/growth-bleachers.png) · [Covered ballpark](docs/screenshots/growth-covered.png) · [First-base concessions](docs/screenshots/growth-concessions.png)
+
+### Optional local playtest timing log
+
+Logging is **off by default**. To opt in, launch `godot --path . -- --playtest-log` (or pass `-- --playtest-log` to the game executable). Finished shifts append to `user://playtest-log.csv`: UTC timestamp, profile, end reason, elapsed time, first observed goal time for each job, final score, paid credits and attempt ID. No network calls or extra in-game screens are added. Blank goal cells mean unrequested, unfinished or not observed before a resumed/mid-shift logging start; the logger does not invent earlier times. Duplicate attempt rows are suppressed across relaunch. A logging failure does not block settlement. The payout column records credits returned by the career settlement at finish (zero when that write failed), rather than later recovery payments.
