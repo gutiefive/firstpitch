@@ -367,3 +367,7 @@ Audit affordability using one continuous saved career and real ledger claims/pur
 ## Foul-line expansion
 
 Seating positions are transforms, not offsets alone: rotate the seat locations, seated fan facing, facial details and access routes together. Reuse the sideline frame for concession placement, serving points, workers, audio and cameras. A fixed home-plate Z boundary prevented visitors reaching line-side amenities; public field exclusion now follows the fence normal. Sample complete route segments and exercise the real controller to catch paths that clear at their endpoints but cross the workshop between them. Review concession cameras after moving buildings: the old field-side camera framing can end up inside a covered seating section.
+
+## First-person presentation
+
+A visible Node is not necessarily visible inside the player image. Project grip points through the actual camera and inspect close renders; this caught low hose grips and a tamper handle rotating behind the eye while looking down. Extend foreground forearms beyond the image edge instead of terminating them as visible floating sleeve caps. Keep physics aiming and work validation independent of these cosmetic poses. Scale a tube along its rotated local Y column when joining two endpoints; global-axis scaling can disconnect a tilted stream. Local hand/tool render layers also keep spectator broadcasts clear of floating first-person meshes.

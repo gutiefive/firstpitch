@@ -16,6 +16,8 @@ var mound: MoundSurface
 var binding_query: Callable
 var placard: Label3D
 var capture_query: Callable
+var rest_query: Callable
+var view_rotation_query: Callable
 var equipped := false
 var busy := false
 var requested := false
@@ -220,7 +222,9 @@ func _process(delta: float) -> void:
 	if held == null:
 		return
 	if equipped:
-		var rest := player.visual.to_global(Vector3(0, 0.08, -0.6))
+		var rest: Vector3 = (
+			rest_query.call() if rest_query.is_valid() else player.visual.to_global(Vector3(0, 0.08, -0.6))
+		)
 		var work_position := rest
 		if busy:
 			var impact_point := mound.patch_world(locked_index) + Vector3.UP * 0.045
@@ -232,7 +236,13 @@ func _process(delta: float) -> void:
 			else:
 				work_position = impact_point.lerp(rest, smoothstep(contact_time, stroke_duration, swing_time))
 		held.global_position = work_position
-		held.rotation.y = player.visual.global_rotation.y
+		var desired: Vector3 = (
+			view_rotation_query.call()
+			if view_rotation_query.is_valid()
+			else Vector3(0, player.visual.global_rotation.y, 0)
+		)
+		held.rotation.x = lerp_angle(held.rotation.x, desired.x, minf(1, delta * 16))
+		held.rotation.y = desired.y
 		(player.visual as CrewVisual).tamp_lift = clampf(work_position.y - rest.y, 0, 1)
 		ring.visible = target_index >= 0
 		if ring.visible:

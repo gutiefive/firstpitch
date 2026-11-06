@@ -270,12 +270,11 @@ func reset_equipment() -> void:
 	game.player.position = game.layout.player_spawn
 	game.player.visual.rotation = Vector3.ZERO
 	game.yaw = 0.12
-	game.pitch = -0.45
-	game.camera_distance = 8
+	game.pitch = -0.1
 	game.camera.current = true
 	game.watering.camera = game.camera
 	game.tamper.camera = game.camera
-	game.pivot.global_position = game.player.global_position + Vector3.UP * 1.5
+	game.first_person.update_view()
 	for action in [
 		"forward", "back", "left", "right", "sprint", "jump", "brake", "spray_water", "tamp_mound"
 	]:

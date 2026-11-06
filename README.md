@@ -1,12 +1,12 @@
 # First Pitch: Grounds Crew
 
-A playable Godot 3D groundskeeping prototype set at **Cedar Grove Ballpark**. Mow the outfield, drag and water the dirt, chalk foul lines, and repair the mound. Take timed shifts or focused contracts, earn crew credits, climb the ranks, and buy permanent tool upgrades. Take a job with the **Cedar Grove Owls**, grow a supporter base, and reinvest home-game income in tools and a bigger ballpark. Save field work and resume later.
+A playable first-person Godot 3D groundskeeping prototype set at **Cedar Grove Ballpark**. Mow the outfield, drag and water the dirt, chalk foul lines, and repair the mound. Take timed shifts or focused contracts, earn crew credits, climb the ranks, and buy permanent tool upgrades. Take a job with the **Cedar Grove Owls**, grow a supporter base, and reinvest home-game income in tools and a bigger ballpark. Save field work and resume later.
 
 Built with GDScript, procedural meshes and original generated sound effects. No plugins, downloaded art, or external runtime dependencies are required.
 
-**Current build: M1–M5 prototypes, rotating game-day conditions, paid manager priorities, postgame recaps, six stadium projects and visual revisions.** The latest progression/stadium-life pass verified **513 targeted assertions** and rendered gameplay checks. The earlier full-suite baseline was 715 assertions; see [verification history](docs/VERIFICATION.md) for subsequent feature checks. Windows and native Forward+ hardware testing remain outstanding.
+**Current build:** first-person groundskeeping, timed shifts/contracts, the Owls club loop, six stadium projects, live matchdays and career-v4 state saves. The eight ordered maintenance tasks are complete; see the [maintenance summary](docs/MAINTENANCE_SUMMARY.md) and [verification history](docs/VERIFICATION.md). Windows and native Forward+ hardware testing remain outstanding.
 
-![Cedar Grove stadium after the four-pass visual revision](docs/screenshots/art-after-stadium.png)
+![First-person watering at Cedar Grove](docs/screenshots/fps-watering.png)
 
 [Start playing](#start-playing) · [Controls](#controls) · [Club story](#club-story-loop) · [Field tools](#field-tools) · [Shifts and contracts](#shifts-and-contracts) · [Career and upgrades](#career-and-upgrades) · [Saving](#save-and-resume) · [Development](#development-and-verification)
 
@@ -14,7 +14,7 @@ Built with GDScript, procedural meshes and original generated sound effects. No 
 
 | Milestone | Implemented |
 | --- | --- |
-| **M1 — Stadium and character** | Explorable ballpark, walking/sprinting/jumping, orbit camera, collisions, daylight, detailed groundskeeper and park props. |
+| **M1 — Stadium and character** | Explorable ballpark, walking/sprinting/jumping, first-person camera, collisions, daylight, detailed groundskeeper and park props. |
 | **M2 — Riding mower** | Enter/exit, acceleration, braking, reverse, steering, animated wheels, seated operator and speed-responsive engine audio. |
 | **M3 — Grass mowing** | Persistent spatial cutting, directional stripes, disappearing grass tufts and overlap-safe coverage. |
 | **M4 — Field tools** | Tow-behind infield drag, pushable chalk marker, on-foot hose and timed hand tamper; five independent field jobs. |
@@ -64,8 +64,7 @@ You spawn beside the workshop in **free practice**, with no countdown. The tract
 | Take tamper near its rack / stow anywhere on foot | G |
 | Spray while holding hose and cursor captured | Hold left mouse button |
 | One timed stroke while holding tamper | Click left mouse button |
-| Orbit third-person camera | Mouse |
-| Zoom | Mouse wheel |
+| First-person look | Mouse |
 | Toggle field inspection | V |
 | Previous / next job | [ / ] |
 | Open/close shift board; pause/resume world and countdown | Tab |
@@ -478,7 +477,7 @@ Matchday viewing now has explicit **Pause/Play**, **1×/2× speed**, **Next mome
 
 ## Walk a live matchday
 
-Choose **Walk park · V / RS** during the matchday presentation, or **Results → Walk the park** between home dates. You control the existing third-person player while the game continues. The visit stretches the 47-second broadcast timeline over roughly six minutes, with the final at about five minutes; the HUD shows first-pitch countdown, inning and score. **V / RS** switches to broadcast, and its Walk button returns to the same visit and shared clock. The condensed broadcast can move time forward faster. **Tab** pauses the visit. **B** or the End visit button returns to Results; **Esc** releases/captures the mouse for HUD buttons. Normal movement, jumping and camera controls remain available. The active field is closed to visitors.
+Choose **Walk park · V / RS** during the matchday presentation, or **Results → Walk the park** between home dates. You explore from the first-person player view while the game continues. The visit stretches the 47-second broadcast timeline over roughly six minutes, with the final at about five minutes; the HUD shows first-pitch countdown, inning and score. **V / RS** switches to broadcast, and its Walk button returns to the same visit and shared clock. The condensed broadcast can move time forward faster. **Tab** pauses the visit. **B** or the End visit button returns to Results; **Esc** releases/captures the mouse for HUD buttons. Normal movement, jumping and camera controls remain available. The active field is closed to visitors.
 
 Walking supporters now follow a live-visit routine: arrivals, public aisles, concession service where built, reserved seats, short reactions to inning changes, occasional return trips, and departures after the final. Seats occupied by moving supporters are removed from the batched seated crowd, keeping the represented attendance consistent. Soft spacing/yielding reduces queue stacking; fixed public routes guide them around the booth, benches and stands. The remaining batched crowd clears after the final as walkers head for the gates.
 
@@ -530,3 +529,11 @@ The snack shack opens on the first-base promenade and the grill on the third-bas
 ### Optional local playtest timing log
 
 Logging is **off by default**. To opt in, launch `godot --path . -- --playtest-log` (or pass `-- --playtest-log` to the game executable). Finished shifts append to `user://playtest-log.csv`: UTC timestamp, profile, end reason, elapsed time, first observed goal time for each job, final score, paid credits and attempt ID. No network calls or extra in-game screens are added. Blank goal cells mean unrequested, unfinished or not observed before a resumed/mid-shift logging start; the logger does not invent earlier times. Duplicate attempt rows are suppressed across relaunch. A logging failure does not block settlement. The payout column records credits returned by the career settlement at finish (zero when that write failed), rather than later recovery payments.
+
+### First-person gameplay
+
+Walking, hose watering, mound repair, mower/drag driving, chalk-cart work and live-matchday jobs use an eye-level camera. Mouse/right-stick look works above and below the horizon; movement and interaction bindings are unchanged. The orbit arm and wheel zoom have been removed. Vehicle views turn with the equipment while retaining a free-look offset. There is no added camera bob or artificial position lag.
+
+Held gloves, hose/nozzle, tamper, broom and concession crate are framed for the eye camera. The hose has a finer, obstacle-clipped visual stream. Tool work, reach limits, prices, rewards, field-save format and career progression retain their existing rules. Optional matchday broadcasts remain spectator presentations and hide the local first-person meshes. Returning to the park restores the player eye view.
+
+[Walking](docs/screenshots/fps-on-foot.png) · [Watering](docs/screenshots/fps-watering.png) · [Tamping](docs/screenshots/fps-tamping.png) · [Mower seat](docs/screenshots/fps-mower.png) · [Chalk marker](docs/screenshots/fps-chalking.png) · [Sweeping](docs/screenshots/fps-sweeping.png) · [Crate carrying](docs/screenshots/fps-carrying.png)

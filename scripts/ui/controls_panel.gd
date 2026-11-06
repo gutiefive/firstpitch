@@ -93,7 +93,7 @@ func refresh() -> void:
 			"%s   ·   %s"
 			% [
 				"Camera" if action == "look_left" else String(action).replace("_", " ").capitalize(),
-				bindings if not bindings.is_empty() else "Mouse orbit"
+				bindings if not bindings.is_empty() else "Mouse look"
 			]
 		)
 	value_label.text = "%.1f rad/s · %s" % [game.settings.pad_sensitivity, game.settings.error]

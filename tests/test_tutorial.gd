@@ -149,7 +149,7 @@ func run() -> void:
 		t.step_complete() and g.moisture.wet_count > 0,
 		"real player-camera spray reaching moisture target satisfies fifth check"
 	)
-	check(g.watering.camera == g.camera, "watering regression uses normal player spring-arm camera")
+	check(g.watering.camera == g.camera, "watering regression uses normal first-person player camera")
 	t._process(0)
 	check(g.hud.tutorial_reason.text.contains("AIM"), "guide exposes live watering feedback and moisture")
 	t._process(0)

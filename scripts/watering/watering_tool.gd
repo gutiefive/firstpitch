@@ -23,6 +23,7 @@ var target := Vector3.ZERO
 var spray_end := Vector3.ZERO
 var feedback := "READY"
 var nozzle: Node3D
+var stream: MeshInstance3D
 var droplets: MultiMeshInstance3D
 var target_ring: MeshInstance3D
 var hose_mesh: MeshInstance3D
@@ -55,8 +56,8 @@ func _ready() -> void:
 	var batch := MultiMesh.new()
 	batch.transform_format = MultiMesh.TRANSFORM_3D
 	var drop := SphereMesh.new()
-	drop.radius = 0.035
-	drop.height = 0.07
+	drop.radius = 0.012
+	drop.height = 0.035
 	drop.radial_segments = 8
 	drop.rings = 4
 	batch.mesh = drop
@@ -66,6 +67,14 @@ func _ready() -> void:
 	droplets.material_override = G.material(Color("a1d3dc"))
 	droplets.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(droplets)
+	stream = G.cylinder(self, Vector3.ZERO, 0.012, 1, Color("a1d3dc"))
+	stream.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var water_material := G.material(Color("a1d3dc")).duplicate() as StandardMaterial3D
+	water_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	water_material.albedo_color.a = 0.55
+	stream.material_override = water_material
+	droplets.material_override = water_material
+	stream.visible = false
 	target_ring = G.ring(
 		self, Vector3.ZERO, moisture.spray_radius - 0.025, moisture.spray_radius, Color("83c4cf")
 	)
@@ -109,6 +118,8 @@ func set_equipped(value: bool) -> void:
 
 func set_visuals_off() -> void:
 	droplets.visible = false
+	if stream != null:
+		stream.visible = false
 	target_ring.visible = false
 	hose_mesh.visible = false
 
@@ -230,6 +241,7 @@ func _physics_process(delta: float) -> void:
 		target_ring.global_position = Vector3(target.x, height_at(point) + 0.04, target.z)
 	target_ring.visible = target_valid
 	droplets.visible = spraying
+	stream.visible = spraying
 	if spraying:
 		update_droplets()
 	hose_timer += delta
@@ -243,6 +255,11 @@ func _physics_process(delta: float) -> void:
 func update_droplets() -> void:
 	var start := nozzle.global_position - nozzle.global_basis.z * 0.28
 	var finish := spray_end
+	var direction := finish - start
+	if direction.length() > 0.001:
+		var stream_basis := Basis(Quaternion(Vector3.UP, direction.normalized()))
+		stream_basis.y *= direction.length()
+		stream.transform = Transform3D(stream_basis, (start + finish) * 0.5)
 	var time := Time.get_ticks_msec() * 0.001
 	for index in range(droplets.multimesh.instance_count):
 		var t := fposmod(float(index) / droplets.multimesh.instance_count + time * 1.4, 1)
@@ -271,8 +288,7 @@ func rebuild_hose() -> void:
 	geometry.begin(Mesh.PRIMITIVE_TRIANGLES)
 	for i in range(points.size() - 1):
 		var direction := points[i + 1] - points[i]
-		var work_basis := Basis(Quaternion(Vector3.UP, direction.normalized())).scaled(
-			Vector3(1, direction.length(), 1)
-		)
+		var work_basis := Basis(Quaternion(Vector3.UP, direction.normalized()))
+		work_basis.y *= direction.length()
 		geometry.append_from(hose_segment, 0, Transform3D(work_basis, (points[i + 1] + points[i]) * 0.5))
 	hose_mesh.mesh = geometry.commit()

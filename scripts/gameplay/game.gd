@@ -5,10 +5,9 @@ var mower: RidingMower
 var grass: MowingGrass
 var camera: Camera3D
 var pivot: Node3D
-var boom: SpringArm3D
 var yaw := 0.12
-var pitch := -0.45
-var camera_distance := 8.0
+var pitch := -0.1
+var first_person: FirstPersonView
 var mode_label: Label
 var prompt: Label
 var percent_label: Label
@@ -96,19 +95,15 @@ func _ready() -> void:
 	pivot = Node3D.new()
 	pivot.position = player.position + Vector3.UP * 1.5
 	add_child(pivot)
-	boom = SpringArm3D.new()
-	boom.spring_length = camera_distance
-	boom.margin = 0.3
-	boom.add_excluded_object(player.get_rid())
-	boom.add_excluded_object(mower.get_rid())
-	boom.add_excluded_object(chalk_marker.get_rid())
-	pivot.add_child(boom)
 	camera = Camera3D.new()
 	camera.current = true
 	camera.fov = 65
 	camera.near = 0.25
 	camera.far = 400
-	boom.add_child(camera)
+	pivot.add_child(camera)
+	first_person = FirstPersonView.new()
+	first_person.game = self
+	add_child(first_person)
 	watering = preload("res://scenes/environment/water_station.tscn").instantiate()
 	watering.player = player
 	watering.camera = camera
@@ -122,6 +117,7 @@ func _ready() -> void:
 	tamper.mound = mound
 	tamper.layout = layout
 	add_child(tamper)
+	first_person.attach_tools()
 	create_hud()
 	grass.completion_changed.connect(update_progress)
 	infield.completion_changed.connect(update_progress)
@@ -189,12 +185,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		)
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		yaw -= event.relative.x * 0.003
-		pitch = clampf(pitch - event.relative.y * 0.003, -1.1, 0.1)
-	if event is InputEventMouseButton and event.pressed:
-		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			camera_distance = maxf(3, camera_distance - 0.7)
-		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			camera_distance = minf(18, camera_distance + 0.7)
+		pitch = clampf(pitch - event.relative.y * 0.003, FirstPersonView.MIN_PITCH, FirstPersonView.MAX_PITCH)
 	if club != null and club.live != null and club.live.active:
 		return
 	if event.is_action_pressed("interact"):
@@ -312,21 +303,13 @@ func on_tool_changed(_tool: int) -> void:
 	update_progress(0)
 
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	if player == null:
 		return
-	player.yaw = yaw
-	var target := (
-		mower.global_position + Vector3.UP * 1.8 if driving else player.global_position + Vector3.UP * 1.5
-	)
-	if pushing_chalk:
-		target = chalk_marker.global_position + Vector3.UP * 1.3
-	if tamper.equipped:
-		target = player.global_position + Vector3.UP * 0.8
-	pivot.global_position = pivot.global_position.lerp(target, 1 - exp(-7 * delta))
-	pivot.rotation = Vector3(pitch, yaw, 0)
-	boom.spring_length = lerpf(boom.spring_length, camera_distance, 1 - exp(-8 * delta))
-	hud.reticle.visible = watering.equipped or tamper.equipped
+	first_person.update_view()
+	hud.reticle.visible = true
+	hud.reticle.text = "+" if watering.equipped or tamper.equipped else "·"
+	hud.reticle.modulate = GameUI.MUTED
 	var text_state := hud_text_state()
 	mode_label.text = HUDText.mode_text(text_state)
 	if tamper.equipped:
@@ -463,7 +446,7 @@ func refresh_bindings() -> void:
 		"%s  Shift board / pause\n%s  Camera   %s  Cursor / back"
 		% [
 			binding_text("shift_board"),
-			"Right stick" if input_device.last_input_device == "pad" else "Mouse / scroll",
+			"Right stick" if input_device.last_input_device == "pad" else "Mouse",
 			binding_text("cursor_menu")
 		]
 	)

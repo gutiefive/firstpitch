@@ -40,6 +40,7 @@ func _ready() -> void:
 	add_child(view)
 	camera = Camera3D.new()
 	camera.fov = 58
+	camera.cull_mask &= ~FirstPersonView.VIEW_LAYER
 	view.add_child(camera)
 	camera.current = true
 	var picture := TextureRect.new()

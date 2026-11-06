@@ -62,7 +62,6 @@ func run() -> void:
 			)
 			g.yaw = 2.6
 			g.pitch = -0.25
-			g.camera_distance = 4
 			live.refresh_hud()
 			await idle(8)
 			await capture("polish-cleaning")
@@ -83,7 +82,6 @@ func run() -> void:
 			)
 			g.yaw = 2.6
 			g.pitch = -0.25
-			g.camera_distance = 4
 			live.refresh_hud()
 			await idle(8)
 			await capture("polish-carry")

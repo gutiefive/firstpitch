@@ -82,7 +82,7 @@ func start(at: float = 0) -> bool:
 	feedback = "Explore the concourse, watch the game, or help the crew."
 	game.shift.reset_equipment()
 	game.player.position = Vector3(4, 0.1, 25)
-	game.pivot.global_position = game.player.position + Vector3.UP * 1.5
+	game.first_person.update_view()
 	game.club.atmosphere.begin(int(game.shift.career.club.games))
 	game.club.matchday.begin(game.shift.career.club.last)
 	game.club.world.reserve_seats(game.club.matchday.agents.size())

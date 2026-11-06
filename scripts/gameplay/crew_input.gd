@@ -182,7 +182,11 @@ func _process(delta: float) -> void:
 		return
 	var look := Input.get_vector("look_left", "look_right", "look_up", "look_down", 0.2)
 	game.yaw -= look.x * game.settings.pad_sensitivity * delta
-	game.pitch = clampf(game.pitch - look.y * game.settings.pad_sensitivity * delta, -1.1, 0.1)
+	game.pitch = clampf(
+		game.pitch - look.y * game.settings.pad_sensitivity * delta,
+		FirstPersonView.MIN_PITCH,
+		FirstPersonView.MAX_PITCH
+	)
 
 
 static func focus_screen(screen: Control) -> void:
