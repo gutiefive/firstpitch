@@ -43,14 +43,22 @@ const ROUTES := {
 }
 
 
+class AuditCareer:
+	extends CareerProfile
+
+	# Exercise real v4 transactions without disk I/O; history remains an audit log.
+	func commit(candidate: Dictionary) -> bool:
+		assert(CareerState.validate(candidate))
+		data = candidate.duplicate(true)
+		rebuild()
+		return true
+
+
 func _initialize() -> void:
 	for finish_quality in [1.0, 0.75]:
 		for strategy in ROUTES:
-			var state := ClubProgress.initial()
-			state.active = true
-			var budget := 0
-			var tools := PackedStringArray()
-			var wages := 0
+			var career := AuditCareer.new()
+			assert(career.start_club())
 			print("ROUTE ", strategy, " finish quality ", finish_quality)
 			for day in range(1, 19):
 				var profile := GameDay.profile(day - 1)
@@ -60,36 +68,19 @@ func _initialize() -> void:
 				shift.set_quality([1.0, finish_quality, finish_quality, finish_quality, 1.0])
 				shift.advance(minf(1000, float(ShiftSession.PROFILES[profile].duration) - 1))
 				var result := shift.get_result()
+				assert(career.claim(shift.attempt_id, result).status == "awarded")
+				assert(career.host_game(shift.attempt_id).status == "hosted")
 				shift.free()
-				assert(CareerProfile.valid_result(result), "audit requires a valid frozen shift result")
-				var wage := CareerProfile.payout(result)
-				wages += wage
-				var receipt := ClubProgress.forecast(state, result)
-				budget += wage + receipt.net + int(receipt.get("priority_bonus", 0))
-				state.fans = receipt.fans_after
-				state.games += 1
-				var options: Array = ROUTES[strategy]
-				for id in options:
+				for id in ROUTES[strategy]:
 					if CareerProfile.UPGRADES.has(id):
-						if id in tools:
+						if career.owns(id):
 							continue
-						var item: Dictionary = CareerProfile.UPGRADES[id]
-						# Lifetime rank includes retained earnings; this route spends only on upgrades.
-						var lifetime: int = (
-							wages + int(state.income) + receipt.net + int(receipt.get("priority_bonus", 0))
-						)
-						if budget >= item.cost and lifetime >= int(item.get("minimum_earnings", 0)):
-							budget -= int(item.cost)
-							tools.append(id)
-							print("  Date %d: %s, %d cr left" % [day, id, budget])
+						if career.purchase(id):
+							print("  Date %d: %s, %d cr left" % [day, id, career.balance])
 						break
-					if id in state.buildings:
+					if id in career.club.buildings:
 						continue
-					if ClubProgress.project_ready(state, id) and budget >= ClubProgress.PROJECTS[id].cost:
-						budget -= int(ClubProgress.PROJECTS[id].cost)
-						state.capacity += int(ClubProgress.PROJECTS[id].seats)
-						state.buildings.append(id)
-						print("  Date %d: %s, %d cr left" % [day, id, budget])
+					if career.purchase_stadium(id):
+						print("  Date %d: %s, %d cr left" % [day, id, career.balance])
 					break
-				state.income += receipt.net + int(receipt.get("priority_bonus", 0))
 	quit()

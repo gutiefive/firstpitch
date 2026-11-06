@@ -58,7 +58,7 @@ func run() -> void:
 	check(not c.start_club() and c.data == legacy, "failed enrollment write leaves old career untouched")
 	c.path = "user://test-club-progress.dat"
 	check(
-		c.start_club() and c.data.version == 2 and c.balance == old_balance and c.earned == old_earned,
+		c.start_club() and c.data.version == 4 and c.balance == old_balance and c.earned == old_earned,
 		"club enrollment preserves old wages, spending and tool purchases"
 	)
 	check(

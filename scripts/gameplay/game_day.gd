@@ -166,17 +166,14 @@ static func investment_text(career: CareerProfile) -> String:
 static func recap(career: CareerProfile) -> String:
 	if career.club.last.is_empty():
 		return ""
-	var last_id := ""
-	for event in career.data.club.events:
-		if event.type == "game":
-			last_id = event.id
+	var last_id := career.latest_host_id()
 	var result := {}
 	for record in career.data.records:
 		if record.id == last_id:
 			result = record.result
 			break
 	var last: Dictionary = career.club.last
-	var wage := CareerProfile.payout(result)
+	var wage := career.recorded_pay(last_id)
 	var extra: int = last.get("priority_bonus", 0)
 	var status := "No cash manager request on this date."
 	if TYPES.has(result.profile_id):

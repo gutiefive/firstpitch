@@ -167,7 +167,12 @@ func refresh() -> void:
 		rows.append(
 			(
 				"%s · %.1f pts · %s · +%d cr"
-				% [result.title, result.score, outcome[result.reason], CareerProfile.payout(result)]
+				% [
+					result.title,
+					result.score,
+					outcome[result.reason],
+					career.recorded_pay(career.data.records[i].id)
+				]
 			)
 		)
 	history.text = (

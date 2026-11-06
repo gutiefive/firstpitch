@@ -1,7 +1,7 @@
 class_name ClubSchedule
 extends RefCounted
 # Presentation derived only from committed hosting order and frozen prep results.
-# No new currency, save fields or changes to the version-2 economic ledger.
+# V4 reads frozen per-date targets; legacy reports retain their original rules.
 const DATES := [
 	{
 		"opponent": "Mill Creek Foxes",
@@ -79,22 +79,21 @@ static func report(career: CareerProfile) -> Dictionary:
 	var by_id := {}
 	for record in career.data.records:
 		by_id[record.id] = record.result
-	if career.club_started():
-		for event in career.data.club.events:
-			if event.type == "game":
-				played.append(by_id[event.id])
+	var played_ids := career.host_ids()
+	for id in played_ids:
+		played.append(by_id[id])
 	var count := played.size()
 	# A completed season remains on screen until the first game of the next one.
 	var start := maxi(0, floori(float(maxi(0, count - 1)) / DATES.size()) * DATES.size())
 	var targets := 0
 	var score := 0.0
 	for i in range(start, count):
-		targets += int(target_met(i, played[i]))
+		targets += int(career.target_met(played_ids[i], i, played[i]))
 		score += float(played[i].score)
 	return {
 		"season": floori(float(start) / DATES.size()) + 1,
 		"played": count - start,
 		"targets": targets,
 		"average": score / maxi(1, count - start),
-		"last_met": count > 0 and target_met(count - 1, played[count - 1])
+		"last_met": count > 0 and career.target_met(played_ids[count - 1], count - 1, played[count - 1])
 	}

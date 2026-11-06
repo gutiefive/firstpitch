@@ -26,7 +26,7 @@ Run `godot --headless --path . --script tools/audit_club_balance.gd` with isolat
 Clean work uses neutral finish penalties (100 score). Rough work uses 0.75 dirt/chalk/water job quality, producing approximately 85–87.5 scores according to the requested jobs and missing manager quality targets. Rough routes retain less cash even where modeled purchase dates coincide. The rank calculation uses lifetime wages plus net club income, independently of spending.
 
 
-Buying both early tool upgrades delays modeled first seating from date 3 to date 4. Buying only the nozzle can still leave enough for seats on date 3; rough work then delays the snack shack from date 4 to date 5. They do not prove human aiming, travel, fatigue or late-shift difficulty. Further player feedback should guide live-tool tuning; changing committed profile or project economics would require new rules/IDs to avoid repricing history.
+Buying both early tool upgrades delays modeled first seating from date 3 to date 4. Buying only the nozzle can still leave enough for seats on date 3; rough work then delays the snack shack from date 4 to date 5. They do not prove human aiming, travel, fatigue or late-shift difficulty. Further player feedback should guide live-tool tuning; career v4 freezes paid wages, construction/tool costs, gate/service receipts and season goals. Current price/pay tuning affects new transactions without repricing existing v4 state. Pre-v4 rules are frozen separately for one-time legacy migration; do not retune the legacy classes.
 
 ## Season ownership goals
 

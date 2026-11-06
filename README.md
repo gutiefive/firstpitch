@@ -241,7 +241,7 @@ Upgrade views: [wide drag preparing dirt](docs/screenshots/wide-drag.png), [guid
 
 **Autosave and the manual slot are separate.** Autosave writes when an attempt starts/finishes, when the board opens, on a normal window close, and every **60 seconds during an active attempt when field work changed**. Writes are queued at no more than one per second; they never run from physics processing. The footer shows **Autosaved hh:mm:ss**. A crash can lose about a minute of recent work. Full-field save time measured roughly **110–140 ms** on the test machine, so a brief save hitch is possible.
 
-On launch, an active autosave, an unpaid finished attempt, or paid home prep that still needs hosting opens a paused **Resume last session** card with its title, remaining clock and goal progress. Choose Resume to restore work and park equipment at the workshop; the clock stays paused until you resume play. **Start fresh** discards that recovery choice and opens clean practice. Resuming a finished attempt claims its reward through the same once-only career ledger. A damaged autosave becomes `field-autosave.bad`, with a notice; startup continues.
+On launch, an active autosave, an unpaid finished attempt, or paid home prep that still needs hosting opens a paused **Resume last session** card with its title, remaining clock and goal progress. Choose Resume to restore work and park equipment at the workshop; the clock stays paused until you resume play. **Start fresh** discards that recovery choice and opens clean practice. Resuming a finished attempt uses the same once-only paid IDs. Missing or damaged main saves first try fully checked `.tmp` then `.bak` copies and show a recovery notice. Truly damaged autosave copies are quarantined as `field-autosave.bad` and matching suffixes; startup continues.
 
 Use **Save to manual slot** and **Load manual slot** on the board for an independent snapshot. It includes all five jobs, patterns, chalk, moisture, mound hits, clock, attempt ID, wear seed/baselines, puddles/ruts, quality state and frozen results. Loading replaces current work and parks equipment; positions, motion, held tools and camera angle are not restored. Autosave and fresh starts leave the manual disk slot intact. See [resume card](docs/screenshots/resume-card.png).
 
@@ -250,7 +250,7 @@ Use **Save to manual slot** and **Load manual slot** on the board for an indepen
 | `user://field-save.dat` | No — manual Save button | Field work, active attempt/clock and last result. |
 | `user://field-autosave.dat` | Yes — shift, dirty interval, board and quit triggers | Separate resumable field/attempt snapshot. |
 | `user://settings.cfg` | Yes — tutorial/input changes | Guide checkpoint/completion and pad sensitivity. |
-| `user://career.dat` | Yes — rewards, projects and purchases | Earnings, paid attempts, tools, crew ranks and the club story/event ledger. |
+| `user://career.dat` | Yes — rewards, projects and purchases | Career v4 current state, frozen payouts, paid/hosted/serviced IDs, tools and historical logs. |
 | `user://sound.cfg` | Yes — volume changes | Master/effects/ambience levels and mute. |
 
 Use Godot's **Project → Open User Data Folder** to find these files. On Windows they are under the game's folder in `%APPDATA%/Godot/app_userdata/`. Saves are local, with no cloud/device sync or GitHub upload.
@@ -505,7 +505,7 @@ At roughly **2:10** into a live visit, one event appears: concourse litter, a co
 
 Supporters now bend their knees while walking and sitting, turn their heads while seated, and clap or raise their arms for home scoring. PA **captions and a chime** mark arrivals, first pitch, home scoring, the stretch and the final. Rivalry-night and under-the-lights fixtures use a dusk sky, warmer sunlight and field floodlights. Daytime lighting is restored after the presentation/visit; announcements use the existing Ambience volume control. These are contextual captions, not recorded voice acting.
 
-Existing career versions 1 and 2 load normally. The first claimed park bonus writes **career version 3**, which records once-only service rewards; older builds do not read career v3. Manual field/autosave format remains version 3. Failed bonus saves keep the previous file and budget, and the claim can be retried.
+Existing career versions 1–3 migrate once to **career v4**, retaining the exact wallet, earnings, tools, supporters, construction, receipts and season state. The original is kept as `career.v3.bak` (including when importing v1/v2). V4 saves current state directly and freezes historical pay, prices, targets and season goals; history is a log rather than an economic replay. Older builds cannot read v4. Manual field/autosave format remains version 3. Failed saves keep confirmed state and the claim can be retried. See [career format and migration](docs/CAREER_V4.md).
 
 [Park review and bonus](docs/screenshots/satisfaction-preview.png) · [Evening field](docs/screenshots/satisfaction-evening.png) · [Concession rush](docs/screenshots/satisfaction-rush.png) · [Seated supporters](docs/screenshots/satisfaction-fans.png)
 

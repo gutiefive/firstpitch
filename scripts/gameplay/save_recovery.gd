@@ -57,8 +57,12 @@ func copy_flushed(source: String, destination: String) -> bool:
 	var input := FileAccess.open(source, FileAccess.READ)
 	if input == null:
 		return false
-	var bytes := input.get_buffer(input.get_length())
+	var size := input.get_length()
+	var bytes := input.get_buffer(size)
+	var read_ok := input.get_error() == OK and bytes.size() == size
 	input.close()
+	if not read_ok:
+		return false
 	var output := FileAccess.open(destination, FileAccess.WRITE)
 	if output == null:
 		return false

@@ -35,9 +35,12 @@ const UPGRADES := {
 }
 const RANKS := [[0, "Rookie"], [500, "Field Hand"], [1500, "Crew Lead"], [3500, "Head Groundskeeper"]]
 const MAX_RECORDS := 2000
+# V4 adds frozen receipts/state; preserve the full existing 2,000-attempt limit.
+const MAX_BYTES := 16 * 1024 * 1024
 var path := "user://career.dat"
 var data := {"version": 1, "records": [], "upgrades": PackedStringArray()}
 var files := SaveRecovery.new()
+var legacy_context := {}
 var healthy := true
 var error := ""
 var earned := 0
@@ -72,7 +75,7 @@ static func payout(result: Dictionary) -> int:
 	)
 
 
-func validate(value: Variant) -> bool:
+func legacy_validate(value: Variant) -> bool:
 	if (
 		not value is Dictionary
 		or not value.has_all(["version", "records", "upgrades"])
@@ -88,47 +91,68 @@ func validate(value: Variant) -> bool:
 		return false
 	var ids := {}
 	var total := 0
+	var finished_count := 0
+	var personal_best := {}
+	var seasons := {}
+	for profile in ShiftSession.PROFILES:
+		personal_best[profile] = 0.0
 	for record in value.records:
 		if (
 			not record is Dictionary
 			or not record.has_all(["id", "result"])
 			or not valid_id(record.id)
 			or ids.has(record.id)
-			or not valid_result(record.result)
+			or not LegacyCareerRules.valid_result(record.result)
 		):
 			return false
 		ids[record.id] = true
-		total += payout(record.result)
+		total += LegacyCareerRules.payout(record.result)
+		finished_count += int(record.result.reason == "completed")
+		personal_best[record.result.profile_id] = maxf(
+			personal_best[record.result.profile_id], record.result.score
+		)
 	var owned := {}
 	var costs := 0
 	for id in value.upgrades:
-		if not UPGRADES.has(id) or owned.has(id):
+		if not LegacyCareerRules.UPGRADES.has(id) or owned.has(id):
 			return false
 		owned[id] = true
-		costs += int(UPGRADES[id].cost)
+		costs += int(LegacyCareerRules.UPGRADES[id].cost)
 	var income := 0
 	var stadium_cost := 0
+	var replayed := LegacyCareerRules.initial()
 	if value.version in [2, 3]:
-		var state := ClubProgress.replay(value.get("club"), value.records, value.upgrades)
+		var state := ClubProgress.legacy_replay(value.get("club"), value.records, value.upgrades, seasons)
 		if state.is_empty():
 			return false
 		if value.version == 2:
 			for event in value.club.events:
 				if event.type == "service":
 					return false
+		replayed = state
 		income = state.income
 		stadium_cost = state.spent
 	elif value.has("club"):
 		return false
 	for id in value.upgrades:
-		if total + income < int(UPGRADES[id].get("minimum_earnings", 0)):
+		if total + income < int(LegacyCareerRules.UPGRADES[id].get("minimum_earnings", 0)):
 			return false
-	return total + income - costs - stadium_cost >= 0
+	if total + income - costs - stadium_cost < 0:
+		return false
+	legacy_context = {
+		"balance": total + income - costs - stadium_cost,
+		"earned": total + income,
+		"completed": finished_count,
+		"best": personal_best,
+		"club": replayed,
+		"seasons": seasons
+	}
+	return true
 
 
 func load_profile() -> bool:
 	error = ""
-	var loaded := files.load_checked(path, "FPCREW01", 4 * 1024 * 1024 - 40, validate)
+	var loaded := files.load_checked(path, "FPCREW01", MAX_BYTES - 40, validate)
 	if loaded.get("missing", false):
 		data = {"version": 1, "records": [], "upgrades": PackedStringArray()}
 		healthy = true
@@ -141,26 +165,53 @@ func load_profile() -> bool:
 		changed.emit()
 		return false
 	var value: Dictionary = loaded.value
-	error = files.notice
-	data = value.duplicate(true)
+	var recovery_notice := files.notice
 	healthy = true
-	rebuild()
+	if value.version != 4:
+		var backup := path.get_basename() + ".v3.bak"
+		if FileAccess.file_exists(backup):
+			if FileAccess.get_file_as_bytes(backup) != FileAccess.get_file_as_bytes(path):
+				backup = (
+					path.get_basename()
+					+ ".v3."
+					+ str(Time.get_unix_time_from_system()).replace(".", "-")
+					+ ".bak"
+				)
+		if not FileAccess.file_exists(backup) and not files.copy_flushed(path, backup):
+			healthy = false
+			error = "Career migration could not keep the original backup. Existing files kept."
+			changed.emit()
+			return false
+		if not commit(CareerState.from_legacy(value, legacy_context)):
+			healthy = false
+			changed.emit()
+			return false
+		error = recovery_notice + " Career migrated to v4; original kept as " + backup.get_file() + "."
+	else:
+		data = value.duplicate(true)
+		rebuild()
+		error = recovery_notice
 	changed.emit()
 	return true
 
 
 func commit(candidate: Dictionary) -> bool:
+	if candidate.get("version") != 4:
+		if not legacy_validate(candidate):
+			error = "Career change could not be validated."
+			return false
+		candidate = CareerState.from_legacy(candidate, legacy_context)
 	if not healthy or not validate(candidate):
 		if error.is_empty():
 			error = "Career change could not be validated."
 		changed.emit()
 		return false
 	var bytes := var_to_bytes(candidate)
-	if bytes.size() > 4 * 1024 * 1024 - 40:
+	if bytes.size() > MAX_BYTES - 40:
 		error = "Career record is full. No credits changed."
 		changed.emit()
 		return false
-	if not files.write(path, "FPCREW01", bytes, 4 * 1024 * 1024 - 40, validate):
+	if not files.write(path, "FPCREW01", bytes, MAX_BYTES - 40, validate):
 		error = "Career could not be saved. No credits changed; retry from Career. " + files.error
 		changed.emit()
 		return false
@@ -174,23 +225,35 @@ func commit(candidate: Dictionary) -> bool:
 func claim(id: String, result: Dictionary) -> Dictionary:
 	if not healthy:
 		return {"status": "error", "message": error}
-	if not valid_id(id) or not valid_result(result):
+	if not valid_id(id):
 		return {"status": "error", "message": "Shift result could not be recorded."}
 	for record in data.records:
 		if record.id == id:
+			var frozen_pay := recorded_pay(id)
 			return {
 				"status": "recorded",
-				"pay": payout(record.result),
-				"message": "Already recorded: %d cr for this attempt." % payout(record.result)
+				"pay": frozen_pay,
+				"message": "Already recorded: %d cr for this attempt." % frozen_pay
 			}
+	if not valid_result(result):
+		return {"status": "error", "message": "Shift result could not be recorded."}
 	if data.records.size() >= MAX_RECORDS:
 		return {"status": "error", "message": "Career record is full (2,000 shifts)."}
-	var candidate := data.duplicate(true)
-	candidate.records.append({"id": id, "result": result.duplicate(true)})
+	var candidate := candidate_snapshot()
+	var pay := payout(result)
+	candidate.records.append({"id": id, "result": result.duplicate(true), "pay": pay})
+	candidate.state.balance += pay
+	candidate.state.earned += pay
+	candidate.state.completed += int(result.reason == "completed")
+	candidate.state.best[result.profile_id] = maxf(
+		candidate.state.best.get(result.profile_id, 0), result.score
+	)
+	if candidate.state.club.active and ClubProgress.eligible(result):
+		candidate.state.pending_ids.append(id)
+		candidate.state.club.pending = candidate.state.pending_ids[0]
 	var previous_rank := rank_title()
 	if not commit(candidate):
 		return {"status": "error", "message": error}
-	var pay := payout(result)
 	return {
 		"status": "awarded",
 		"pay": pay,
@@ -202,8 +265,11 @@ func claim(id: String, result: Dictionary) -> Dictionary:
 func purchase(id: String) -> bool:
 	if not healthy or not upgrade_unlocked(id) or owns(id) or balance < int(UPGRADES[id].cost):
 		return false
-	var candidate := data.duplicate(true)
+	var candidate := candidate_snapshot()
+	var cost := int(UPGRADES[id].cost)
 	candidate.upgrades.append(id)
+	candidate.state.balance -= cost
+	candidate.state.tool_costs[id] = cost
 	return commit(candidate)
 
 
@@ -215,26 +281,14 @@ func owns(id: String) -> bool:
 	return id in data.upgrades
 
 
-func rebuild() -> void:
-	earned = 0
-	completed = 0
-	best = {}
-	for id in ShiftSession.PROFILES:
-		best[id] = 0.0
-	for record in data.records:
-		var result: Dictionary = record.result
-		earned += payout(result)
-		completed += 1 if result.reason == "completed" else 0
-		best[result.profile_id] = maxf(best[result.profile_id], result.score)
-	club = (
-		ClubProgress.replay(data.club, data.records, data.upgrades)
-		if club_started()
-		else ClubProgress.initial()
-	)
-	earned += int(club.income)
-	balance = earned - int(club.spent)
-	for id in data.upgrades:
-		balance -= int(UPGRADES[id].cost)
+func legacy_rebuild() -> void:
+	if not legacy_validate(data):
+		return
+	earned = legacy_context.earned
+	balance = legacy_context.balance
+	completed = legacy_context.completed
+	best = legacy_context.best.duplicate(true)
+	club = legacy_context.club.duplicate(true)
 
 
 func rank_index() -> int:
@@ -259,21 +313,25 @@ func next_rank_text() -> String:
 
 
 func club_started() -> bool:
-	return data.version in [2, 3]
+	return bool(data.state.club.active) if data.version == 4 else data.version in [2, 3]
 
 
 func start_club() -> bool:
 	if not healthy or club_started():
 		return false
-	var candidate := data.duplicate(true)
-	candidate.version = 2
+	var candidate := candidate_snapshot()
 	candidate.club = {"record_start": data.records.size(), "tool_start": data.upgrades.size(), "events": []}
+	candidate.state.club = ClubProgress.initial()
+	candidate.state.club.active = true
+	candidate.state.club.record_start = data.records.size()
 	return commit(candidate)
 
 
 func pending_home_game(id: String) -> bool:
 	if not club_started() or club.hosted.has(id):
 		return false
+	if data.version == 4:
+		return id in data.state.pending_ids
 	for i in range(int(club.record_start), data.records.size()):
 		if data.records[i].id == id:
 			return ClubProgress.eligible(data.records[i].result)
@@ -287,25 +345,41 @@ func host_game(id: String) -> Dictionary:
 		return {"status": "recorded", "message": "This home game has already been hosted."}
 	if not pending_home_game(id):
 		return {"status": "error", "message": "Complete all home-game prep goals first."}
-	var candidate := data.duplicate(true)
+	var candidate := candidate_snapshot()
+	var result := {}
+	for record in candidate.records:
+		if record.id == id:
+			result = record.result
+			break
+	var state: Dictionary = candidate.state.club
+	var receipt := ClubProgress.forecast(state, result)
+	var income := int(receipt.net) + int(receipt.get("priority_bonus", 0))
+	state.host_buildings = state.buildings.duplicate()
+	state.games = receipt.game
+	state.fans = receipt.fans_after
+	state.income += income
+	state.hosted[id] = receipt.duplicate(true)
+	state.last = receipt
+	candidate.state.targets[id] = ClubSchedule.target_met(candidate.state.host_order.size(), result)
+	candidate.state.host_order.append(id)
+	candidate.state.pending_ids.remove_at(candidate.state.pending_ids.find(id))
+	state.pending = candidate.state.pending_ids[0] if not candidate.state.pending_ids.is_empty() else ""
+	candidate.state.balance += income
+	candidate.state.earned += income
 	candidate.club.events.append(
 		{"type": "game", "id": id, "records": data.records.size(), "tools": data.upgrades.size()}
 	)
+	if int(state.games) % 6 == 0:
+		candidate.state.seasons[str(int(state.games) / 6)] = CareerState.snapshot(state, candidate.upgrades)
 	if not commit(candidate):
 		return {"status": "error", "message": error}
-	var receipt: Dictionary = club.last.duplicate(true)
 	return {
 		"status": "hosted",
-		"receipt": receipt,
+		"receipt": receipt.duplicate(true),
 		"message":
 		(
 			"Home game %d: %d attended · +%d fans · %d cr net club income"
-			% [
-				receipt.game,
-				receipt.attendance,
-				receipt.fans_gained,
-				receipt.net + int(receipt.get("priority_bonus", 0))
-			]
+			% [receipt.game, receipt.attendance, receipt.fans_gained, income]
 		)
 	}
 
@@ -318,7 +392,14 @@ func purchase_stadium(id: String) -> bool:
 		or balance < int(ClubProgress.PROJECTS[id].cost)
 	):
 		return false
-	var candidate := data.duplicate(true)
+	var candidate := candidate_snapshot()
+	var cost := int(ClubProgress.PROJECTS[id].cost)
+	var state: Dictionary = candidate.state.club
+	candidate.state.balance -= cost
+	candidate.state.project_costs[id] = cost
+	state.spent += cost
+	state.capacity += int(ClubProgress.PROJECTS[id].seats)
+	state.buildings.append(id)
 	candidate.club.events.append(
 		{"type": "build", "id": id, "records": data.records.size(), "tools": data.upgrades.size()}
 	)
@@ -326,12 +407,8 @@ func purchase_stadium(id: String) -> bool:
 
 
 func latest_host_id() -> String:
-	var id := ""
-	if club_started():
-		for event in data.club.events:
-			if event.type == "game":
-				id = event.id
-	return id
+	var hosted := host_ids()
+	return hosted[-1] if not hosted.is_empty() else ""
 
 
 func claim_service(id: String, input: Dictionary) -> bool:
@@ -341,11 +418,19 @@ func claim_service(id: String, input: Dictionary) -> bool:
 		or id != latest_host_id()
 		or club.services.has(id)
 		or not String(club.pending).is_empty()
-		or ParkSatisfaction.evaluate(club, input).is_empty()
 	):
 		return false
-	var candidate := data.duplicate(true)
-	candidate.version = 3
+	var report := ParkSatisfaction.evaluate(club, input)
+	if report.is_empty():
+		return false
+	var candidate := candidate_snapshot()
+	var bonus := int(report.bonus)
+	candidate.state.club.services[id] = report.duplicate(true)
+	candidate.state.service_inputs[id] = input.duplicate(true)
+	candidate.state.club.income += bonus
+	candidate.state.club.fans += int(report.fans)
+	candidate.state.balance += bonus
+	candidate.state.earned += bonus
 	candidate.club.events.append(
 		{
 			"type": "service",
@@ -356,3 +441,56 @@ func claim_service(id: String, input: Dictionary) -> bool:
 		}
 	)
 	return commit(candidate)
+
+
+func validate(value: Variant) -> bool:
+	return (
+		CareerState.validate(value)
+		if value is Dictionary and value.get("version") == 4
+		else legacy_validate(value)
+	)
+
+
+func candidate_snapshot() -> Dictionary:
+	if data.version == 4:
+		return data.duplicate(true)
+	if not legacy_validate(data):
+		return {}
+	return CareerState.from_legacy(data, legacy_context)
+
+
+func rebuild() -> void:
+	if data.version != 4:
+		legacy_rebuild()
+		return
+	earned = data.state.earned
+	balance = data.state.balance
+	completed = data.state.completed
+	best = data.state.best.duplicate(true)
+	club = data.state.club.duplicate(true)
+
+
+func recorded_pay(id: String) -> int:
+	for record in data.records:
+		if record.id == id:
+			return int(record.pay) if data.version == 4 else LegacyCareerRules.payout(record.result)
+	return 0
+
+
+func host_ids() -> PackedStringArray:
+	if data.version == 4:
+		return data.state.host_order.duplicate()
+	var hosted := PackedStringArray()
+	if club_started():
+		for event in data.club.events:
+			if event.type == "game":
+				hosted.append(event.id)
+	return hosted
+
+
+func target_met(id: String, index: int, result: Dictionary) -> bool:
+	return bool(data.state.targets[id]) if data.version == 4 else LegacyCareerRules.target_met(index, result)
+
+
+func saved_objective(season: int) -> Dictionary:
+	return data.state.seasons[str(season)].objective.duplicate(true)

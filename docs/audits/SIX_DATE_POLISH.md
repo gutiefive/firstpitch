@@ -2,7 +2,7 @@
 
 Run `godot --headless --path . --script tests/test_season_polish.gd` with isolated XDG data/config/cache roots. It writes `/tmp/firstpitch-season-polish.csv`. The committed CSV records the audited route.
 
-This is a deterministic integration audit, not a human playthrough. Prep surfaces and service completions are explicit ideal-work fixtures. Actual walking, interaction guards and once-only settlement have separate gameplay tests. The audit checks the full sequence, season rollover/review, purchases, all event types, money reconciliation and exact career-v3 reload.
+This is a deterministic integration audit, not a human playthrough. Prep surfaces and service completions are explicit ideal-work fixtures. Actual walking, interaction guards and once-only settlement have separate gameplay tests. The audit checks the full sequence, season rollover/review, purchases, all event types, money reconciliation and exact career-v4 reload (the original recorded route was verified under v3).
 
 The tools-first route buys the 200-credit nozzle after date one, the 450-credit snack shack after date three, and 600-credit bleachers after date four. No side contracts or injected money are used. It ends with 1,967 credits, 189 supporters and 240 seats. The 200-supporter grandstand threshold gives season two a remaining goal despite sufficient cash.
 

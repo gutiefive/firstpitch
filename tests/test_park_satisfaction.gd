@@ -93,7 +93,7 @@ func run() -> void:
 	live.show_broadcast()
 	await pad(JOY_BUTTON_A)
 	check(
-		c.data.version == 2, "ordinary hosting retains legacy career format until service reward is claimed"
+		c.data.version == 4, "ordinary hosting stores authoritative version-four career state"
 	)
 	check(
 		not live.service_report().is_empty() and c.balance == old_balance,
@@ -124,7 +124,7 @@ func run() -> void:
 		c.club.last == old_receipt and c.data.records.size() == 1,
 		"service reward never rewrites gate receipt or prep wages"
 	)
-	check(c.data.version == 3, "first service claim explicitly migrates career to version three")
+	check(c.data.version == 4, "service rewards retain authoritative version-four career state")
 	check(
 		c.club.services.has(first_id) and g.shift.overlay.club_panel.claim_button.disabled,
 		"claimed reward is recorded and disabled"

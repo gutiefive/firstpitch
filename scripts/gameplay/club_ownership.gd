@@ -7,13 +7,15 @@ const OBJECTIVE_PROJECTS := [
 
 
 static func closing_state(career: CareerProfile, season: int) -> Dictionary:
+	if career.data.version == 4:
+		return career.data.state.seasons[str(season)].club.duplicate(true)
 	var games := 0
 	for i in range(career.data.club.events.size()):
 		var event: Dictionary = career.data.club.events[i]
 		if event.type == "game":
 			games += 1
 			if games == season * 6:
-				return ClubProgress.replay(
+				return ClubProgress.legacy_replay(
 					{
 						"record_start": career.data.club.record_start,
 						"tool_start": career.data.club.tool_start,
@@ -40,6 +42,8 @@ static func objective(state: Dictionary, tools: PackedStringArray) -> Dictionary
 
 
 static func tool_prefix(career: CareerProfile, season: int) -> PackedStringArray:
+	if career.data.version == 4:
+		return career.data.state.seasons[str(season)].tools.duplicate()
 	var games := 0
 	for event in career.data.club.events:
 		if event.type == "game":
@@ -80,10 +84,10 @@ static func review(career: CareerProfile) -> Dictionary:
 	var by_id := {}
 	for record in career.data.records:
 		by_id[record.id] = record.result
-	for event in career.data.club.events:
-		if event.type == "game":
-			receipts.append(career.club.hosted[event.id])
-			results.append(by_id[event.id])
+	var played_ids := career.host_ids()
+	for id in played_ids:
+		receipts.append(career.club.hosted[id])
+		results.append(by_id[id])
 	var start := (season - 1) * 6
 	var pay := 0
 	var gate := 0
@@ -91,19 +95,23 @@ static func review(career: CareerProfile) -> Dictionary:
 	var targets := 0
 	var score := 0.0
 	for i in range(start, start + 6):
-		pay += CareerProfile.payout(results[i])
+		pay += career.recorded_pay(played_ids[i])
 		gate += int(receipts[i].net)
 		bonus += int(receipts[i].get("priority_bonus", 0))
-		targets += int(ClubSchedule.target_met(i, results[i]))
+		targets += int(career.target_met(played_ids[i], i, results[i]))
 		score += float(results[i].score)
-	var goal := objective(end, tools)
+	var goal := career.saved_objective(season) if career.data.version == 4 else objective(end, tools)
 	var current_targets := 0
 	for i in range(season * 6, receipts.size()):
-		current_targets += int(ClubSchedule.target_met(i, results[i]))
+		current_targets += int(career.target_met(played_ids[i], i, results[i]))
 	var previous := ""
 	if season > 1:
 		var prior := closing_state(career, season - 1)
-		var old_goal := objective(prior, tool_prefix(career, season - 1))
+		var old_goal := (
+			career.saved_objective(season - 1)
+			if career.data.version == 4
+			else objective(prior, tool_prefix(career, season - 1))
+		)
 		previous = (
 			"Previous ownership objective: "
 			+ ("MET" if met(old_goal, end, tools, targets) else "MISSED")

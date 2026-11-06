@@ -150,7 +150,9 @@ static func project_ready(state: Dictionary, id: String) -> bool:
 	return true
 
 
-static func replay(value: Variant, records: Array, tools: PackedStringArray) -> Dictionary:
+static func legacy_replay(
+	value: Variant, records: Array, tools: PackedStringArray, snapshots: Dictionary = {}
+) -> Dictionary:
 	if (
 		not value is Dictionary
 		or not value.has_all(["record_start", "tool_start", "events"])
@@ -161,7 +163,7 @@ static func replay(value: Variant, records: Array, tools: PackedStringArray) -> 
 		typeof(value.record_start) != TYPE_INT
 		or typeof(value.tool_start) != TYPE_INT
 		or not value.events is Array
-		or value.events.size() > 4000 + PROJECTS.size()
+		or value.events.size() > 4000 + LegacyCareerRules.PROJECTS.size()
 	):
 		return {}
 	if (
@@ -176,15 +178,15 @@ static func replay(value: Variant, records: Array, tools: PackedStringArray) -> 
 	var by_id := {}
 	for i in range(records.size()):
 		var record: Dictionary = records[i]
-		pay.append(int(pay[-1]) + CareerProfile.payout(record.result))
+		pay.append(int(pay[-1]) + LegacyCareerRules.payout(record.result))
 		by_id[record.id] = i
 	for id in tools:
-		if not CareerProfile.UPGRADES.has(id):
+		if not LegacyCareerRules.UPGRADES.has(id):
 			return {}
-		tool_cost.append(int(tool_cost[-1]) + int(CareerProfile.UPGRADES[id].cost))
+		tool_cost.append(int(tool_cost[-1]) + int(LegacyCareerRules.UPGRADES[id].cost))
 	if int(pay[value.record_start]) - int(tool_cost[value.tool_start]) < 0:
 		return {}
-	var state := initial()
+	var state := LegacyCareerRules.initial()
 	state.active = true
 	state.record_start = value.record_start
 	var last_host := ""
@@ -221,7 +223,7 @@ static func replay(value: Variant, records: Array, tools: PackedStringArray) -> 
 			var index: int = by_id[event.id]
 			if index < value.record_start or index >= event.records or not eligible(records[index].result):
 				return {}
-			var receipt := forecast(state, records[index].result)
+			var receipt := LegacyCareerRules.forecast(state, records[index].result)
 			state.host_buildings = state.buildings.duplicate()
 			last_host = event.id
 			state.games = receipt.game
@@ -229,20 +231,36 @@ static func replay(value: Variant, records: Array, tools: PackedStringArray) -> 
 			state.income += receipt.net + int(receipt.get("priority_bonus", 0))
 			state.hosted[event.id] = receipt.duplicate(true)
 			state.last = receipt
+			if int(state.games) % 6 == 0:
+				var closing := state.duplicate(true)
+				for pending_index in range(value.record_start, event.records):
+					var pending_record: Dictionary = records[pending_index]
+					if eligible(pending_record.result) and not state.hosted.has(pending_record.id):
+						closing.pending = pending_record.id
+						break
+				snapshots[str(int(state.games) / 6)] = CareerState.snapshot(
+					closing, tools.slice(0, event.tools)
+				)
+				snapshots[str(int(state.games) / 6)].objective = LegacyCareerRules.objective(
+					closing, tools.slice(0, event.tools)
+				)
 		elif event.type == "service":
 			if event.id != last_host or state.services.has(event.id):
 				return {}
-			var report := ParkSatisfaction.evaluate(state, event.get("input"))
+			var report := LegacyParkSatisfaction.evaluate(state, event.get("input"))
 			if report.is_empty():
 				return {}
 			state.income += int(report.bonus)
 			state.fans += int(report.fans)
 			state.services[event.id] = report
 		elif event.type == "build":
-			if not project_ready(state, event.id) or funds < int(PROJECTS[event.id].cost):
+			if (
+				not LegacyCareerRules.project_ready(state, event.id)
+				or funds < int(LegacyCareerRules.PROJECTS[event.id].cost)
+			):
 				return {}
-			state.spent += int(PROJECTS[event.id].cost)
-			state.capacity += int(PROJECTS[event.id].seats)
+			state.spent += int(LegacyCareerRules.PROJECTS[event.id].cost)
+			state.capacity += int(LegacyCareerRules.PROJECTS[event.id].seats)
 			state.buildings.append(event.id)
 		else:
 			return {}
@@ -328,3 +346,8 @@ static func chapter(state: Dictionary) -> Dictionary:
 			+ "then finish improving your tools. Keep hosting to fund the next investment."
 		)
 	}
+
+
+# Compatibility entry point for legacy fixtures; v4 transactions never call replay.
+static func replay(value: Variant, records: Array, tools: PackedStringArray) -> Dictionary:
+	return legacy_replay(value, records, tools)

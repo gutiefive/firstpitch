@@ -1,0 +1,460 @@
+{
+	"1": {
+		"balance": 400,
+		"best": {
+			"doubleheader": 0.0,
+			"full": 100.0,
+			"home_double": 0.0,
+			"home_game": 0.0,
+			"home_hot": 0.0,
+			"home_rain": 0.0,
+			"infield_turnaround": 0.0,
+			"mound_callout": 0.0,
+			"quick_mow": 0.0,
+			"training": 0.0
+		},
+		"club": {
+			"active": false,
+			"buildings": [],
+			"capacity": 120,
+			"fans": 48,
+			"games": 0,
+			"host_buildings": [],
+			"hosted": {
+
+			},
+			"income": 0,
+			"last": {
+
+			},
+			"pending": "",
+			"record_start": 0,
+			"services": {
+
+			},
+			"spent": 0
+		},
+		"completed": 2,
+		"earned": 900,
+		"ownership": {
+
+		},
+		"rank": "Field Hand",
+		"schedule": {
+			"average": 0.0,
+			"last_met": false,
+			"played": 0,
+			"season": 1,
+			"targets": 0
+		},
+		"upgrades": [
+			"hose_nozzle",
+			"wide_deck"
+		]
+	},
+	"2": {
+		"balance": 1734,
+		"best": {
+			"doubleheader": 0.0,
+			"full": 0.0,
+			"home_double": 100.0,
+			"home_game": 100.0,
+			"home_hot": 100.0,
+			"home_rain": 100.0,
+			"infield_turnaround": 0.0,
+			"mound_callout": 0.0,
+			"quick_mow": 0.0,
+			"training": 0.0
+		},
+		"club": {
+			"active": true,
+			"buildings": [
+				"snack_shack",
+				"bleachers"
+			],
+			"capacity": 240,
+			"fans": 177,
+			"games": 6,
+			"host_buildings": [
+				"snack_shack",
+				"bleachers"
+			],
+			"hosted": {
+				"1ade7ff2c9e0ee2a10358d3e83fd47e6": {
+					"attendance": 154,
+					"capacity": 240,
+					"costs": 214,
+					"fans_after": 177,
+					"fans_before": 154,
+					"fans_gained": 23,
+					"food_income": 154,
+					"game": 6,
+					"net": 556,
+					"priority_bonus": 40,
+					"score": 100.0,
+					"ticket_income": 616
+				},
+				"2a00c5af8deb99cf0327f95d3b26e1ef": {
+					"attendance": 108,
+					"capacity": 120,
+					"costs": 168,
+					"fans_after": 131,
+					"fans_before": 108,
+					"fans_gained": 23,
+					"food_income": 108,
+					"game": 4,
+					"net": 372,
+					"priority_bonus": 50,
+					"score": 100.0,
+					"ticket_income": 432
+				},
+				"650ac9a5797b17154dec02d4908c6135": {
+					"attendance": 48,
+					"capacity": 120,
+					"costs": 108,
+					"fans_after": 68,
+					"fans_before": 48,
+					"fans_gained": 20,
+					"food_income": 0,
+					"game": 1,
+					"net": 84,
+					"score": 100.0,
+					"ticket_income": 192
+				},
+				"9b2d51b2097af8b3e153341487d78a63": {
+					"attendance": 68,
+					"capacity": 120,
+					"costs": 128,
+					"fans_after": 88,
+					"fans_before": 68,
+					"fans_gained": 20,
+					"food_income": 0,
+					"game": 2,
+					"net": 144,
+					"priority_bonus": 35,
+					"score": 100.0,
+					"ticket_income": 272
+				},
+				"c1e58ea7e661403f61734fbb4556fca6": {
+					"attendance": 88,
+					"capacity": 120,
+					"costs": 148,
+					"fans_after": 108,
+					"fans_before": 88,
+					"fans_gained": 20,
+					"food_income": 0,
+					"game": 3,
+					"net": 204,
+					"priority_bonus": 40,
+					"score": 100.0,
+					"ticket_income": 352
+				},
+				"d05a0b81d7c44b998f43e102615c8f5e": {
+					"attendance": 131,
+					"capacity": 240,
+					"costs": 191,
+					"fans_after": 154,
+					"fans_before": 131,
+					"fans_gained": 23,
+					"food_income": 131,
+					"game": 5,
+					"net": 464,
+					"priority_bonus": 35,
+					"score": 100.0,
+					"ticket_income": 524
+				}
+			},
+			"income": 2024,
+			"last": {
+				"attendance": 154,
+				"capacity": 240,
+				"costs": 214,
+				"fans_after": 177,
+				"fans_before": 154,
+				"fans_gained": 23,
+				"food_income": 154,
+				"game": 6,
+				"net": 556,
+				"priority_bonus": 40,
+				"score": 100.0,
+				"ticket_income": 616
+			},
+			"pending": "",
+			"record_start": 0,
+			"services": {
+
+			},
+			"spent": 1050
+		},
+		"completed": 6,
+		"earned": 2984,
+		"ownership": {
+			"achieved": false,
+			"capacity": 240,
+			"earnings": 2984,
+			"fans": 177,
+			"objective": {
+				"fans": 257,
+				"project": "grandstand",
+				"targets": 0,
+				"tool": ""
+			},
+			"previous": "",
+			"season": 1,
+			"targets": 6,
+			"text": "MARA'S OWNERSHIP REVIEW · SEASON 1\nA dependable home club · 6 / 6 targets · 100.0 average score\nSupporters 48 → 177 · 240 seats at the finale\nSeason earnings: prep 960 + gate 1824 + manager bonuses 200 = 2984 cr\nMara: The town can count on this crew. Let's turn that trust into the next improvement.\nSeason 2 objective: Reach 257 supporters and open Covered grandstand by the next home finale.\nFans 177 / 257 · project still needed · IN PROGRESS"
+		},
+		"rank": "Crew Lead",
+		"schedule": {
+			"average": 100.0,
+			"last_met": true,
+			"played": 6,
+			"season": 1,
+			"targets": 6
+		},
+		"upgrades": [
+			"hose_nozzle"
+		]
+	},
+	"3": {
+		"balance": 1967,
+		"best": {
+			"doubleheader": 0.0,
+			"full": 0.0,
+			"home_double": 100.0,
+			"home_game": 100.0,
+			"home_hot": 100.0,
+			"home_rain": 100.0,
+			"infield_turnaround": 0.0,
+			"mound_callout": 0.0,
+			"quick_mow": 0.0,
+			"training": 0.0
+		},
+		"club": {
+			"active": true,
+			"buildings": [
+				"snack_shack",
+				"bleachers"
+			],
+			"capacity": 240,
+			"fans": 189,
+			"games": 6,
+			"host_buildings": [
+				"snack_shack",
+				"bleachers"
+			],
+			"hosted": {
+				"000cfe12e2d9110d26d94fea1be71527": {
+					"attendance": 92,
+					"capacity": 120,
+					"costs": 152,
+					"fans_after": 112,
+					"fans_before": 92,
+					"fans_gained": 20,
+					"food_income": 0,
+					"game": 3,
+					"net": 216,
+					"priority_bonus": 40,
+					"score": 100.0,
+					"ticket_income": 368
+				},
+				"30a87d3cb44e5bf9abb88e55e6d53cf1": {
+					"attendance": 164,
+					"capacity": 240,
+					"costs": 224,
+					"fans_after": 187,
+					"fans_before": 164,
+					"fans_gained": 23,
+					"food_income": 164,
+					"game": 6,
+					"net": 596,
+					"priority_bonus": 40,
+					"score": 100.0,
+					"ticket_income": 656
+				},
+				"4668ed4d29e377c900149a7ea3a3c094": {
+					"attendance": 48,
+					"capacity": 120,
+					"costs": 108,
+					"fans_after": 68,
+					"fans_before": 48,
+					"fans_gained": 20,
+					"food_income": 0,
+					"game": 1,
+					"net": 84,
+					"score": 100.0,
+					"ticket_income": 192
+				},
+				"939e5d981d64b08f238d4611947729f7": {
+					"attendance": 70,
+					"capacity": 120,
+					"costs": 130,
+					"fans_after": 90,
+					"fans_before": 70,
+					"fans_gained": 20,
+					"food_income": 0,
+					"game": 2,
+					"net": 150,
+					"priority_bonus": 35,
+					"score": 100.0,
+					"ticket_income": 280
+				},
+				"ac886e366363386a0a94030bbd9df91f": {
+					"attendance": 114,
+					"capacity": 120,
+					"costs": 174,
+					"fans_after": 137,
+					"fans_before": 114,
+					"fans_gained": 23,
+					"food_income": 114,
+					"game": 4,
+					"net": 396,
+					"priority_bonus": 50,
+					"score": 100.0,
+					"ticket_income": 456
+				},
+				"ad9e1198fb5f22dc4873ed8f74a47ea6": {
+					"attendance": 139,
+					"capacity": 240,
+					"costs": 199,
+					"fans_after": 162,
+					"fans_before": 139,
+					"fans_gained": 23,
+					"food_income": 139,
+					"game": 5,
+					"net": 496,
+					"priority_bonus": 35,
+					"score": 100.0,
+					"ticket_income": 556
+				}
+			},
+			"income": 2257,
+			"last": {
+				"attendance": 164,
+				"capacity": 240,
+				"costs": 224,
+				"fans_after": 187,
+				"fans_before": 164,
+				"fans_gained": 23,
+				"food_income": 164,
+				"game": 6,
+				"net": 596,
+				"priority_bonus": 40,
+				"score": 100.0,
+				"ticket_income": 656
+			},
+			"pending": "",
+			"record_start": 0,
+			"services": {
+				"000cfe12e2d9110d26d94fea1be71527": {
+					"amenities": 0,
+					"bonus": 19,
+					"comfort": 8,
+					"completed": 3,
+					"fans": 2,
+					"field": 25,
+					"opportunities": 3,
+					"queue_penalty": 0,
+					"rating": 88,
+					"service": 20,
+					"stars": 5
+				},
+				"30a87d3cb44e5bf9abb88e55e6d53cf1": {
+					"amenities": 4,
+					"bonus": 21,
+					"comfort": 8,
+					"completed": 4,
+					"fans": 2,
+					"field": 25,
+					"opportunities": 4,
+					"queue_penalty": 0,
+					"rating": 92,
+					"service": 20,
+					"stars": 5
+				},
+				"4668ed4d29e377c900149a7ea3a3c094": {
+					"amenities": 0,
+					"bonus": 20,
+					"comfort": 10,
+					"completed": 3,
+					"fans": 2,
+					"field": 25,
+					"opportunities": 3,
+					"queue_penalty": 0,
+					"rating": 90,
+					"service": 20,
+					"stars": 5
+				},
+				"939e5d981d64b08f238d4611947729f7": {
+					"amenities": 0,
+					"bonus": 19,
+					"comfort": 9,
+					"completed": 3,
+					"fans": 2,
+					"field": 25,
+					"opportunities": 3,
+					"queue_penalty": 0,
+					"rating": 89,
+					"service": 20,
+					"stars": 5
+				},
+				"ac886e366363386a0a94030bbd9df91f": {
+					"amenities": 2,
+					"bonus": 19,
+					"comfort": 7,
+					"completed": 4,
+					"fans": 2,
+					"field": 25,
+					"opportunities": 4,
+					"queue_penalty": 0,
+					"rating": 89,
+					"service": 20,
+					"stars": 5
+				},
+				"ad9e1198fb5f22dc4873ed8f74a47ea6": {
+					"amenities": 4,
+					"bonus": 21,
+					"comfort": 9,
+					"completed": 4,
+					"fans": 2,
+					"field": 25,
+					"opportunities": 4,
+					"queue_penalty": 0,
+					"rating": 93,
+					"service": 20,
+					"stars": 5
+				}
+			},
+			"spent": 1050
+		},
+		"completed": 6,
+		"earned": 3217,
+		"ownership": {
+			"achieved": false,
+			"capacity": 240,
+			"earnings": 3098,
+			"fans": 187,
+			"objective": {
+				"fans": 267,
+				"project": "grandstand",
+				"targets": 0,
+				"tool": ""
+			},
+			"previous": "",
+			"season": 1,
+			"targets": 6,
+			"text": "MARA'S OWNERSHIP REVIEW · SEASON 1\nA dependable home club · 6 / 6 targets · 100.0 average score\nSupporters 48 → 187 · 240 seats at the finale\nSeason earnings: prep 960 + gate 1938 + manager bonuses 200 = 3098 cr\nMara: The town can count on this crew. Let's turn that trust into the next improvement.\nSeason 2 objective: Reach 267 supporters and open Covered grandstand by the next home finale.\nFans 189 / 267 · project still needed · IN PROGRESS"
+		},
+		"rank": "Crew Lead",
+		"schedule": {
+			"average": 100.0,
+			"last_met": true,
+			"played": 6,
+			"season": 1,
+			"targets": 6
+		},
+		"upgrades": [
+			"hose_nozzle"
+		]
+	}
+}
